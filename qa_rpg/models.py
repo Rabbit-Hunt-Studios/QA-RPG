@@ -16,6 +16,10 @@ class Question(models.Model):
     def commend(self):
         return Commend.objects.filter(question=self).count()
 
+    @property
+    def correct_choice(self):
+        return Choice.objects.filter(question=self, correct_answer=True)[0]
+
     def __str__(self):
         """Return Question string."""
         return self.question_text
