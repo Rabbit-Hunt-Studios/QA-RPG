@@ -56,6 +56,10 @@ class Log(models.Model):
     log_text = models.CharField(max_length=300, default="")
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
 
+    @property
+    def split_log(self):
+        return self.log_text.split(';')[:-1]
+
     def clear_log(self):
         self.log_text = ""
 
