@@ -8,9 +8,11 @@ class Question(models.Model):
     currency = models.IntegerField(default=1)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    @property
     def report(self):
         return Report.objects.filter(question=self).count()
 
+    @property
     def commend(self):
         return Commend.objects.filter(question=self).count()
 
