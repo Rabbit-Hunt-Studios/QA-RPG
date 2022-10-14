@@ -47,11 +47,12 @@ class Player(models.Model):
     current_hp = models.IntegerField(default=5)
     currency = models.IntegerField(default=0)
 
-    def reset_hp(self):
-        self.current_hp = self.max_hp
-
+    @property
     def player_name(self):
         return self.user.first_name
+
+    def reset_hp(self):
+        self.current_hp = self.max_hp
 
 
 class Log(models.Model):
