@@ -12,3 +12,5 @@ Project documents are in the [Project Wiki](../../wiki/Home).
 - [Requirements](https://github.com/QA-RPG/QA-RPG/wiki/Requirements)
 
 - [Development Plan](https://github.com/QA-RPG/QA-RPG/wiki/Development-Plan)
+
+- [Trello board](https://trello.com/b/87UXzdzR/information)
