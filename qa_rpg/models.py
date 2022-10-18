@@ -7,6 +7,7 @@ class Question(models.Model):
     damage = models.IntegerField(default=1)
     currency = models.IntegerField(default=1)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    enable = models.BooleanField(default=True)
 
     @property
     def report(self):
