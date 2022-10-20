@@ -2,5 +2,18 @@
     <a>{{log}}<br></a>
 {% endfor %}
 
-<a href="{% url 'qa_rpg:dungeon' %}"><button type="submit" value="walk">walk</button></a>
-<a href="{% url 'qa_rpg:index' %}"><button type="button">exit</button></a>
+
+<form action="{% url 'qa_rpg:action' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="walk"/>
+  <p>
+  <button type="submit">walk</button>
+  </p>
+</form>
+<form action="{% url 'qa_rpg:action' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="exit"/>
+  <p>
+  <button type="submit">exit</button>
+  </p>
+</form>
