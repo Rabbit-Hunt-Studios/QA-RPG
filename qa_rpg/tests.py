@@ -87,15 +87,3 @@ class LogModelTest(TestCase):
         self.log.clear_log()
         self.assertEqual(self.log.split_log, [])
 
-
-class DungeonViewTest(TestCase):
-
-    def setUp(self):
-        self.system = User.objects.create_user(username="Demo")
-        self.system.set_password('12345')
-        self.system.save()
-        self.player = Player.objects.create(user=self.system)
-        self.log = Log.objects.create(player=self.player)
-
-    def test_something(self):
-        self.client.get(reverse('qa_rpg:dungeon'), )
