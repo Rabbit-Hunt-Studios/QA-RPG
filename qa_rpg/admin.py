@@ -3,7 +3,7 @@ from .models import Question, Choice, Player
 
 class ChoiceInline(admin.TabularInline):
     model = Choice
-    extra = 3
+    extra = 2
 
 
 class QuestionAdmin(admin.ModelAdmin):
