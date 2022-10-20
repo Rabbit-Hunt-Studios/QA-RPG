@@ -1,0 +1,19 @@
+{% for log in logs%}
+    <a>{{log}}<br></a>
+{% endfor %}
+
+
+<form action="{% url 'qa_rpg:action' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="walk"/>
+  <p>
+  <button type="submit">walk</button>
+  </p>
+</form>
+<form action="{% url 'qa_rpg:action' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="exit"/>
+  <p>
+  <button type="submit">exit</button>
+  </p>
+</form>

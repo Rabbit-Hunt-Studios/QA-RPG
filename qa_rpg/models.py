@@ -79,6 +79,6 @@ class Log(models.Model):
         self.log_text += f"{text};"
 
     def __str__(self):
-        """Return Question string."""
+        """Return Log string."""
         return self.log_text
 

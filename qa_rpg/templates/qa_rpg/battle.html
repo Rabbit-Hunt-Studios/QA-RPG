@@ -1,0 +1,29 @@
+
+<form action="{% url 'qa_rpg:check' question.id %}" method="post">
+{% csrf_token %}
+
+<fieldset>
+    <legend><h1>{{ question.question_text }}</h1></legend>
+    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+    {% for choice in question.choice_set.all %}
+        <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+        <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
+    {% endfor %}
+</fieldset>
+    <input type="radio" name="option" id="report" value="report">
+    <label for="report">Report</label><br>
+
+    <input type="radio" name="option" id="commend" value="commend">
+    <label for="report">Commend</label><br>
+
+<input type="submit" value="Fight">
+</form>
+
+<form action="{% url 'qa_rpg:check' question.id %}" method="post">
+    {% csrf_token %}
+
+    <input type="hidden" name="choice" value="run away">
+    <p>
+        <button type="submit">Run Away</button>
+    </p>
+</form>

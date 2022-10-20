@@ -86,3 +86,4 @@ class LogModelTest(TestCase):
         self.assertEqual(self.log.split_log, ['test'])
         self.log.clear_log()
         self.assertEqual(self.log.split_log, [])
+
