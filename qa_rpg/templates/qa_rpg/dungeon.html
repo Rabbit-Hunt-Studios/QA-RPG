@@ -1,0 +1,6 @@
+{% for log in logs%}
+    <a>{{log}}<br></a>
+{% endfor %}
+
+<a href="{% url 'qa_rpg:dungeon' %}"><button type="submit" value="walk">walk</button></a>
+<a href="{% url 'qa_rpg:index' %}"><button type="button">exit</button></a>
