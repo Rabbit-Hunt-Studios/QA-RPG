@@ -7,6 +7,7 @@ class Question(models.Model):
     damage = models.IntegerField(default=1)
     currency = models.IntegerField(default=1)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.CharField(max_length=100)
     enable = models.BooleanField(default=True)
 
     @property
@@ -59,7 +60,7 @@ class Player(models.Model):
     def player_name(self):
         return self.user.first_name
 
-    def hit(self, damage: int):
+    def minus_health(self, damage: int):
         self.current_hp -= damage
         self.save()
 
@@ -91,7 +92,7 @@ class Player(models.Model):
 
 
 class Log(models.Model):
-    log_text = models.CharField(max_length=300, default="")
+    log_text = models.CharField(max_length=1000, default=";;;;;;;;;;")
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
 
     @property
