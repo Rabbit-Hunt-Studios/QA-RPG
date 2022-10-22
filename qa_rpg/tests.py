@@ -83,7 +83,7 @@ class LogModelTest(TestCase):
     def test_clear_log(self):
         """clear_log method should empty out the log."""
         self.log.add_log(text='test')
-        self.assertEqual(self.log.split_log, ['test'])
+        self.assertEqual(self.log.split_log, ['', '', '', '', '', '', '', '', '', 'test'])
         self.log.clear_log()
         self.assertEqual(self.log.split_log, ['', '', '', '', '', '', '', '', '', ''])
 
