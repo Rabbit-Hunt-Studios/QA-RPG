@@ -1,6 +1,11 @@
+<a>HP: {{ player.current_hp }}/{{ player.max_hp }}<br></a>
+<a>Current coins: {{ player.dungeon_currency }}<br></a>
+
+<fieldset>
 {% for log in logs%}
-    <a>{{log}}<br></a>
+    <a>{{ log }}<br></a>
 {% endfor %}
+</fieldset>
 
 
 <form action="{% url 'qa_rpg:action' %}" method="post">

@@ -1,3 +1,5 @@
+<a>HP: {{ player.current_hp }}/{{ player.max_hp }}<br></a>
+<a>Coins: {{ player.dungeon_currency }}<br></a>
 
 <form action="{% url 'qa_rpg:check' question.id %}" method="post">
 {% csrf_token %}
