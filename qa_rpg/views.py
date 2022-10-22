@@ -4,8 +4,9 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 import random
 from .models import Question, Choice, Player, Log
+from .dialogue import *
 
-TREASURE_AMOUNT = [1, 5, 10]
+TREASURE_AMOUNT = [2, 5, 10]
 TREASURE_THRESHOLD = 0.5
 
 
@@ -25,6 +26,7 @@ def check_player_activity(player: Player, activity: list):
 
 
 class IndexView(generic.TemplateView):
+
     template_name = 'qa_rpg/index.html'
 
     def get(self, request):
@@ -43,6 +45,7 @@ class IndexView(generic.TemplateView):
 
 
 class DungeonView(generic.ListView):
+
     template_name = "qa_rpg/dungeon.html"
 
     def get(self, request):
@@ -55,9 +58,11 @@ class DungeonView(generic.ListView):
 
 
 def action(request):
+
     player = Player.objects.get(pk=1)
     log = get_player_log(player)
     event = random.random()
+
     if request.POST['action'] == "walk":
         if player.luck >= TREASURE_THRESHOLD and event <= (player.luck-TREASURE_THRESHOLD):
             coins = random.choice(TREASURE_AMOUNT)
@@ -65,10 +70,10 @@ def action(request):
             player.earn_currency(coins)
             player.set_luck(TREASURE_THRESHOLD)
         elif event <= player.luck:
-            log.add_log("Monster want to hit you")
+            log.add_log(random.choice(MONSTER) + random.choice(BATTLE_DIALOGUE))
             return redirect("qa_rpg:battle")
         else:
-            log.add_log("Walk")
+            log.add_log(random.choice(WALK_DIALOGUE))
             player.set_luck(player.luck + 0.02)
         return HttpResponseRedirect(reverse("qa_rpg:dungeon"), headers={"logs": log})
     else:
@@ -77,6 +82,7 @@ def action(request):
 
 
 class BattleView(generic.DetailView):
+
     template_name = 'battle.html'
 
     def get(self, request):
@@ -90,35 +96,33 @@ class BattleView(generic.DetailView):
 
 
 def check(request, question_id):
+
     question = Question.objects.get(pk=question_id)
     player = Player.objects.get(pk=1)
     log = get_player_log(player)
 
     try:
         if request.POST['choice'] == "run away":
-            log.add_log("Nigerundayo~~")
+            log.add_log(random.choice(RUN_DIALOGUE))
             player.set_activity("dungeon")
             return redirect("qa_rpg:dungeon")
         check_choice = Choice.objects.get(pk=request.POST['choice'])
     except KeyError:
-        return render(request, 'qa_rpg/battle.html', {
-            'question': question,
-            'player': player,
-            'error_message': "You didn't select a choice.",
-        })
+        return render(request, 'qa_rpg/battle.html', {'question': question,
+                                                      'player': player,
+                                                      'error_message': "You didn't select a choice."})
     if check_choice.correct_answer:
-        log.add_log("fought monster, ggez win")
-        log.add_log(f"you earn {question.currency} coins")
+        log.add_log(random.choice(WIN_DIALOGUE))
+        log.add_log(f"You earn {question.currency} coins.")
         player.earn_currency(question.currency)
         player.set_luck(player.luck+0.05)
         player.set_activity("dungeon")
-        return redirect("qa_rpg:dungeon")
     else:
-        log.add_log("Monster HIT your butt")
-        player.hit(question.damage)
+        log.add_log(random.choice(LOSE_DIALOGUE))
+        player.minus_health(question.damage)
         if player.current_hp <= 0:
             player.dead()
             return render(request, "qa_rpg/index.html", {'player': player,
-                                                         'error_message': "You die.",})
+                                                         'error_message': "You lost consciousness in the dungeons."})
         player.set_activity("dungeon")
-        return redirect("qa_rpg:dungeon")
+    return redirect("qa_rpg:dungeon")
