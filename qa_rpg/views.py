@@ -119,6 +119,7 @@ def check(request, question_id):
         player.set_activity("dungeon")
     else:
         log.add_log(random.choice(LOSE_DIALOGUE))
+        log.add_log(f"You lost {question.damage} health points.")
         player.minus_health(question.damage)
         if player.current_hp <= 0:
             player.dead()
