@@ -51,6 +51,8 @@ class Player(models.Model):
     max_hp = models.IntegerField(default=5)
     current_hp = models.IntegerField(default=5)
     currency = models.IntegerField(default=0)
+    dungeon_currency = models.IntegerField(default=0)
+    activity = models.CharField(max_length=100, default="index")
 
     @property
     def player_name(self):
@@ -58,6 +60,16 @@ class Player(models.Model):
 
     def reset_hp(self):
         self.current_hp = self.max_hp
+        self.save()
+
+    def clear_dungeon_currency(self):
+        self.currency += self.dungeon_currency
+        self.dungeon_currency = 0
+        self.save()
+
+    def set_activity(self, activity):
+        self.activity = activity
+        self.save()
 
 
 class Log(models.Model):
@@ -70,6 +82,7 @@ class Log(models.Model):
 
     def clear_log(self):
         self.log_text = ""
+        self.save()
 
     def add_log(self, text):
         list_log = self.log_text.split(';')
@@ -77,6 +90,7 @@ class Log(models.Model):
             del(list_log[0])
             self.log_text = ";".join(list_log)
         self.log_text += f"{text};"
+        self.save()
 
     def __str__(self):
         """Return Log string."""
