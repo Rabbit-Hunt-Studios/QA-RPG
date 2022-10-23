@@ -267,3 +267,80 @@ class BattleViewTest(TestCase):
         self.player.set_activity("index")
         response = self.client.get(reverse("qa_rpg:battle"))
         self.assertEqual(response.status_code, 302)
+
+
+class BattleActionTest(TestCase):
+
+    def setUp(self):
+        """Setup for testing actions in battle page."""
+        self.system = User.objects.create_user(username="demo")
+        self.system.save()
+        self.player = Player.objects.create(user=self.system)
+        self.player.set_activity("battle1")
+        self.question = Question.objects.create(question_text="test", owner=self.system)
+        self.question.save()
+        self.correct = Choice.objects.create(question=self.question, choice_text='yes', correct_answer=True)
+        self.correct.save()
+        self.wrong = Choice.objects.create(question=self.question, choice_text='no', correct_answer=False)
+        self.wrong.save()
+
+    def test_player_answers_correctly(self):
+        """When player chooses the correct answer, player is given currency and health is not deducted."""
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
+                                    {"choice": self.correct.id})
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.current_hp, self.player.max_hp)
+        self.assertEqual(self.player.dungeon_currency, self.question.currency)
+        self.assertEqual(self.player.luck, BASE_LUCK + 0.03)
+        self.assertEqual(self.player.activity, "dungeon")
+
+    def test_player_answers_incorrectly(self):
+        """When player chooses the incorrect answer, player health is deducted."""
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
+                                    {"choice": self.wrong.id})
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.current_hp, self.player.max_hp - self.question.damage)
+        self.assertEqual(self.player.dungeon_currency, 0)
+        self.assertEqual(self.player.luck, BASE_LUCK)
+        self.assertEqual(self.player.activity, "dungeon")
+
+    def test_player_dies_to_question_damage(self):
+        """If player answers incorrectly, dungeon currency becomes zero and return to index."""
+        self.player.current_hp = 10
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
+                                    {"choice": self.wrong.id})
+        self.assertEqual(response.status_code, 200)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.currency, 0)
+        self.assertEqual(self.player.activity, "index")
+
+    def test_player_runs_away_successfully(self):
+        """When player chooses run away and randoms high enough float, return to dungeon page."""
+        random.seed(10)
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
+                                    {"choice": "run away"})
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("dungeon", response.url)
+        self.assertEqual(Player.objects.get(pk=1).activity, "dungeon")
+
+    def test_player_does_not_run_away_successfully(self):
+        """When player chooses run away and randoms low float, stay in battle page and deduct health."""
+        random.seed(100)
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
+                                    {"choice": "run away"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Player.objects.get(pk=1).activity, "battle1")
+
+    def test_player_dies_to_unsuccessful_run_away(self):
+        """If player chooses run away and randoms low float and health falls below zero, dungeon currency becomes
+        zero and return to index."""
+        self.player.current_hp = 10
+        self.player.save()
+        random.seed(100)
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
+                                    {"choice": "run away"})
+        self.assertEqual(response.status_code, 200)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.currency, 0)
+        self.assertEqual(self.player.activity, "index")
