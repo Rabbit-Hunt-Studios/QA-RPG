@@ -87,7 +87,10 @@ class Player(models.Model):
     def dead(self):
         self.set_activity("index")
         self.reset_stats()
-        Log.objects.get(player=self).clear_log()
+        try:
+            Log.objects.get(player=self).clear_log()
+        except Log.DoesNotExist:
+            Log.objects.create(player=self)
         self.save()
 
 
