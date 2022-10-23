@@ -4,9 +4,11 @@ branch = True
 # omit uninteresting files
 omit =
     mysite/*
-    polls/__init__.py
-    polls/admin.py
-    polls/tests.py
-    polls/urls.py
+    qa_rpg/__init__.py
+    qa_rpg/admin.py
+    qa_rpg/tests.py
+    qa_rpg/urls.py
+    qa_rpg/dialogue.py
+    qa_rpg/apps.py
     manage.py
-    polls/migrations/*
+    qa_rpg/migrations/*
