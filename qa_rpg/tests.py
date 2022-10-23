@@ -2,6 +2,9 @@ from django.test import TestCase
 from .models import *
 from django.contrib.auth.models import User
 from django.urls import reverse
+import random
+
+empty_log = ['', '', '', '', '', '', '', '', '', '']
 
 
 class QuestionModelTest(TestCase):
@@ -120,7 +123,7 @@ class LogModelTest(TestCase):
         self.log.add_log(text='test')
         self.assertEqual(self.log.split_log, ['', '', '', '', '', '', '', '', '', 'test'])
         self.log.clear_log()
-        self.assertEqual(self.log.split_log, ['', '', '', '', '', '', '', '', '', ''])
+        self.assertEqual(self.log.split_log, empty_log)
 
 
 class IndexViewTest(TestCase):
@@ -135,7 +138,7 @@ class IndexViewTest(TestCase):
         """When a player's log isn't in the database, it automatically creates one."""
         response = self.client.get(reverse("qa_rpg:index"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.log.split_log, ['', '', '', '', '', '', '', '', '', ''])
+        self.assertEqual(self.log.split_log, empty_log)
         self.log.delete()
         self.client.get(reverse("qa_rpg:index"))
         log = Log.objects.get(player=self.player)
@@ -151,3 +154,26 @@ class IndexViewTest(TestCase):
         response = self.client.get(reverse("qa_rpg:index"))
         self.assertEqual(response.status_code, 302)
         self.assertIn("battle", response.url)
+
+
+class DungeonViewTest(TestCase):
+
+    def setUp(self):
+        """Setup for testing Dungeon page."""
+        self.system = User.objects.create_user(username="demo")
+        self.player = Player.objects.create(user=self.system)
+        self.log = Log.objects.create(player=self.player)
+
+    def test_rendering_dungeon_page(self):
+        """Dungeon view should return the player and player's log to html."""
+        self.player.set_activity("index")
+        response = self.client.get(reverse("qa_rpg:dungeon"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["logs"], empty_log)
+        self.assertEqual(response.context["player"], self.player)
+
+    def test_not_matching_activity(self):
+        """When player does not encounter monster, log is updated and go to dungeon page."""
+        self.player.set_activity("battle1")
+        response = self.client.get(reverse("qa_rpg:dungeon"))
+        self.assertEqual(response.status_code, 302)
