@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+BASE_LUCK = 0.25
+
 
 class Question(models.Model):
     question_text = models.CharField(max_length=200)
@@ -54,31 +56,27 @@ class Player(models.Model):
     currency = models.IntegerField(default=0)
     dungeon_currency = models.IntegerField(default=0)
     activity = models.CharField(max_length=100, default="index")
-    luck = models.FloatField(default=0.2)
+    luck = models.FloatField(default=BASE_LUCK)
 
     @property
     def player_name(self):
         return self.user.first_name
 
-    def minus_health(self, damage: int):
-        self.current_hp -= damage
+    def update_player_stats(self, health: int = 0, dungeon_currency: int = 0, luck: float = 0):
+        self.current_hp += health
+        self.dungeon_currency += dungeon_currency
+        self.luck += luck
         self.save()
 
-    def reset_hp(self):
+    def reset_stats(self):
         self.current_hp = self.max_hp
-        self.save()
-
-    def earn_currency(self, currency: int):
-        self.dungeon_currency += currency
-        self.save()
-
-    def clear_dungeon_currency(self):
-        self.currency += self.dungeon_currency
+        self.luck = BASE_LUCK
         self.dungeon_currency = 0
         self.save()
 
-    def set_luck(self, luck: float = 0.2):
-        self.luck = luck
+    def add_dungeon_currency(self):
+        self.currency += self.dungeon_currency
+        self.dungeon_currency = 0
         self.save()
 
     def set_activity(self, activity: str):
@@ -87,7 +85,8 @@ class Player(models.Model):
 
     def dead(self):
         self.set_activity("index")
-        self.dungeon_currency = 0
+        self.reset_stats()
+        Log.objects.get(player=self).clear_log()
         self.save()
 
 
