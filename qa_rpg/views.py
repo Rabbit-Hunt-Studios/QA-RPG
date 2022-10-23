@@ -119,8 +119,8 @@ def check(request, question_id):
                 player.set_activity("dungeon")
                 return redirect("qa_rpg:dungeon")
             else:
-                run_away = random.choice(RUN_FAIL_DIALOGUE)
-                log.add_log(run_away)
+                run_fail = random.choice(RUN_FAIL_DIALOGUE)
+                log.add_log(run_fail)
 
                 death = check_dead(request, player, question.damage, log)
                 if death is not None:
@@ -129,7 +129,7 @@ def check(request, question_id):
                               'qa_rpg/battle.html',
                               {'question': question,
                                'player': player,
-                               'error_message': run_away})
+                               'error_message': run_fail})
 
         check_choice = Choice.objects.get(pk=request.POST['choice'])
     except KeyError:
