@@ -1,8 +1,9 @@
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.views import generic
 from django.shortcuts import render, redirect
 from django.urls import reverse
 import random
+import difflib
 from .models import Question, Choice, Player, Log
 from .dialogue import *
 
@@ -20,9 +21,11 @@ def get_player_log(player: Player):
 
 
 def check_player_activity(player: Player, activity: list):
-    if player.activity not in activity:
-        return True
-    return False
+    if not difflib.get_close_matches(player.activity, activity):
+        if difflib.get_close_matches(player.activity, ["battle"]):
+            return f"qa_rpg:{player.activity[:6]}"
+        return f"qa_rpg:{player.activity}"
+    return None
 
 
 class IndexView(generic.TemplateView):
@@ -33,8 +36,9 @@ class IndexView(generic.TemplateView):
         player = Player.objects.get(pk=1)
         log = get_player_log(player)
 
-        if check_player_activity(player, ["index"]):
-            return redirect(f"qa_rpg:{player.activity}")
+        check_url = check_player_activity(player, ["index"])
+        if check_url is not None:
+            return redirect(check_url)
 
         player.reset_hp()
         player.set_luck()
@@ -50,8 +54,11 @@ class DungeonView(generic.ListView):
 
     def get(self, request):
         player = Player.objects.get(pk=1)  # dummy player
-        if check_player_activity(player, ["index", "dungeon"]):
-            return redirect(f"qa_rpg:{player.activity}")
+
+        check_url = check_player_activity(player, ["index", "dungeon"])
+        if check_url is not None:
+            return redirect(check_url)
+
         player.set_activity("dungeon")
         log = get_player_log(player)
         return render(request, self.template_name, {"logs": log.split_log, "player": player})
@@ -71,6 +78,7 @@ def action(request):
             player.set_luck(TREASURE_THRESHOLD)
         elif event <= player.luck:
             log.add_log(random.choice(MONSTER) + random.choice(BATTLE_DIALOGUE))
+            player.set_activity("found monster")
             return redirect("qa_rpg:battle")
         else:
             log.add_log(random.choice(WALK_DIALOGUE))
@@ -86,12 +94,20 @@ class BattleView(generic.DetailView):
     template_name = 'battle.html'
 
     def get(self, request):
-        question_id = random.choice(Question.objects.all().values_list("id", flat=True))
-        question = Question.objects.get(pk=question_id)
         player = Player.objects.get(pk=1)
-        if check_player_activity(player, ["dungeon", "battle"]):
-            return redirect(f"qa_rpg:{player.activity}")
-        player.set_activity("battle")
+
+        check_url = check_player_activity(player, ["battle", "found monster"])
+        if check_url is not None:
+            return redirect(check_url)
+
+        if difflib.get_close_matches(player.activity, ["battle"]):
+            question_id = int(player.activity[6:])
+            question = Question.objects.get(pk=question_id)
+        else:
+            question_id = random.choice(Question.objects.all().values_list("id", flat=True))
+            question = Question.objects.get(pk=question_id)
+
+        player.set_activity(f"battle{question_id}")
         return render(request, "qa_rpg/battle.html", {"question": question, "player": player})
 
 
@@ -109,11 +125,14 @@ def check(request, question_id):
                 return redirect("qa_rpg:dungeon")
             else:
                 player.minus_health(question.damage)
-                log.add_log("You run away but monster HIT your butt")
-                log.add_log(f"You lost {question.damage} health points.")
-                return render(request, 'qa_rpg/battle.html', {'question': question,
-                                                              'player': player,
-                                                              'error_message': "You run away but monster HIT your butt."})
+                run_away = random.choice(RUN_FAIL_DIALOGUE)
+                log.add_log(run_away)
+                log.add_log(f"You lose {question.damage} health points.")
+                return render(request,
+                              'qa_rpg/battle.html',
+                              {'question': question,
+                               'player': player,
+                               'error_message': run_away})
 
         check_choice = Choice.objects.get(pk=request.POST['choice'])
     except KeyError:
