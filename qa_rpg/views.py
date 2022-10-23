@@ -64,7 +64,7 @@ class DungeonView(generic.ListView):
 
 def action(request):
 
-    player = Player.objects.get(pk=1)
+    player = Player.objects.get(pk=1)  # dummy player
     log = get_player_log(player)
     event = random.random()
 
@@ -92,7 +92,7 @@ class BattleView(generic.DetailView):
     template_name = 'battle.html'
 
     def get(self, request):
-        player = Player.objects.get(pk=1)
+        player = Player.objects.get(pk=1)  # dummy player
 
         check_url = check_player_activity(player, ["battle", "found monster"])
         if check_url is not None:
@@ -111,7 +111,7 @@ class BattleView(generic.DetailView):
 def check(request, question_id):
 
     question = Question.objects.get(pk=question_id)
-    player = Player.objects.get(pk=1)
+    player = Player.objects.get(pk=1)  # dummy player
     log = get_player_log(player)
 
     try:
