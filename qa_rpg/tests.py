@@ -43,12 +43,40 @@ class PlayerModelTest(TestCase):
         self.player = Player.objects.create(user=self.system)
 
     def test_reset_player_stats(self):
-        """Health of the player is reset to the maximum health."""
-        self.player.current_hp -= 2
-        self.assertEqual(self.player.current_hp, 3)
+        """All stats of the player is reset to the default value."""
+        self.player.current_hp -= 10
+        self.assertEqual(self.player.current_hp, 90)
+        self.player.dungeon_currency += 3
+        self.player.luck += 0.02
         self.player.reset_stats()
-        self.assertEqual(self.player.current_hp, 5)
-        self.assertEqual(self.player.max_hp, 5)
+        self.assertEqual(self.player.current_hp, 100)
+        self.assertEqual(self.player.max_hp, 100)
+        self.assertEqual(self.player.luck, BASE_LUCK)
+        self.assertEqual(self.player.dungeon_currency, 0)
+
+    def test_update_player_stats(self):
+        """Each value is correctly added to its respective stat."""
+        self.player.update_player_stats(health=-20, dungeon_currency=5, luck=0.02)
+        self.assertEqual(self.player.current_hp, 80)
+        self.assertEqual(self.player.dungeon_currency, 5)
+        self.assertEqual(self.player.currency, 0)
+        self.assertEqual(self.player.luck, BASE_LUCK + 0.02)
+
+    def test_dead_player(self):
+        """When a player dies, their dungeon currency becomes 0 and returns to index page."""
+        self.player.dungeon_currency += 10
+        self.assertEqual(self.player.dungeon_currency, 10)
+        self.assertEqual(self.player.currency, 0)
+        self.player.dead()
+        self.assertEqual(self.player.dungeon_currency, 0)
+        self.assertEqual(self.player.currency, 0)
+
+    def test_add_currency_from_dungeon(self):
+        """Dungeon currency is added to the player's normal currency."""
+        self.player.dungeon_currency += 20
+        self.player.add_dungeon_currency()
+        self.assertEqual(self.player.dungeon_currency, 0)
+        self.assertEqual(self.player.currency, 20)
 
 
 class LogModelTest(TestCase):
