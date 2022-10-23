@@ -2,12 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
 
 BASE_LUCK = 0.25
+BASE_HEALTH = 100
 
 
 class Question(models.Model):
     question_text = models.CharField(max_length=200)
-    damage = models.IntegerField(default=1)
-    currency = models.IntegerField(default=1)
+    damage = models.IntegerField(default=20)
+    currency = models.IntegerField(default=5)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.CharField(max_length=100)
     enable = models.BooleanField(default=True)
@@ -51,8 +52,8 @@ class Commend(models.Model):
 
 class Player(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    max_hp = models.IntegerField(default=5)
-    current_hp = models.IntegerField(default=5)
+    max_hp = models.IntegerField(default=BASE_HEALTH)
+    current_hp = models.IntegerField(default=BASE_HEALTH)
     currency = models.IntegerField(default=0)
     dungeon_currency = models.IntegerField(default=0)
     activity = models.CharField(max_length=100, default="index")

@@ -7,8 +7,8 @@ import difflib
 from .models import Question, Choice, Player, Log
 from .dialogue import *
 
-TREASURE_AMOUNT = [2, 5, 10]
-TREASURE_THRESHOLD = 0.5
+TREASURE_AMOUNT = [1, 5, 10, 15, 30]
+TREASURE_THRESHOLD = 0.55
 
 
 def get_player_log(player: Player):
