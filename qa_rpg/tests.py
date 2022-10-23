@@ -1,7 +1,7 @@
 from django.test import TestCase
 from .models import *
 from django.contrib.auth.models import User
-from .views import *
+from django.urls import reverse
 
 
 class QuestionModelTest(TestCase):
@@ -62,6 +62,12 @@ class PlayerModelTest(TestCase):
         self.assertEqual(self.player.currency, 0)
         self.assertEqual(self.player.luck, BASE_LUCK + 0.02)
 
+    def test_set_player_activity(self):
+        """Player's activity is correctly set."""
+        self.assertEqual(self.player.activity, "index")
+        self.player.set_activity("dungeon")
+        self.assertEqual(self.player.activity, "dungeon")
+
     def test_dead_player(self):
         """When a player dies, their dungeon currency becomes 0 and returns to index page."""
         self.player.dungeon_currency += 10
@@ -105,6 +111,7 @@ class LogModelTest(TestCase):
                      'Exiting dungeon']
         for text in logs_text:
             self.log.add_log(text=text)
+            self.assertEqual(len(self.log.split_log), 10)
         self.assertEqual(self.log.split_log, logs_text[1:])
         self.assertEqual(len(self.log.split_log), 10)
 
@@ -115,3 +122,32 @@ class LogModelTest(TestCase):
         self.log.clear_log()
         self.assertEqual(self.log.split_log, ['', '', '', '', '', '', '', '', '', ''])
 
+
+class IndexViewTest(TestCase):
+
+    def setUp(self):
+        """Setup for testing the Index page."""
+        self.system = User.objects.create_user(username="demo")
+        self.player = Player.objects.create(user=self.system)
+        self.log = Log.objects.create(player=self.player)
+
+    def test_get_player_log(self):
+        """When a player's log isn't in the database, it automatically creates one."""
+        response = self.client.get(reverse("qa_rpg:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.log.split_log, ['', '', '', '', '', '', '', '', '', ''])
+        self.log.delete()
+        self.client.get(reverse("qa_rpg:index"))
+        log = Log.objects.get(player=self.player)
+        self.assertEqual(log.player, self.player)
+
+    def test_not_matching_activity(self):
+        """If the player activity is not index, redirect player to the correct page."""
+        self.player.set_activity("dungeon")
+        response = self.client.get(reverse("qa_rpg:index"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("dungeon", response.url)
+        self.player.set_activity("battle1")
+        response = self.client.get(reverse("qa_rpg:index"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("battle", response.url)
