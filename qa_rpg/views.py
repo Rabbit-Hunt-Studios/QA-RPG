@@ -15,7 +15,7 @@ def get_player_log(player: Player):
     try:
         log = Log.objects.get(player=player)
     except Log.DoesNotExist:
-        log = Log.object.create(player=player)
+        log = Log.objects.create(player=player)
         log.save()
     return log
 
