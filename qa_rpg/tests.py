@@ -173,7 +173,22 @@ class DungeonViewTest(TestCase):
         self.assertEqual(response.context["player"], self.player)
 
     def test_not_matching_activity(self):
-        """When player does not encounter monster, log is updated and go to dungeon page."""
+        """If the player activity is not index, redirect player to the correct page."""
         self.player.set_activity("battle1")
         response = self.client.get(reverse("qa_rpg:dungeon"))
         self.assertEqual(response.status_code, 302)
+
+
+class DungeonActionTest(TestCase):
+
+    def setUp(self):
+        """Setup for testing actions in dungeon."""
+        self.system = User.objects.create_user(username="demo")
+        self.player = Player.objects.create(user=self.system)
+        self.log = Log.objects.create(player=self.player)
+        self.question = Question.objects.create(question)
+
+    def test_walk_with_no_monsters(self):
+        """When player does not encounter monster, log is updated and go to dungeon page."""
+        random.seed(100)  # random.random() = 0.14566
+        self.client.
