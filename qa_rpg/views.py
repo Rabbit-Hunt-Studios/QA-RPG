@@ -33,16 +33,14 @@ class IndexView(generic.TemplateView):
     template_name = 'qa_rpg/index.html'
 
     def get(self, request):
-        player = Player.objects.get(pk=1)
+        player = Player.objects.get(pk=1)  # dummy player
         log = get_player_log(player)
 
         check_url = check_player_activity(player, ["index"])
         if check_url is not None:
             return redirect(check_url)
 
-        player.reset_hp()
-        player.set_luck()
-        player.clear_dungeon_currency()
+        player.reset_stats()
         log.clear_log()
 
         return render(request, self.template_name, {"player": player})
@@ -74,18 +72,18 @@ def action(request):
         if player.luck >= TREASURE_THRESHOLD and event <= (player.luck-TREASURE_THRESHOLD):
             coins = random.choice(TREASURE_AMOUNT)
             log.add_log(f"You found a treasure chest with {coins} coins in it.")
-            player.earn_currency(coins)
-            player.set_luck(TREASURE_THRESHOLD)
+            player.update_player_stats(dungeon_currency=coins, luck=-(player.luck - TREASURE_THRESHOLD))
         elif event <= player.luck:
             log.add_log(random.choice(MONSTER) + random.choice(BATTLE_DIALOGUE))
             player.set_activity("found monster")
             return redirect("qa_rpg:battle")
         else:
             log.add_log(random.choice(WALK_DIALOGUE))
-            player.set_luck(player.luck + 0.02)
+            player.update_player_stats(luck=0.02)
         return HttpResponseRedirect(reverse("qa_rpg:dungeon"), headers={"logs": log})
     else:
         player.set_activity("index")
+        player.add_dungeon_currency()
         return redirect("qa_rpg:index")
 
 
@@ -102,10 +100,9 @@ class BattleView(generic.DetailView):
 
         if difflib.get_close_matches(player.activity, ["battle"]):
             question_id = int(player.activity[6:])
-            question = Question.objects.get(pk=question_id)
         else:
             question_id = random.choice(Question.objects.all().values_list("id", flat=True))
-            question = Question.objects.get(pk=question_id)
+        question = Question.objects.get(pk=question_id)
 
         player.set_activity(f"battle{question_id}")
         return render(request, "qa_rpg/battle.html", {"question": question, "player": player})
@@ -119,15 +116,17 @@ def check(request, question_id):
 
     try:
         if request.POST['choice'] == "run away":
-            if player.luck >= random.random():
+            if random.random() >= player.luck:
                 log.add_log(random.choice(RUN_DIALOGUE))
                 player.set_activity("dungeon")
                 return redirect("qa_rpg:dungeon")
             else:
-                player.minus_health(question.damage)
                 run_away = random.choice(RUN_FAIL_DIALOGUE)
                 log.add_log(run_away)
-                log.add_log(f"You lose {question.damage} health points.")
+
+                death = check_dead(request, player, question.damage, log)
+                if death is not None:
+                    return death
                 return render(request,
                               'qa_rpg/battle.html',
                               {'question': question,
@@ -142,16 +141,22 @@ def check(request, question_id):
     if check_choice.correct_answer:
         log.add_log(random.choice(WIN_DIALOGUE))
         log.add_log(f"You earn {question.currency} coins.")
-        player.earn_currency(question.currency)
-        player.set_luck(player.luck+0.05)
+        player.update_player_stats(dungeon_currency=question.currency, luck=0.03)
         player.set_activity("dungeon")
     else:
         log.add_log(random.choice(LOSE_DIALOGUE))
-        log.add_log(f"You lost {question.damage} health points.")
-        player.minus_health(question.damage)
-        if player.current_hp <= 0:
-            player.dead()
-            return render(request, "qa_rpg/index.html", {'player': player,
-                                                         'error_message': "You lost consciousness in the dungeons."})
+        death = check_dead(request, player, question.damage, log)
+        if death is not None:
+            return death
         player.set_activity("dungeon")
     return redirect("qa_rpg:dungeon")
+
+
+def check_dead(request, player: Player, damage: int, log: Log):
+    log.add_log(f"You lose {damage} health points.")
+    player.update_player_stats(health=-damage)
+    if player.current_hp <= 0:
+        player.dead()
+        return render(request, "qa_rpg/index.html", {'player': player,
+                                                     'error_message': "You lost consciousness in the dungeons."})
+    return None
