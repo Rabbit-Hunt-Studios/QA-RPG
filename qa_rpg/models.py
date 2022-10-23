@@ -108,9 +108,8 @@ class Log(models.Model):
 
     def add_log(self, text):
         list_log = self.log_text.split(';')
-        if len(list_log)-1 >= 10:
-            del(list_log[0])
-            self.log_text = ";".join(list_log)
+        del(list_log[0])
+        self.log_text = ";".join(list_log)
         self.log_text += f"{text};"
         self.save()
 
