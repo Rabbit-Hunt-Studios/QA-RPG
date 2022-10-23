@@ -1,7 +1,5 @@
-from django.http import HttpResponseRedirect
 from django.views import generic
 from django.shortcuts import render, redirect
-from django.urls import reverse
 import random
 import difflib
 from .models import Question, Choice, Player, Log
@@ -80,7 +78,7 @@ def action(request):
         else:
             log.add_log(random.choice(WALK_DIALOGUE))
             player.update_player_stats(luck=0.02)
-        return HttpResponseRedirect(reverse("qa_rpg:dungeon"), headers={"logs": log})
+        return redirect("qa_rpg:dungeon")
     else:
         player.set_activity("index")
         player.add_dungeon_currency()
@@ -135,9 +133,7 @@ def check(request, question_id):
 
         check_choice = Choice.objects.get(pk=request.POST['choice'])
     except KeyError:
-        return render(request, 'qa_rpg/battle.html', {'question': question,
-                                                      'player': player,
-                                                      'error_message': "You didn't select a choice."})
+        return redirect("qa_rpg:battle")
     if check_choice.correct_answer:
         log.add_log(random.choice(WIN_DIALOGUE))
         log.add_log(f"You earn {question.currency} coins.")
