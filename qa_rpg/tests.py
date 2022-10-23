@@ -42,11 +42,11 @@ class PlayerModelTest(TestCase):
         self.question = Question.objects.create(owner=self.system, question_text='test')
         self.player = Player.objects.create(user=self.system)
 
-    def test_reset_health(self):
+    def test_reset_player_stats(self):
         """Health of the player is reset to the maximum health."""
         self.player.current_hp -= 2
         self.assertEqual(self.player.current_hp, 3)
-        self.player.reset_hp()
+        self.player.reset_stats()
         self.assertEqual(self.player.current_hp, 5)
         self.assertEqual(self.player.max_hp, 5)
 
