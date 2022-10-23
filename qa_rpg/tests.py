@@ -184,11 +184,50 @@ class DungeonActionTest(TestCase):
     def setUp(self):
         """Setup for testing actions in dungeon."""
         self.system = User.objects.create_user(username="demo")
+        self.system.save()
         self.player = Player.objects.create(user=self.system)
+        self.player.set_activity("dungeon")
         self.log = Log.objects.create(player=self.player)
-        self.question = Question.objects.create(question)
+        self.log.save()
 
-    def test_walk_with_no_monsters(self):
-        """When player does not encounter monster, log is updated and go to dungeon page."""
-        random.seed(100)  # random.random() = 0.14566
-        self.client.
+    def test_walk_with_no_monster_found(self):
+        """When player does not encounter monster, log is updated, player luck is incremented and then redirect to
+        dungeon view."""
+        random.seed(10)
+        response = self.client.post(reverse("qa_rpg:action"), {"action": "walk"})
+        self.assertEqual(Player.objects.get(pk=1).luck, 0.27)
+        self.assertNotEqual(Log.objects.get(pk=1).split_log[9], "")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("dungeon", response.url)
+
+    def test_walk_with_monster_found(self):
+        """When a player encounters a monster, log is updated, and then redirected to battle view."""
+        random.seed(100)
+        response = self.client.post(reverse("qa_rpg:action"), {"action": "walk"})
+        self.assertNotEqual(Log.objects.get(pk=1).split_log[9], "")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("battle", response.url)
+
+    def test_exit_dungeon(self):
+        """When player chooses to exit, then redirect to index view."""
+        self.player.dungeon_currency = 20
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:action"), {"action": "exit"})
+        self.assertEqual(response.status_code, 302)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.activity, "index")
+        self.assertEqual(self.player.currency, 20)
+        self.assertEqual(self.player.dungeon_currency, 0)
+
+    def test_found_treasure(self):
+        """When player has high enough luck, they can find treasure."""
+        random.seed(123)
+        self.player.luck = 0.7
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:action"), {"action": "walk"})
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("dungeon", response.url)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.luck, 0.55)
+        self.assertTrue(self.player.dungeon_currency != 0)
+
