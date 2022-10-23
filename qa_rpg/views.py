@@ -103,9 +103,18 @@ def check(request, question_id):
 
     try:
         if request.POST['choice'] == "run away":
-            log.add_log(random.choice(RUN_DIALOGUE))
-            player.set_activity("dungeon")
-            return redirect("qa_rpg:dungeon")
+            if player.luck >= random.random():
+                log.add_log(random.choice(RUN_DIALOGUE))
+                player.set_activity("dungeon")
+                return redirect("qa_rpg:dungeon")
+            else:
+                player.minus_health(question.damage)
+                log.add_log("You run away but monster HIT your butt")
+                log.add_log(f"You lost {question.damage} health points.")
+                return render(request, 'qa_rpg/battle.html', {'question': question,
+                                                              'player': player,
+                                                              'error_message': "You run away but monster HIT your butt."})
+
         check_choice = Choice.objects.get(pk=request.POST['choice'])
     except KeyError:
         return render(request, 'qa_rpg/battle.html', {'question': question,
