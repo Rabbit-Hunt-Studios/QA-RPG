@@ -173,7 +173,7 @@ class DungeonViewTest(TestCase):
         self.assertEqual(response.context["player"], self.player)
 
     def test_not_matching_activity(self):
-        """If the player activity is not index, redirect player to the correct page."""
+        """If the player activity is not dungeon, redirect player to the correct page."""
         self.player.set_activity("battle1")
         response = self.client.get(reverse("qa_rpg:dungeon"))
         self.assertEqual(response.status_code, 302)
@@ -231,3 +231,39 @@ class DungeonActionTest(TestCase):
         self.assertEqual(self.player.luck, 0.55)
         self.assertTrue(self.player.dungeon_currency != 0)
 
+
+class BattleViewTest(TestCase):
+
+    def setUp(self):
+        """Setup for testing battle page."""
+        self.system = User.objects.create_user(username="demo")
+        self.system.save()
+        self.player = Player.objects.create(user=self.system)
+        self.player.set_activity("battle1")
+        self.question = Question.objects.create(question_text="test", owner=self.system)
+        self.question.save()
+
+    def test_rendering_battle_page(self):
+        """If player got randomized a monster from dungeon page, randomize a question and render the battle page."""
+        self.player.set_activity("found monster")
+        response = self.client.get(reverse("qa_rpg:battle"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Player.objects.get(pk=1).activity, "battle1")
+
+    def test_already_in_battle(self):
+        """If player is already in battle, render the same question."""
+        self.player.set_activity("battle1")
+        Question.objects.create(question_text="test new question", owner=self.system)
+        response = self.client.get(reverse("qa_rpg:battle"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["question"], self.question)
+
+    def test_not_matching_activity(self):
+        """If the player activity is not battle, redirect player to the correct page."""
+        self.player.set_activity("dungeon")
+        response = self.client.get(reverse("qa_rpg:battle"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("dungeon", response.url)
+        self.player.set_activity("index")
+        response = self.client.get(reverse("qa_rpg:battle"))
+        self.assertEqual(response.status_code, 302)
