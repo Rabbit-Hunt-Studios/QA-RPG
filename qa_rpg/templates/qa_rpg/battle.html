@@ -1,11 +1,29 @@
-<a>HP: {{ player.current_hp }}/{{ player.max_hp }}<br></a>
-<a>Coins: {{ player.dungeon_currency }}<br></a>
+<!doctype html>
+{% load static %}
+{% load tailwind_tags %}
+<head>
+{% tailwind_css %}
+</head>
+
+<body class="font-serif text-white bg-cover "
+  style="background-image: url('https://assets.dicebreaker.com/dungeons-and-dragons-players-handbook-art-8png.jpg/BROK/resize/1920x1920%3E/format/jpg/quality/80/dungeons-and-dragons-players-handbook-art-8png.jpg;">
+  <div class="m-8 p-4">
+    <div class="h-20 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+      <div class="text-pink-50 text-3xl pl-2 pt-1">
+        HP: {{ player.current_hp }} / {{ player.max_hp }}
+        <br> <a> Current coins: {{ player.dungeon_currency }} </a> </br>
+      </div>
+    </div>
+  </div>
 
 <form action="{% url 'qa_rpg:check' question.id %}" method="post">
 {% csrf_token %}
 
-<fieldset>
-    <legend><h1>{{ question.question_text }}</h1></legend>
+    <div class="flex justify-center items-center w-3/4 h-3/4">
+        <div class="bg-black bg-opacity-50 border-gray-600 border-2 w-3/4 h-48 justify-center items-center">
+            <h1 class="p-2 text-3xl ">{{ question.question_text }}</h1>
+        </div>
+    </div>
     {% if messages %}
         {% for message in messages %}
         <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>
@@ -18,7 +36,7 @@
         <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
         <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
     {% endfor %}
-</fieldset>
+
     <input type="radio" name="option" id="report" value="report">
     <label for="report">Report</label><br>
 
