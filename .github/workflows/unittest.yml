@@ -19,6 +19,11 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.9"
+    - name: Setup Node.js Current
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    - run: echo "NPM_BIN_PATH=$(which npm)" >> $GITHUB_ENV
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
