@@ -1,3 +1,9 @@
 <a>Coins: {{ player.currency }}<br></a>
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+    {% if messages %}
+        {% for message in messages %}
+        <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+        <p><strong>{{ message }}</strong></p>
+        </div>
+        {% endfor %}
+    {% endif %}
 <a href="{% url 'qa_rpg:dungeon' %}"><button type="button">dungeon</button></a>

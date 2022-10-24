@@ -1,5 +1,6 @@
 from django.views import generic
 from django.shortcuts import render, redirect
+from django.contrib import messages
 import random
 import difflib
 from .models import Question, Choice, Player, Log
@@ -121,6 +122,7 @@ def check(request, question_id):
             else:
                 run_fail = random.choice(RUN_FAIL_DIALOGUE)
                 log.add_log(run_fail)
+                messages.error(request, run_fail)
 
                 death = check_dead(request, player, question.damage, log)
                 if death is not None:
@@ -128,11 +130,11 @@ def check(request, question_id):
                 return render(request,
                               'qa_rpg/battle.html',
                               {'question': question,
-                               'player': player,
-                               'error_message': run_fail})
+                               'player': player,})
 
         check_choice = Choice.objects.get(pk=request.POST['choice'])
     except KeyError:
+        messages.error(request, "You didn't select a attack move.")
         return redirect("qa_rpg:battle")
     if check_choice.correct_answer:
         log.add_log(random.choice(WIN_DIALOGUE))
@@ -153,6 +155,6 @@ def check_dead(request, player: Player, damage: int, log: Log):
     player.update_player_stats(health=-damage)
     if player.current_hp <= 0:
         player.dead()
-        return render(request, "qa_rpg/index.html", {'player': player,
-                                                     'error_message': "You lost consciousness in the dungeons."})
+        messages.error(request, "You lost consciousness in the dungeons.")
+        return render(request, "qa_rpg/index.html", {'player': player,})
     return None
