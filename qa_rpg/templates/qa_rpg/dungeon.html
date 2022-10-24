@@ -1,24 +1,55 @@
-<a>HP: {{ player.current_hp }}/{{ player.max_hp }}<br></a>
-<a>Current coins: {{ player.dungeon_currency }}<br></a>
-
-<fieldset>
-{% for log in logs%}
-    <a>{{ log }}<br></a>
-{% endfor %}
-</fieldset>
+{% load static %}
+{% load tailwind_tags %}
+{% tailwind_css %}
+<title> Dungeon </title>
 
 
-<form action="{% url 'qa_rpg:action' %}" method="post">
-  {% csrf_token %}
-  <input type="hidden" name="action" value="walk"/>
-  <p>
-  <button type="submit">walk</button>
-  </p>
-</form>
-<form action="{% url 'qa_rpg:action' %}" method="post">
-  {% csrf_token %}
-  <input type="hidden" name="action" value="exit"/>
-  <p>
-  <button type="submit">exit</button>
-  </p>
-</form>
+<body class="font-serif bg-cover bg-center"
+  style="background-image: url('https://generativedungeon.com/images/Website_main_bg.jpg'); color: white;">
+  <div class="m-8 p-4">
+    <div class="h-20 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+      <div class="text-pink-50 text-3xl pl-2 pt-1">
+        HP: {{ player.current_hp }} / {{ player.max_hp }}
+        <br> <a> Current coins: {{ player.dungeon_currency }} </a> </br>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="flex justify-center items-center w-screen h-3/4">
+      <div class="bg-black bg-opacity-50 border-gray-600 border-2 w-2/3 h-fit justify-center items-center">
+        <!--display messages log-->
+        {% for log in logs %}
+        <div class="text-2xl text-justify px-8">
+          <a>{{ log }}<br></a>
+        </div>
+        </br>
+        {% endfor %}
+      </div>
+      <div class="text-center sticky top-0">
+        <div class="display: inline-flex">
+          <form action="{% url 'qa_rpg:action' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="walk" />
+            <button
+              class="px-8 py-6 m-10 bg-black hover:bg-green-900 bg-opacity-50 text-white text-2xl text-center font-serif font-bold transition-colors duration-300 hover:text-white border border-green-900 hover:border-transparent rounded"
+              type="submit">Walk</button>
+        </div>
+        </form>
+
+        <div class="display : inline-flex">
+          <form action="{% url 'qa_rpg:action' %}" method="post">
+            {% csrf_token %}
+
+            <input type="hidden" name="action" value="exit" />
+            <button
+              class="px-8 py-6 m-10 bg-black hover:bg-red-900 bg-opacity-50 text-white text-2xl text-center font-serif font-bold transition-colors duration-300 hover:text-white border border-red-900 hover:border-transparent rounded"
+              type="submit">Exit</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+</body>
