@@ -122,11 +122,12 @@ def check(request, question_id):
             else:
                 run_fail = random.choice(RUN_FAIL_DIALOGUE)
                 log.add_log(run_fail)
-                messages.error(request, run_fail)
 
                 death = check_dead(request, player, question.damage, log)
                 if death is not None:
                     return death
+                messages.error(request, run_fail)
+
                 return render(request,
                               'qa_rpg/battle.html',
                               {'question': question,
