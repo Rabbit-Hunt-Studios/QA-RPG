@@ -1,29 +1,76 @@
+<!doctype html>
+{% load static %}
+{% load tailwind_tags %}
+<head>
+{% tailwind_css %}
+</head>
+
+<body class="font-serif text-white bg-cover "
+  style="background-image: url('https://assets.dicebreaker.com/dungeons-and-dragons-players-handbook-art-8png.jpg/BROK/resize/1920x1920%3E/format/jpg/quality/80/dungeons-and-dragons-players-handbook-art-8png.jpg;">
+  <div class="m-8 p-4">
+    <div class="h-20 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+      <div class="text-pink-50 text-3xl pl-2 pt-1">
+        HP: {{ player.current_hp }} / {{ player.max_hp }}<br>
+          <a> Current coins: {{ player.dungeon_currency }} </a>
+      </div>
+    </div>
+  </div>
 
 <form action="{% url 'qa_rpg:check' question.id %}" method="post">
 {% csrf_token %}
 
-<fieldset>
-    <legend><h1>{{ question.question_text }}</h1></legend>
-    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+    <div class="flex justify-center items-center py-4">
+        <div class="bg-black bg-opacity-50 border-gray-600 border-2 w-3/4 h-48 justify-center items-center">
+            <h1 class="p-2 text-3xl ">{{ question.question_text }}</h1>
+        </div>
+    </div>
+    {% if messages %}
+        {% for message in messages %}
+        <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+    <div class="flex item-center grid justify-center">
+        <p class="text-red-700 text-3xl bg-black bg-opacity-80 border-gray-600 border-2 p-4"><strong>{{ message }}</strong></p>
+    </div>
+        {% endfor %}
+    {% endif %}
+
+
+    <div class="flex item-center grid justify-center py-8 w-1/2 h-80 ">
     {% for choice in question.choice_set.all %}
-        <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
-        <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
+        <div>
+            <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+            <label class="text-2xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2" for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
+        </div>
     {% endfor %}
-</fieldset>
-    <input type="radio" name="option" id="report" value="report">
-    <label for="report">Report</label><br>
+    </div>
 
-    <input type="radio" name="option" id="commend" value="commend">
-    <label for="report">Commend</label><br>
 
-<input type="submit" value="Fight">
+    <div class="flex justify-center item-center gap-4">
+        <input type="hidden" value="Fight">
+        <p>
+            <button type="submit" class="text-5xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-green-700 duration-300 pl-2 pt-1 pb-1 pr-2">Fight</button>
+        </p>
+
 </form>
 
-<form action="{% url 'qa_rpg:check' question.id %}" method="post">
-    {% csrf_token %}
+        <form action="{% url 'qa_rpg:check' question.id %}" method="post">
+        {% csrf_token %}
+            <div>
+        <input type="hidden" name="choice" value="run away">
+        <p>
+            <button type="submit" class="text-5xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-red-500 duration-300 pl-2 pt-1 pb-1 pr-2">Run Away</button>
+        </p>
+            </div>
+        </form>
+    </div>
 
-    <input type="hidden" name="choice" value="run away">
-    <p>
-        <button type="submit">Run Away</button>
-    </p>
-</form>
+<div class="absolute top-0 right-0 my-10 mx-10 py-2 text-2xl" >
+        <div class="py-2">
+            <input type="radio" name="option" id="report" value="report" >
+            <label for="report" class="bg-black bg-opacity-50 border-gray-600 border-2 hover:text-red-500 pl-2 pt-1 pb-1 pr-2">Report</label><br>
+        </div>
+
+    <div class="py-2">
+        <input type="radio" name="option" id="commend" value="commend" class="">
+        <label for="commend" class="bg-black bg-opacity-50 border-gray-600 border-2 hover:text-green-500 pl-2 pt-1 pb-1 pr-2">Commend</label><br>
+    </div>
+</div>
