@@ -19,7 +19,7 @@
 <form action="{% url 'qa_rpg:check' question.id %}" method="post">
 {% csrf_token %}
 
-    <div class="flex justify-center items-center w-3/4 h-3/4">
+    <div class="flex justify-center items-center  ">
         <div class="bg-black bg-opacity-50 border-gray-600 border-2 w-3/4 h-48 justify-center items-center">
             <h1 class="p-2 text-3xl ">{{ question.question_text }}</h1>
         </div>
@@ -32,16 +32,16 @@
         {% endfor %}
     {% endif %}
 
+
+    <div class="flex item-center grid justify-center ">
+
+        <div>
     {% for choice in question.choice_set.all %}
         <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
         <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
     {% endfor %}
+            </div>
 
-    <input type="radio" name="option" id="report" value="report">
-    <label for="report">Report</label><br>
-
-    <input type="radio" name="option" id="commend" value="commend">
-    <label for="report">Commend</label><br>
 
 <input type="submit" value="Fight">
 </form>
@@ -54,3 +54,13 @@
         <button type="submit">Run Away</button>
     </p>
 </form>
+
+</div>
+
+<div class="absolute top-0 right-0 my-10 mx-10" >
+        <input type="radio" name="option" id="report" value="report">
+        <label for="report">Report</label><br>
+
+    <input type="radio" name="option" id="commend" value="commend">
+    <label for="report">Commend</label><br>
+    </div>
