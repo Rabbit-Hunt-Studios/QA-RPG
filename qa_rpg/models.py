@@ -84,14 +84,17 @@ class Player(models.Model):
         self.activity = activity
         self.save()
 
-    def dead(self):
-        self.set_activity("index")
-        self.reset_stats()
-        try:
-            Log.objects.get(player=self).clear_log()
-        except Log.DoesNotExist:
-            Log.objects.create(player=self)
-        self.save()
+    def check_death(self):
+        if self.current_hp <= 0:
+            self.set_activity("index")
+            self.reset_stats()
+            try:
+                Log.objects.get(player=self).clear_log()
+            except Log.DoesNotExist:
+                Log.objects.create(player=self)
+            self.save()
+            return True
+        return False
 
 
 class Log(models.Model):
