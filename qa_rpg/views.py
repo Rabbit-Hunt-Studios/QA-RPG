@@ -1,7 +1,6 @@
-from django.http import HttpResponseRedirect
 from django.views import generic
 from django.shortcuts import render, redirect
-from django.urls import reverse
+from django.contrib import messages
 import random
 import difflib
 from .models import Question, Choice, Player, Log
@@ -80,7 +79,7 @@ def action(request):
         else:
             log.add_log(random.choice(WALK_DIALOGUE))
             player.update_player_stats(luck=0.02)
-        return HttpResponseRedirect(reverse("qa_rpg:dungeon"), headers={"logs": log})
+        return redirect("qa_rpg:dungeon")
     else:
         player.set_activity("index")
         player.add_dungeon_currency()
@@ -121,23 +120,23 @@ def check(request, question_id):
                 player.set_activity("dungeon")
                 return redirect("qa_rpg:dungeon")
             else:
-                run_away = random.choice(RUN_FAIL_DIALOGUE)
-                log.add_log(run_away)
+                run_fail = random.choice(RUN_FAIL_DIALOGUE)
+                log.add_log(run_fail)
 
                 death = check_dead(request, player, question.damage, log)
                 if death is not None:
                     return death
+                messages.error(request, run_fail)
+
                 return render(request,
                               'qa_rpg/battle.html',
                               {'question': question,
-                               'player': player,
-                               'error_message': run_away})
+                               'player': player,})
 
         check_choice = Choice.objects.get(pk=request.POST['choice'])
     except KeyError:
-        return render(request, 'qa_rpg/battle.html', {'question': question,
-                                                      'player': player,
-                                                      'error_message': "You didn't select a choice."})
+        messages.error(request, "You didn't select a attack move.")
+        return redirect("qa_rpg:battle")
     if check_choice.correct_answer:
         log.add_log(random.choice(WIN_DIALOGUE))
         log.add_log(f"You earn {question.currency} coins.")
@@ -157,6 +156,6 @@ def check_dead(request, player: Player, damage: int, log: Log):
     player.update_player_stats(health=-damage)
     if player.current_hp <= 0:
         player.dead()
-        return render(request, "qa_rpg/index.html", {'player': player,
-                                                     'error_message': "You lost consciousness in the dungeons."})
+        messages.error(request, "You lost consciousness in the dungeons.")
+        return render(request, "qa_rpg/index.html", {'player': player,})
     return None

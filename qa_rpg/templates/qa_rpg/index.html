@@ -1,3 +1,34 @@
-<a>Coins: {{ player.currency }}<br></a>
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-<a href="{% url 'qa_rpg:dungeon' %}"><button type="button">dungeon</button></a>
+<!doctype html>
+{% load static %}
+{% load tailwind_tags %}
+<head>
+{% tailwind_css %}
+</head>
+
+<body class="text-white font-serif bg-no-repeat bg-cover  "
+  style="background-image: url('https://d.wattpad.com/story_parts/632993320/images/1555c78f7608fede446379137457.jpg');">
+  <div class="m-8 p-4">
+    <div class="h-25 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+      <div class="text-pink-50 text-3xl pl-2 pt-1">
+        <a> Current coins: {{ player.dungeon_currency }} </a> </br>
+      </div>
+    </div>
+  </div>
+    {% if messages %}
+        {% for message in messages %}
+        <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+        <p><strong>{{ message }}</strong></p>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+  <div class="m-8 p-4">
+      <div class="h-25 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+          <div class="text-pink-50 text-3xl ">
+<a href="{% url 'qa_rpg:dungeon' %}"><button class=" h-25 w-60 bg-Neutral-900 hover:bg-red-900 duration-300" type="button">dungeon</button></a>
+          </div>
+      </div>
+  </div>
+
+
+</body>
