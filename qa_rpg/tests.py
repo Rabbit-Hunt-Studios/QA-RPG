@@ -76,9 +76,11 @@ class PlayerModelTest(TestCase):
         self.player.dungeon_currency += 10
         self.assertEqual(self.player.dungeon_currency, 10)
         self.assertEqual(self.player.currency, 0)
-        self.player.dead()
+        self.player.current_hp -= 200
+        self.assertTrue(self.player.check_death())
         self.assertEqual(self.player.dungeon_currency, 0)
         self.assertEqual(self.player.currency, 0)
+        self.assertEqual(self.player.activity, "index")
 
     def test_add_currency_from_dungeon(self):
         """Dungeon currency is added to the player's normal currency."""
@@ -195,7 +197,7 @@ class DungeonActionTest(TestCase):
         dungeon view."""
         random.seed(10)
         response = self.client.post(reverse("qa_rpg:action"), {"action": "walk"})
-        self.assertEqual(Player.objects.get(pk=1).luck, 0.27)
+        self.assertEqual(Player.objects.get(pk=1).luck, 0.26)
         self.assertNotEqual(Log.objects.get(pk=1).split_log[9], "")
         self.assertEqual(response.status_code, 302)
         self.assertIn("dungeon", response.url)
