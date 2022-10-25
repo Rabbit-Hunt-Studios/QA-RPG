@@ -1,0 +1,14 @@
+[run]
+# measure branch coverage
+branch = True
+# omit uninteresting files
+omit =
+    mysite/*
+    qa_rpg/__init__.py
+    qa_rpg/admin.py
+    qa_rpg/tests.py
+    qa_rpg/urls.py
+    qa_rpg/dialogue.py
+    qa_rpg/apps.py
+    manage.py
+    qa_rpg/migrations/*
