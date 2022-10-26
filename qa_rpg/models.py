@@ -61,7 +61,7 @@ class Player(models.Model):
 
     @property
     def player_name(self):
-        return self.user.first_name
+        return self.user.username
 
     def update_player_stats(self, health: int = 0, dungeon_currency: int = 0, luck: float = 0):
         self.current_hp += health
