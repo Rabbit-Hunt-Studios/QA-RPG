@@ -1,6 +1,7 @@
 from django.views import generic
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.db.models import Q
 import random
 import difflib
 from .models import Question, Choice, Player, Log
@@ -35,10 +36,11 @@ class IndexView(generic.TemplateView):
         player = Player.objects.get(pk=1)  # dummy player
         log = get_player_log(player)
 
-        check_url = check_player_activity(player, ["index"])
+        check_url = check_player_activity(player, ["index", "profile"])
         if check_url is not None:
             return redirect(check_url)
 
+        player.set_activity("index")
         player.reset_stats()
         log.clear_log()
 
@@ -157,3 +159,20 @@ def check(request, question_id):
     except KeyError:
         messages.error(request, "You didn't select a attack move.")
         return redirect("qa_rpg:battle")
+
+
+class ProfileView(generic.TemplateView):
+
+    template_name = 'qa_rpg/profile.html'
+
+    def get(self, request):
+        player = Player.objects.get(pk=1)  # dummy player
+        questions = Question.objects.filter(owner=player.user)
+
+        check_url = check_player_activity(player, ["index", "profile"])
+        if check_url is not None:
+            return redirect(check_url)
+
+        player.set_activity("profile")
+
+        return render(request, self.template_name, {"player": player, "questions": questions})
