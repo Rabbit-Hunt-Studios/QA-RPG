@@ -1,0 +1,21 @@
+
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags %} {% endif %} {{ message }} <br>
+    {% endfor %}
+{% endif %}
+
+<form action="{% url 'qa_rpg:create' %}" method="post">
+    {% csrf_token %}
+
+    Question: <input type="text" name="question"> <br>
+    <br>
+    {% for num in amount %}
+        Choice {{ forloop.counter }}: <input type="text" name="choice{{ forloop.counter0 }}">
+        <input type="radio" name="index" id="choice{{ forloop.counter0 }}" value="{{ forloop.counter0 }}"><br>
+    {% endfor %}
+
+    <button type="submit">Summon</button>
+    <a href="{% url 'qa_rpg:index' %}"><button type="button">Cancel</button></a>
+
+</form>

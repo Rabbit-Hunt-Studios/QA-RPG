@@ -21,7 +21,7 @@ def get_player_log(player: Player):
 
 def check_player_activity(player: Player, activity: list):
     if not difflib.get_close_matches(player.activity, activity):
-        if difflib.get_close_matches(player.activity, ["battle"]):
+        if difflib.get_close_matches(player.activity, ["battle", "summon"]):
             return f"qa_rpg:{player.activity[:6]}"
         return f"qa_rpg:{player.activity}"
     return None
@@ -35,13 +35,13 @@ class IndexView(generic.TemplateView):
         player = Player.objects.get(pk=1)  # dummy player
         log = get_player_log(player)
 
-        check_url = check_player_activity(player, ["index"])
+        check_url = check_player_activity(player, ["summon", "index"])
         if check_url is not None:
             return redirect(check_url)
 
         player.reset_stats()
         log.clear_log()
-
+        player.set_activity("index")
         return render(request, self.template_name, {"player": player})
 
 
@@ -157,3 +157,47 @@ def check(request, question_id):
     except KeyError:
         messages.error(request, "You didn't select a attack move.")
         return redirect("qa_rpg:battle")
+
+
+class SummonView(generic.DetailView):
+
+    template_name = "summon.html"
+
+    def get(self, request):
+        player = Player.objects.get(pk=1)
+
+        check_url = check_player_activity(player, ["summon", "index"])
+        if check_url is not None:
+            return redirect(check_url)
+
+        player.set_activity("summon4")
+        return render(request, "qa_rpg/summon.html", {"amount": range(4)})  # fixed 4 choices for now
+
+
+def create(request):
+    player = Player.objects.get(user=request.user)
+
+    try:
+        question = Question.objects.create(question_text=request.POST['question'],
+                                           owner=request.user)
+        choices = []
+        correct_index = int(request.POST['index'])
+        for num in range(int(player.activity[6:])):
+            if num == correct_index:
+                choices.append(Choice.objects.create(choice_text=request.POST[f'choice{num}'],
+                                                     correct_answer=True,
+                                                     question=question))
+            else:
+                choices.append(Choice.objects.create(choice_text=request.POST[f'choice{num}'],
+                                                     correct_answer=False,
+                                                     question=question))
+    except KeyError:
+        messages.error(request, "Please fill in every field and select a correct answer.")
+        return redirect("qa_rpg:summon")
+
+    question.save()
+    for choice in choices:
+        choice.save()
+    player.set_activity("index")
+    messages.error(request, "Successfully summoned a new monster.")
+    return redirect('qa_rpg:index')
