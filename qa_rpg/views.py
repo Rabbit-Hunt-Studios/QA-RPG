@@ -129,6 +129,7 @@ def check(request, question_id):
                 log.add_log(run_fail)
 
                 player.update_player_stats(health=-question.damage)
+                question.add_coin()
                 if player.check_death():
                     messages.error(request, "You lost consciousness in the dungeons.")
                     return render(request, "qa_rpg/index.html", {'player': player})
