@@ -187,7 +187,7 @@ class SummonView(generic.DetailView):
         fee = 150 + Question.objects.filter(owner=request.user).count() * 20
         player.set_activity("summon4")
         return render(request, "qa_rpg/summon.html", {"amount": range(4), "fee": fee,
-                                                      "category": CATEGORY})  # fixed 4 choices for now
+                                                      "category": CATEGORY, "player": player})  # fixed 4 choices for now
 
 
 def create(request):
