@@ -11,8 +11,11 @@ class IndexViewTest(TestCase):
 
     def setUp(self):
         """Setup for testing the Index page."""
-        self.system = User.objects.create_user(username="demo")
-        self.player = Player.objects.create(user=self.system)
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username=self.user, password="12345")
+        self.player = Player.objects.create(user=self.user)
         self.log = Log.objects.create(player=self.player)
 
     def test_get_player_log(self):
@@ -41,8 +44,11 @@ class DungeonViewTest(TestCase):
 
     def setUp(self):
         """Setup for testing Dungeon page."""
-        self.system = User.objects.create_user(username="demo")
-        self.player = Player.objects.create(user=self.system)
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username=self.user, password="12345")
+        self.player = Player.objects.create(user=self.user)
         self.log = Log.objects.create(player=self.player)
 
     def test_rendering_dungeon_page(self):
@@ -64,9 +70,11 @@ class DungeonActionTest(TestCase):
 
     def setUp(self):
         """Setup for testing actions in dungeon."""
-        self.system = User.objects.create_user(username="demo")
-        self.system.save()
-        self.player = Player.objects.create(user=self.system)
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.player = Player.objects.create(user=self.user)
         self.player.set_activity("dungeon")
         self.log = Log.objects.create(player=self.player)
         self.log.save()
@@ -117,9 +125,12 @@ class BattleViewTest(TestCase):
 
     def setUp(self):
         """Setup for testing battle page."""
-        self.system = User.objects.create_user(username="demo")
-        self.system.save()
-        self.player = Player.objects.create(user=self.system)
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.system = User.objects.create_user(username="test")
+        self.player = Player.objects.create(user=self.user)
         self.player.set_activity("battle1")
         self.question = Question.objects.create(question_text="test", owner=self.system)
         self.question.save()
@@ -129,7 +140,7 @@ class BattleViewTest(TestCase):
         self.player.set_activity("found monster")
         response = self.client.get(reverse("qa_rpg:battle"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(Player.objects.get(pk=1).activity, "battle1")
+        self.assertEqual(Player.objects.get(user=self.user).activity, "battle1")
 
     def test_already_in_battle(self):
         """If player is already in battle, render the same question."""
@@ -154,9 +165,12 @@ class BattleActionTest(TestCase):
 
     def setUp(self):
         """Setup for testing actions in battle page."""
-        self.system = User.objects.create_user(username="demo")
-        self.system.save()
-        self.player = Player.objects.create(user=self.system)
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.system = User.objects.create_user(username="test")
+        self.player = Player.objects.create(user=self.user)
         self.player.set_activity("battle1")
         self.question = Question.objects.create(question_text="test", owner=self.system)
         self.question.save()
@@ -167,11 +181,14 @@ class BattleActionTest(TestCase):
 
     def test_player_answers_correctly(self):
         """When player chooses the correct answer, player is given currency and health is not deducted."""
+        random.seed(100)
         response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
                                     {"choice": self.correct.id})
         self.player = Player.objects.get(pk=1)
+        self.question = Question.objects.get(pk=1)
         self.assertEqual(self.player.current_hp, self.player.max_hp)
-        self.assertEqual(self.player.dungeon_currency, self.question.currency)
+        self.assertEqual(self.player.dungeon_currency, 15)
+        self.assertEqual(self.question.currency, 0)
         self.assertEqual(self.player.luck, BASE_LUCK + 0.03)
         self.assertEqual(self.player.activity, "dungeon")
 
@@ -180,7 +197,9 @@ class BattleActionTest(TestCase):
         response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
                                     {"choice": self.wrong.id})
         self.player = Player.objects.get(pk=1)
+        self.question = Question.objects.get(pk=1)
         self.assertEqual(self.player.current_hp, self.player.max_hp - self.question.damage)
+        self.assertEqual(self.question.currency, 2)
         self.assertEqual(self.player.dungeon_currency, 0)
         self.assertEqual(self.player.luck, BASE_LUCK)
         self.assertEqual(self.player.activity, "dungeon")

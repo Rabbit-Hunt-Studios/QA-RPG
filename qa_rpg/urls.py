@@ -5,6 +5,8 @@ from . import views
 app_name = 'qa_rpg'
 urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
+    path('summon/', views.SummonView.as_view(), name='summon'),
+    path('summon/create', views.create, name='create'),
     path('dungeon/', views.DungeonView.as_view(), name='dungeon'),
     path('dungeon/action', views.action, name='action'),
     path('dungeon/battle', views.BattleView.as_view(), name='battle'),
