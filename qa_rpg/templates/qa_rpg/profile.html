@@ -1,11 +1,16 @@
-<h2>{{ player.player_name }}</h2>
+<h2 xmlns="http://www.w3.org/1999/html">{{ player.player_name }}</h2>
 Max HP: {{ player.max_hp }}<br>
 Coin: {{player.currency}}
 
 {% if questions %}
     <ul>
     {% for question in questions %}
-        <li>{{ question.question_text }} <br></li>
+        <li>{{ question.question_text }} {{question.currency}}/{{question.max_currency}}
+            <form action="{% url 'qa_rpg:claim' question.id %}" method="post">
+            {% csrf_token %}
+                <button type="submit">Claim</button>
+                <br></li>
+            </form>
     {% endfor %}
     </ul>
 

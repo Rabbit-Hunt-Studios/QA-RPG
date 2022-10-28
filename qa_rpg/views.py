@@ -232,7 +232,7 @@ class ProfileView(generic.TemplateView):
     template_name = 'qa_rpg/profile.html'
 
     def get(self, request):
-        player = Player.objects.get(pk=1)  # dummy player
+        player = Player.objects.get(user=request.user) # dummy player
         questions = Question.objects.filter(owner=player.user)
 
         check_url = check_player_activity(player, ["index", "profile"])
@@ -242,3 +242,17 @@ class ProfileView(generic.TemplateView):
         player.set_activity("profile")
 
         return render(request, self.template_name, {"player": player, "questions": questions})
+
+
+def claim_coin(request, question_id):
+    player = Player.objects.get(user=request.user)
+    questions = Question.objects.get(pk=question_id)
+
+    player.currency += questions.currency
+    questions.currency = 0
+    player.save()
+    questions.save()
+    return redirect('qa_rpg:profile')
+
+
+
