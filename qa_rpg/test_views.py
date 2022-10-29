@@ -287,4 +287,9 @@ class CreateQuestionTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.player.currency = 200
         self.player.save()
+        self.client.post(reverse("qa_rpg:create",))
+
+
+class IndexPageTest(TestCase):
+    def setUp(self):
         pass
