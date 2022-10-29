@@ -38,10 +38,11 @@ class IndexView(generic.TemplateView):
         player = Player.objects.get(user=request.user)
         log = get_player_log(player)
 
-        check_url = check_player_activity(player, ["summon", "index"])
+        check_url = check_player_activity(player, ["summon", "index", "profile"])
         if check_url is not None:
             return redirect(check_url)
 
+        player.set_activity("index")
         player.reset_stats()
         log.clear_log()
         player.set_activity("index")
@@ -224,3 +225,34 @@ def create(request):
     player.currency -= summon_fee
     player.save()
     return redirect('qa_rpg:index')
+
+
+class ProfileView(generic.TemplateView):
+
+    template_name = 'qa_rpg/profile.html'
+
+    def get(self, request):
+        player = Player.objects.get(user=request.user) # dummy player
+        questions = Question.objects.filter(owner=player.user)
+
+        check_url = check_player_activity(player, ["index", "profile"])
+        if check_url is not None:
+            return redirect(check_url)
+
+        player.set_activity("profile")
+
+        return render(request, self.template_name, {"player": player, "questions": questions})
+
+
+def claim_coin(request, question_id):
+    player = Player.objects.get(user=request.user)
+    questions = Question.objects.get(pk=question_id)
+
+    player.currency += questions.currency
+    questions.currency = 0
+    player.save()
+    questions.save()
+    return redirect('qa_rpg:profile')
+
+
+
