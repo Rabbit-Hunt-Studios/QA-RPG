@@ -244,3 +244,47 @@ class BattleActionTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 0)
         self.assertEqual(self.player.activity, "index")
+
+
+class SummonViewTest(TestCase):
+    def setUp(self):
+        """Setup for testing summon view page."""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.system = User.objects.create_user(username="test")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("summon4")
+
+    def test_rendering_summon_page(self):
+        """Test that player actually in summon page"""
+        response = self.client.get(reverse("qa_rpg:summon"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Player.objects.get(user=self.user).activity, "summon4")
+
+    def test_test_rendering_summon_page_from_another_page(self):
+        self.player.set_activity("battle")
+        response = self.client.get(reverse("qa_rpg:summon"))
+        self.assertEqual(response.status_code, 302)
+
+
+class CreateQuestionTest(TestCase):
+    """Testing actions in summon page."""
+
+    def setUp(self):
+        """Setup for testing actions in summon page."""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.system = User.objects.create_user(username="test")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("summon4")
+
+    def test_remain_currency_after_summon(self):
+        """Test remain currency after summoning."""
+        self.player = Player.objects.get(pk=1)
+        self.player.currency = 200
+        self.player.save()
+        pass
