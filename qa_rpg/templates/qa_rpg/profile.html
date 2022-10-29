@@ -1,0 +1,63 @@
+<!doctype html>
+{% load static %}
+{% load tailwind_tags %}
+<head>
+{% tailwind_css %}
+</head>
+
+<body class="text-white font-serif bg-no-repeat bg-cover  "
+  style="background-image: url('https://wallup.net/wp-content/uploads/2018/09/30/118900-fantasy-castle-room-dark.jpg');">
+
+<div class="m-8 p-4 flex">
+    <div class="h-40 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+      <div class="flex justify-center text-pink-50 text-5xl pl-2 pt-1 pb-1 pr-2">
+        <a class="m-11">{{ player.player_name }}</a> </br>
+      </div>
+    </div>
+    <div class="h-40 w-[18rem] box-border bg-black bg-opacity-50 border-gray-600  border-2">
+        <label class="bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl ">Player Stats</label><br>
+        <div class="flex mt-3 justify-between px-3">
+            <div class="text-3xl">
+                Max HP: <br>
+                Coin: <br>
+                Total Monsters: <br>
+            </div>
+            <div class="flex text-3xl text-right">
+                {{ player.max_hp }}<br>
+                {{player.currency}}<br>
+                {{questions.count}}
+            </div>
+        </div>
+    </div>
+  </div>
+
+<div class="m-8 p-4">
+    <div class="h-25 w-auto box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl">
+
+        <label class="bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl">Monsters</label>
+        {% if questions %}
+            <ul class="list-disc">
+            {% for question in questions %}
+                <form action="{% url 'qa_rpg:claim' question.id %}" method="post">
+                    {% csrf_token %}
+                <li>{{ question.question_text }} <br>
+                    {{question.currency}}/{{question.max_currency}}  <button type="submit" class="bg-black bg-opacity-50 hover:text-yellow-500 border-gray-600 border-2 pl-2 pr-2">Claim</button>
+                        <br></li>
+                    </form>
+            {% endfor %}
+            </ul>
+
+        {% else %}
+            <p>No Question.</p>
+        {% endif %}
+    </div>
+</div>
+<div class="m-8 p-4">
+      <div class="h-25 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+          <div class="text-pink-50 text-3xl ">
+                <a href="{% url 'qa_rpg:index' %}"><button class=" h-25 w-60 bg-Neutral-900 hover:bg-red-900 duration-300" type="button">Back</button></a>
+          </div>
+      </div>
+  </div>
+</body>
+

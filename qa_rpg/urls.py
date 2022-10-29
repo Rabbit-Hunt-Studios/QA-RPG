@@ -10,5 +10,7 @@ urlpatterns = [
     path('dungeon/', views.DungeonView.as_view(), name='dungeon'),
     path('dungeon/action', views.action, name='action'),
     path('dungeon/battle', views.BattleView.as_view(), name='battle'),
-    path('dungeon/battle/check/<int:question_id>', views.check, name='check')
+    path('dungeon/battle/check/<int:question_id>', views.check, name='check'),
+    path('profile/', views.ProfileView.as_view(), name='profile'),
+    path('profile/claim/<int:question_id>', views.claim_coin, name='claim')
 ]
