@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic.base import RedirectView
+from .views import SignUpView
 
 urlpatterns = [
     path('qa_rpg/', include('qa_rpg.urls')),
@@ -23,5 +24,5 @@ urlpatterns = [
     path('', RedirectView.as_view(url='qa_rpg/')), 
     path("__reload__/", include("django_browser_reload.urls")),
     path('accounts/', include('django.contrib.auth.urls')),
-    # path('signup/', views.signup, name='signup'),
+    path('signup/', SignUpView.as_view(), name='signup'),
 ]
