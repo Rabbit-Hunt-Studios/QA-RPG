@@ -132,4 +132,7 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
+LOGIN_REDIRECT_URL = '/qa_rpg/'
+LOGOUT_REDIRECT_URL = '/accounts/login/' # have to change to homepage
+
 NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"

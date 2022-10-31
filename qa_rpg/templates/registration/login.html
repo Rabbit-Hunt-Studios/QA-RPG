@@ -1,0 +1,19 @@
+<html>
+    <body>
+        <h2>Login</h2>
+        <form method="post">
+          {% csrf_token %}
+          <table>
+                {{ form.as_table }}
+          </table>
+          <p>
+              <button type="submit">Login</button>
+          </p>
+          <input type="hidden" name="next" value="{{next}}"/>
+         </form>
+        {# If you have a password_reset template, then add here #}
+        <p>
+            <a href="{% url 'password_reset' %}">Forgot password?</a>
+        </p>
+    </body>
+</html>
