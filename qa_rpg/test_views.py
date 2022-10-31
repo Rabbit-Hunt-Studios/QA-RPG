@@ -263,7 +263,7 @@ class SummonViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Player.objects.get(user=self.user).activity, "summon4")
 
-    def test_test_rendering_summon_page_from_another_page(self):
+    def test_rendering_summon_page_from_another_page(self):
         self.player.set_activity("battle")
         response = self.client.get(reverse("qa_rpg:summon"))
         self.assertEqual(response.status_code, 302)
@@ -288,11 +288,32 @@ class CreateQuestionTest(TestCase):
         self.player.currency = 200
         self.player.save()
         response = self.client.post(reverse("qa_rpg:create"),
-                                 {"question": "What is?", "choice0": "1", "choice1": "2", "choice2": "3",
-                                  "choice3": "4","fee": "150","index": "0" })
+                                    {"question": "What is?", "choice0": "1", "choice1": "2", "choice2": "3",
+                                     "choice3": "4", "fee": "150", "index": "0"})
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 50)
 
+    def test_player_not_fill_every_field(self):
+        """Test player not fill all field in create question."""
+        self.player = Player.objects.get(pk=1)
+        self.player.currency = 200
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:create"),
+                                    {"question": "What is?", "choice1": "2", "choice2": "3",
+                                     "choice3": "4", "fee": "150", "index": "0"})
+        self.assertEqual(response.status_code,302)
+        self.assertEqual(self.player.currency, 200)
+
+    def test_player_not_have_enough_coin(self):
+        """Test player not have enough coin for create question."""
+        self.player = Player.objects.get(pk=1)
+        self.player.currency = 20
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:create"),
+                                    {"question": "What is?","choice0": "1", "choice1": "2", "choice2": "3",
+                                     "choice3": "4", "fee": "150", "index": "0"})
+        self.assertEqual(response.status_code,302)
+        self.assertEqual(self.player.currency, 20)
 
 
 class ProfileViewTest(TestCase):
@@ -306,13 +327,29 @@ class ProfileViewTest(TestCase):
         self.system = User.objects.create_user(username="test")
         self.player = Player.objects.create(user=self.user)
         self.player.set_activity("profile")
-        self.player.currency=0
+        self.player.currency = 0
         self.question = Question.objects.create(question_text="test", owner=self.system, pk=1)
         self.question.currency = 10
         self.question.save()
+
+    def test_rendering_profile_page(self):
+        """Test that player actually in summon page"""
+        response = self.client.get(reverse("qa_rpg:profile"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Player.objects.get(user=self.user).activity, "profile")
+
+    def test_rendering_profile_page_from_another_page(self):
+        self.player.set_activity("index")
+        response = self.client.get(reverse("qa_rpg:profile"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_rendering_profile_page_not_in_check_url(self):
+        self.player.set_activity("battle")
+        response = self.client.get(reverse("qa_rpg:profile"))
+        self.assertEqual(response.status_code, 302)
 
     def test_claim_coin(self):
         random.seed(100)
         respond = self.client.post(reverse("qa_rpg:claim", args=(self.question.id,)))
         self.player = Player.objects.get(pk=1)
-        self.assertEqual(self.player.currency,10)
+        self.assertEqual(self.player.currency, 10)
