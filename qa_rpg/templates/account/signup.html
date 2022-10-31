@@ -1,12 +1,18 @@
-<h2>Register</h2>
-<form method="POST" action="{% url 'signup' %}" enctype="multipart/form-data">
-    {% csrf_token %}
-    <table>
-    {{ form.as_table }}
-    <tr>
-    <td colspan="2">
-    <button type="submit">Register</button> | <a href="{% url 'login' %}"><button type="button">back</button></a>
-    </td>
-    </tr>
-    </table>
-</form>
+{% load static %}
+{% load tailwind_tags %}
+{% tailwind_css %}
+
+<title>Register</title>
+<div class="flex justify-center items-center w-screen h-screen font-serif">
+    <form method="POST" action="{% url 'signup' %}" enctype="multipart/form-data"> 
+        {% csrf_token %}
+        <table>
+        {{ form.as_p }}
+        <tr>
+        <td colspan="2">
+        <button class=" h-25 w-40 text-white hover:text-white bg-green-600 hover:bg-green-900 duration-300 rounded" type="submit">Register</button> | <a href="{% url 'login' %}"><button class=" h-25 w-40 bg-red-600 text-white hover:text-white hover:bg-red-900 duration-300 rounded" type="button">back</button></a>
+        </td>
+        </tr>
+        </table>
+    </form>
+</div>
