@@ -2,6 +2,7 @@ from django.views import generic
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Q
+from django.contrib.auth.mixins import LoginRequiredMixin
 import random
 import difflib
 from .models import Question, Choice, Player, Log
@@ -30,7 +31,7 @@ def check_player_activity(player: Player, activity: list):
     return None
 
 
-class IndexView(generic.TemplateView):
+class IndexView(LoginRequiredMixin, generic.TemplateView):
 
     template_name = 'qa_rpg/index.html'
 
@@ -49,7 +50,7 @@ class IndexView(generic.TemplateView):
         return render(request, self.template_name, {"player": player})
 
 
-class DungeonView(generic.ListView):
+class DungeonView(LoginRequiredMixin, generic.ListView):
 
     template_name = "qa_rpg/dungeon.html"
 
@@ -95,7 +96,7 @@ def action(request):
         return redirect("qa_rpg:index")
 
 
-class BattleView(generic.DetailView):
+class BattleView(LoginRequiredMixin, generic.DetailView):
 
     template_name = 'battle.html'
 
@@ -178,7 +179,7 @@ def get_coins(damage: int):
     return 50
 
 
-class SummonView(generic.DetailView):
+class SummonView(LoginRequiredMixin, generic.DetailView):
 
     template_name = "summon.html"
 
@@ -231,7 +232,7 @@ def create(request):
     return redirect('qa_rpg:index')
 
 
-class ProfileView(generic.TemplateView):
+class ProfileView(LoginRequiredMixin, generic.TemplateView):
 
     template_name = 'qa_rpg/profile.html'
 
