@@ -287,9 +287,32 @@ class CreateQuestionTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.player.currency = 200
         self.player.save()
-        self.client.post(reverse("qa_rpg:create",))
+        response = self.client.post(reverse("qa_rpg:create"),
+                                 {"question": "What is?", "choice0": "1", "choice1": "2", "choice2": "3",
+                                  "choice3": "4","fee": "150","index": "0" })
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.currency, 50)
 
 
-class IndexPageTest(TestCase):
+
+class ProfileViewTest(TestCase):
+    """Testing actions in profile page."""
+
     def setUp(self):
-        pass
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.system = User.objects.create_user(username="test")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("profile")
+        self.player.currency=0
+        self.question = Question.objects.create(question_text="test", owner=self.system, pk=1)
+        self.question.currency = 10
+        self.question.save()
+
+    def test_claim_coin(self):
+        random.seed(100)
+        respond = self.client.post(reverse("qa_rpg:claim", args=(self.question.id,)))
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.currency,10)
