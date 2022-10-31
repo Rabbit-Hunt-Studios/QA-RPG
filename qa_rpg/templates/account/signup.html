@@ -1,5 +1,5 @@
 <h2>Register</h2>
-<form method="POST">
+<form method="POST" action="{% url 'signup' %}" enctype="multipart/form-data">
     {% csrf_token %}
     <table>
     {{ form.as_table }}

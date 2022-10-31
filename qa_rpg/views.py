@@ -41,6 +41,14 @@ def check_player_activity(player: Player, activity: list):
     return None
 
 
+class HomeView(generic.TemplateView):
+
+    template_name = 'qa_rpg/homepage.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+
 class IndexView(LoginRequiredMixin, generic.TemplateView):
 
     template_name = 'qa_rpg/index.html'

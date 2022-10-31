@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -76,15 +77,15 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SITE_ID = 2
 
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/qa_rpg/'
+LOGOUT_REDIRECT_URL = '/qa_rpg/home/'
 
 ROOT_URLCONF = 'mysite.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'qa_rpg', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -153,8 +154,5 @@ TAILWIND_APP_NAME = 'Dungeon'
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
-
-LOGIN_REDIRECT_URL = '/qa_rpg/'
-LOGOUT_REDIRECT_URL = '/accounts/login/' # have to change to homepage
 
 NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"

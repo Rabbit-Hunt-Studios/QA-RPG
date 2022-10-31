@@ -1,3 +1,4 @@
+{% load socialaccount %}
 <html>
     <body>
         <h2>Login</h2>
@@ -7,13 +8,12 @@
                 {{ form.as_table }}
           </table>
           <p>
-              <button type="submit">Login</button> | <a href="{% url 'signup'%}?next={{request.path}}"><button type="button">Sign up</button></a>
+              <button type="submit">Login</button> | <a href="{% url 'qa_rpg:home'%}"><button type="button">Back</button></a>
           </p>
           <input type="hidden" name="next" value="{{next}}"/>
          </form>
         <p>
-            <a href="{% url 'password_reset' %}">Forgot password?</a>
         </p>
-    <a href="{% provider_login_url 'google' %}">Login With Google</a>
+    <button onclick="document.location='{% provider_login_url 'google' %}'"> Login with Google </button>
     </body>
 </html>
