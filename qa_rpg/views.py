@@ -19,7 +19,7 @@ def get_player(user: User):
     try:
         player = Player.objects.get(user=user)
     except Player.DoesNotExist:
-        player = Player.objects.crete(user=user)
+        player = Player.objects.create(user=user)
         player.save()
     return player
 
