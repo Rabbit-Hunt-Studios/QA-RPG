@@ -11,9 +11,9 @@
           </p>
           <input type="hidden" name="next" value="{{next}}"/>
          </form>
-        {# If you have a password_reset template, then add here #}
         <p>
             <a href="{% url 'password_reset' %}">Forgot password?</a>
         </p>
+    <a href="{% provider_login_url 'google' %}">Login With Google</a>
     </body>
 </html>
