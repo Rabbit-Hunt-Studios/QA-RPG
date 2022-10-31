@@ -4,12 +4,14 @@
 
 <title>QA-RPG</title>
 
-<body class="font-serif bg-cover bg-center bg-no-repeat" style="background-image: url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/f6e96d02-fa58-47e4-89c1-c64bb1b038d1/d5wfggl-9758a7ba-5499-48dc-ab42-73a3e3c4a53b.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2Y2ZTk2ZDAyLWZhNTgtNDdlNC04OWMxLWM2NGJiMWIwMzhkMVwvZDV3ZmdnbC05NzU4YTdiYS01NDk5LTQ4ZGMtYWI0Mi03M2EzZTNjNGE1M2IuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.Jh3KpznQLkmRF9Typ3oaDs-LubX-k8erUwtmv_vtx9Y');">
-    <div class="justify-center items-center w-screen h-1/2">
+<body class="font-serif bg-cover bg-center bg-no-repeat" style="background-image: url('https://cdn.dribbble.com/users/1138853/screenshots/2769445/media/37c9c8d30e97c198ab26e0c114a59c50.jpg?compress=1&resize=800x600&vertical=top');">
+    <div class="flex justify-center items-center w-screen h-1/3">
+        <img src="{% static 'images/Logo.png' %}" width="800" height="1000">
+    </div>
     {% if messages %}
         {% for message in messages %}
         <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
-        <div class="m-8 p-4">
+        <div class="m-4 p-4">
             <div>
                 <div>
             <p class="text-red-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
@@ -19,9 +21,10 @@
     </div>
         {% endfor %}
     {% endif %}
-        <div class="w-screen h-screen justify-center items-center flex">
-            <a href="{% url 'login' %}"><button class="px-8 py-6 m-10 bg-black hover:bg-red-900 bg-opacity-50 text-white text-2xl text-center font-serif font-bold transition-colors duration-300 hover:text-white border border-green-900 hover:border-transparent rounded"type="button">login</button></a> | <a href="{% url 'signup'%}"><button class="px-8 py-6 m-10 bg-black hover:bg-green-900 bg-opacity-50 text-white text-2xl text-center font-serif font-bold transition-colors duration-300 hover:text-white border border-green-900 hover:border-transparent rounded"
+</div>
+        <div class="w-screen h-2/5 justify-center items-center flex">
+            <a href="{% url 'login' %}"><button class="px-10 py-8 m-10 bg-black hover:bg-red-900 bg-opacity-50 text-white text-3xl text-center font-serif font-bold transition-colors duration-300 hover:text-white border border-green-900 hover:border-transparent rounded"type="button">Login</button></a> | <a href="{% url 'signup'%}"><button class="px-10 py-8 m-10 bg-black hover:bg-green-900 bg-opacity-50 text-white text-3xl text-center font-serif font-bold transition-colors duration-300 hover:text-white border border-green-900 hover:border-transparent rounded"
             type="button">Sign up</button></a>
         </div>
-    </div>
+    
 </body>
