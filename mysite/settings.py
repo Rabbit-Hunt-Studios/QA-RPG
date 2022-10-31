@@ -77,8 +77,8 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SITE_ID = 2
 
-LOGIN_REDIRECT_URL = '/qa_rpg/'
-LOGOUT_REDIRECT_URL = '/qa_rpg/home/'
+LOGIN_REDIRECT_URL = '/qa_rpg/index/'
+LOGOUT_REDIRECT_URL = '/qa_rpg/'
 
 ROOT_URLCONF = 'mysite.urls'
 
