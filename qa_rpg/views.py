@@ -2,6 +2,8 @@ from django.views import generic
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Q
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 import random
 import difflib
 from .models import Question, Choice, Player, Log
@@ -11,6 +13,15 @@ TREASURE_AMOUNT = [5, 10, 15, 30, 35]
 TREASURE_THRESHOLD = 0.55
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
+
+
+def get_player(user: User):
+    try:
+        player = Player.objects.get(user=user)
+    except Player.DoesNotExist:
+        player = Player.objects.create(user=user)
+        player.save()
+    return player
 
 
 def get_player_log(player: Player):
@@ -30,12 +41,20 @@ def check_player_activity(player: Player, activity: list):
     return None
 
 
-class IndexView(generic.TemplateView):
+class HomeView(generic.TemplateView):
+
+    template_name = 'qa_rpg/homepage.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+
+class IndexView(LoginRequiredMixin, generic.TemplateView):
 
     template_name = 'qa_rpg/index.html'
 
     def get(self, request):
-        player = Player.objects.get(user=request.user)
+        player = get_player(request.user)
         log = get_player_log(player)
 
         check_url = check_player_activity(player, ["summon", "index", "profile"])
@@ -49,12 +68,12 @@ class IndexView(generic.TemplateView):
         return render(request, self.template_name, {"player": player})
 
 
-class DungeonView(generic.ListView):
+class DungeonView(LoginRequiredMixin, generic.ListView):
 
     template_name = "qa_rpg/dungeon.html"
 
     def get(self, request):
-        player = Player.objects.get(user=request.user)
+        player = get_player(request.user)
 
         check_url = check_player_activity(player, ["index", "dungeon"])
         if check_url is not None:
@@ -67,7 +86,7 @@ class DungeonView(generic.ListView):
 
 def action(request):
 
-    player = Player.objects.get(user=request.user)
+    player = get_player(request.user)
     log = get_player_log(player)
     event = random.random()
 
@@ -95,12 +114,12 @@ def action(request):
         return redirect("qa_rpg:index")
 
 
-class BattleView(generic.DetailView):
+class BattleView(LoginRequiredMixin, generic.DetailView):
 
     template_name = 'battle.html'
 
     def get(self, request):
-        player = Player.objects.get(user=request.user)
+        player = get_player(request.user)
 
         check_url = check_player_activity(player, ["battle", "found monster"])
         if check_url is not None:
@@ -120,7 +139,7 @@ class BattleView(generic.DetailView):
 def check(request, question_id):
 
     question = Question.objects.get(pk=question_id)
-    player = Player.objects.get(user=request.user)
+    player = get_player(request.user)
     log = get_player_log(player)
 
     try:
@@ -178,12 +197,12 @@ def get_coins(damage: int):
     return 50
 
 
-class SummonView(generic.DetailView):
+class SummonView(LoginRequiredMixin, generic.DetailView):
 
     template_name = "summon.html"
 
     def get(self, request):
-        player = Player.objects.get(user=request.user)
+        player = get_player(request.user)
 
         check_url = check_player_activity(player, ["summon", "index"])
         if check_url is not None:
@@ -196,7 +215,7 @@ class SummonView(generic.DetailView):
 
 
 def create(request):
-    player = Player.objects.get(user=request.user)
+    player = get_player(request.user)
 
     try:
         question_text = request.POST['question']
@@ -231,12 +250,12 @@ def create(request):
     return redirect('qa_rpg:index')
 
 
-class ProfileView(generic.TemplateView):
+class ProfileView(LoginRequiredMixin, generic.TemplateView):
 
     template_name = 'qa_rpg/profile.html'
 
     def get(self, request):
-        player = Player.objects.get(user=request.user) # dummy player
+        player = get_player(request.user)
         questions = Question.objects.filter(owner=player.user)
 
         check_url = check_player_activity(player, ["index", "profile"])
@@ -249,7 +268,7 @@ class ProfileView(generic.TemplateView):
 
 
 def claim_coin(request, question_id):
-    player = Player.objects.get(user=request.user)
+    player = get_player(request.user)
     questions = Question.objects.get(pk=question_id)
 
     player.currency += questions.currency

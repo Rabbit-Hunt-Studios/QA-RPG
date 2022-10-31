@@ -1,0 +1,21 @@
+{% load static %}
+{% load tailwind_tags %}
+{% tailwind_css %}
+
+<h1>QA-RPG</h1>
+
+{% if messages %}
+        {% for message in messages %}
+        <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
+    <div class="m-8 p-4">
+        <div>
+            <div>
+        <p class="text-red-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
+            </div>
+        </div>
+    </div>
+  </div>
+        {% endfor %}
+{% endif %}
+
+<a href="{% url 'login' %}"><button type="button">LOG IN</button></a> | <a href="{% url 'signup'%}"><button type="button">Sign up</button></a>
