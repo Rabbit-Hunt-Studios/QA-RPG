@@ -71,6 +71,10 @@ def action(request):
     log = get_player_log(player)
     event = random.random()
 
+    check_url = check_player_activity(player, ["dungeon"])
+    if check_url is not None:
+        return redirect(check_url)
+
     if request.POST['action'] == "walk":
         url = "qa_rpg:dungeon"
         if player.luck >= TREASURE_THRESHOLD and event <= (player.luck-TREASURE_THRESHOLD):
