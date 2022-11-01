@@ -10,7 +10,7 @@ style="background-image: url('https://cdn.wallpapersafari.com/42/19/RzUIa4.jpg')
     <div class="flex justify-center items-center w-screen h-screen font-serif">
         <form method="POST" action="{% url 'signup' %}" enctype="multipart/form-data"> 
             {% csrf_token %}
-            <table class="text-center text-2xl text-white font-bold box-border border-gray-600 border-2 bg-black bg-opacity-50">
+            <table class="text-center text-2xl text-white font-bold box-border border-gray-600 border-2 bg-black bg-opacity-50 px-5 py-10">
             {{ form.as_table }}
             <tr>
             <td colspan="2">
