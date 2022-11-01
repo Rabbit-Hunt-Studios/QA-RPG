@@ -8,10 +8,9 @@ def signup(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
             username = form.cleaned_data.get('username')
             raw_passwd = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=raw_passwd)
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return redirect('login')
         # what if form is not valid?
