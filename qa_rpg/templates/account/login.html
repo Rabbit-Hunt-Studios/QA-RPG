@@ -5,11 +5,11 @@
 
 <html>
     <body style="background-image: url('https://images5.alphacoders.com/116/1164046.png');" class = "bg-cover bg-center">
-        <div class = "justify-center flex items-center h-screen w-screen font-serif">
+        <div class = "justify-center flex items-center h-screen w-screen font-serif ">
         <title>Login</title>
-        <form method="post">
+        <form method="post" class="box-border border-gray-600 border-2 bg-black bg-opacity-50 px-5 py-10">
           {% csrf_token %}
-          <table class="w-50 h-100 text-2xl text-white">
+          <table class="w-50 h-100 text-2xl text-white ">
                 {{ form.as_table }}
           </table>
           <p>
