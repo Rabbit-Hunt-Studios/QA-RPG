@@ -1,0 +1,63 @@
+<!doctype html>
+{% load static %}
+{% load tailwind_tags %}
+<head>
+    {% tailwind_css %}
+</head>
+
+<body class="text-white font-serif bg-no-repeat bg-cover  "
+  style="background-image: url('https://images6.alphacoders.com/601/601698.jpg');">
+    <div class="m-8 p-4">
+    <div class="h-25 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+      <div class="text-pink-50 text-3xl pl-2 pt-1">
+        <a> Coins: {{ player.currency }} </a> </br>
+      </div>
+    </div>
+  </div>
+    {% if messages %}
+            {% for message in messages %}
+            <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
+        <div class="m-8 p-4">
+            <div>
+        <p class="text-red-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
+            </div>
+        </div>
+      </div>
+            {% endfor %}
+        {% endif %}
+
+        <form action="{% url 'qa_rpg:create' %}" method="post">
+            {% csrf_token %}
+                <div class="flex justify-center item-center w-screen">
+
+                    <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">Question:</label> <input type="text" name="question" class="w-[32rem] text-black text-2xl">
+                    <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">Category:</label> <select name="category" aria-readonly="true" class="text-black text-2xl">
+                    <option value="" class="text-black">--Choose a category--</option>
+                    {% for type in category %}
+                        <option value="{{ type }}" class="text-black">{{ type }}</option>
+                    {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center py-8 w-screen h-80">
+                <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2 flex justify-left">Enter choice and Select correct choice</label>
+            <div class=" bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">
+            {% for num in amount %}
+                <div class="py-2 flex items-center">
+                    <input type="radio" name="index" id="choice{{ forloop.counter0 }}" value="{{ forloop.counter0 }}" class="peer checked:bg-green-700 checked:focus:ring-green-700 checked:focus:bg-green-700">
+                    <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-green-700 " for="choice{{ forloop.counter0 }}">Choice {{ forloop.counter }}:</label><input type="text" name="choice{{ forloop.counter0 }}" class="w-[32rem] text-black text-2xl"><br>
+                </div>
+            {% endfor %}
+            </div>
+            </div>
+
+            <div class="flex justify-center item-center gap-4 py-10">
+                <input type="hidden" name="fee" value="{{ fee }}">
+                <button type="submit" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-yellow-600 duration-300 pl-2 pt-0 pb-1 pr-2">Summon: {{ fee }} coins</button>
+                <div>
+                    <a href="{% url 'qa_rpg:index' %}"><button type="button" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-red-500 duration-300 pl-2 pt-0 pb-1 pr-2">Cancel</button></a>
+                </div>
+            </div>
+        </form>
+</body>

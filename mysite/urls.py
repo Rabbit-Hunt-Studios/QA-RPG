@@ -16,10 +16,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic.base import RedirectView
+from .views import signup
+from django.contrib.auth.views import LogoutView, LoginView
 
 urlpatterns = [
     path('qa_rpg/', include('qa_rpg.urls')),
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(url='qa_rpg/')), 
     path("__reload__/", include("django_browser_reload.urls")),
+    path('accounts/logout/', LogoutView.as_view(), name='logout'),
+    path('accounts/', include('allauth.urls')),
+    path('signup/', signup, name='signup'),
+    path('accounts/login/', LoginView.as_view(), name='login')
 ]

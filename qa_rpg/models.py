@@ -8,9 +8,10 @@ BASE_HEALTH = 100
 class Question(models.Model):
     question_text = models.CharField(max_length=200)
     damage = models.IntegerField(default=20)
-    currency = models.IntegerField(default=5)
+    currency = models.IntegerField(default=0)
+    max_currency = models.IntegerField(default=20)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    category = models.CharField(max_length=100)
+    category = models.CharField(max_length=100, null=False, default="test")
     enable = models.BooleanField(default=True)
 
     @property
@@ -23,7 +24,12 @@ class Question(models.Model):
 
     @property
     def correct_choice(self):
-        return Choice.objects.filter(question=self, correct_answer=True)[0]
+        return Choice.objects.get(question=self, correct_answer=True)
+
+    def add_coin(self):
+        if self.currency + 2 <= self.max_currency:
+            self.currency += 2
+            self.save()
 
     def __str__(self):
         """Return Question string."""
@@ -61,7 +67,7 @@ class Player(models.Model):
 
     @property
     def player_name(self):
-        return self.user.first_name
+        return self.user.username
 
     def update_player_stats(self, health: int = 0, dungeon_currency: int = 0, luck: float = 0):
         self.current_hp += health
@@ -84,14 +90,17 @@ class Player(models.Model):
         self.activity = activity
         self.save()
 
-    def dead(self):
-        self.set_activity("index")
-        self.reset_stats()
-        try:
-            Log.objects.get(player=self).clear_log()
-        except Log.DoesNotExist:
-            Log.objects.create(player=self)
-        self.save()
+    def check_death(self):
+        if self.current_hp <= 0:
+            self.set_activity("index")
+            self.reset_stats()
+            try:
+                Log.objects.get(player=self).clear_log()
+            except Log.DoesNotExist:
+                Log.objects.create(player=self)
+            self.save()
+            return True
+        return False
 
 
 class Log(models.Model):
