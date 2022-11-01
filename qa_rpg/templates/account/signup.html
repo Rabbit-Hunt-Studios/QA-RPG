@@ -8,13 +8,13 @@
 <body class="bg-cover bg-center" 
 style="background-image: url('https://cdn.wallpapersafari.com/42/19/RzUIa4.jpg');">
     <div class="flex justify-center items-center w-screen h-screen font-serif">
-        <form method="POST" action="{% url 'signup' %}" enctype="multipart/form-data"> 
+        <form method="POST" action="{% url 'signup' %}" enctype="multipart/form-data" class="box-border border-gray-600 border-2  bg-white bg-opacity-70 px-5 py-10"> 
             {% csrf_token %}
-            <table class="text-center text-2xl text-white font-bold box-border border-gray-600 border-2 bg-black bg-opacity-50 px-5 py-10">
+            <table class="text-center text-2xl">
             {{ form.as_table }}
             <tr>
             <td colspan="2">
-            <button class=" px-8 py-6 m-10 text-white hover:text-white bg-green-600 hover:bg-green-900 duration-300 rounded" type="submit">Register</button> | <a href="{% url 'login' %}"><button class=" px-8 py-6 m-10 bg-red-600 text-white hover:text-white hover:bg-red-900 duration-300 rounded" type="button">back</button></a>
+            <button class=" px-10 py-2 m-10 text-white hover:text-white bg-green-600 hover:bg-green-900 duration-300 rounded" type="submit">Register</button> | <a href="{% url 'login' %}"><button class=" px-10 py-2 m-10 bg-red-600 text-white hover:text-white hover:bg-red-900 duration-300 rounded" type="button">back</button></a>
             </td>
             </tr>
             </table>

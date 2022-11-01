@@ -4,23 +4,28 @@
 {% tailwind_css %}
 
 <html>
-    <body>
-        <div class = "justify-center flex items-center h-screen w-screen">
+    <body style="background-image: url('https://images5.alphacoders.com/116/1164046.png');" class = "bg-cover bg-center">
+        <div class = "justify-center flex items-center h-screen w-screen font-serif ">
         <title>Login</title>
-        <form method="post">
+        <form method="post" class="box-border border-gray-600 border-2 bg-white bg-opacity-70 px-5 py-10">
           {% csrf_token %}
-          <table>
+          <table class="w-50 h-100 text-2xl ">
                 {{ form.as_table }}
           </table>
           <p>
-              <button class=" h-25 w-40 text-white hover:text-white bg-green-600 hover:bg-green-900 duration-300 rounded" type="submit">Login</button> | <a href="{% url 'qa_rpg:home'%}"><button class=" h-25 w-40 text-white hover:text-white bg-red-600 hover:bg-red-900 duration-300 rounded" type="button">Back</button></a>
+              <button class="px-10 py-2 m-4 text-2xl text-white hover:text-white bg-green-600 hover:bg-green-900 duration-300 rounded" type="submit">Login</button> | <a href="{% url 'qa_rpg:home'%}"><button class="px-10 py-2 m-4 text-2xl text-white hover:text-white bg-red-600 hover:bg-red-900 duration-300 rounded" type="button">Back</button></a>
           </p>
           <input type="hidden" name="next" value="{{next}}"/>
-          <p>
-            <button class="h-25 w-40 text-white hover:text-white bg-red-500 hover:bg-red-800 duration-300 rounded m-6" onclick="document.location='{% provider_login_url 'google' %}'"> Login with Google </button>
-            </p>
+            <div class = "container">
+                <div>
+                <button class="px-10 py-2 m-8 justify-center text-center text-2xl text-black bg-white hover:text-white hover:bg-red-500 border-black border-2 hover:border-transparent duration-300 rounded" onclick="document.location='{% provider_login_url 'google' %}'"> 
+                    <div class = "flex flex-row" >
+                    <img src="https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-webinar-optimizing-for-success-google-business-webinar-13.png" width="35px" height="25px" class='float-left'>Login with google
+                    </div>
+                </button>
+                </div>
+            </div>
          </form>
-       
-    </div>
+        </div>
     </body>
 </html>
