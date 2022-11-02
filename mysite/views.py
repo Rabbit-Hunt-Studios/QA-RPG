@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
+from django.contrib import messages
 from .forms import RegisterForm
 
 
@@ -12,9 +13,8 @@ def signup(request):
             username = form.cleaned_data.get('username')
             raw_passwd = form.cleaned_data.get('password')
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        return redirect('login')
-        # what if form is not valid?
-        # we should display a message in signup.html
-    else:
-        form = RegisterForm()
+            return redirect('login')
+        else:
+            messages.error(request, "You form is invalid please fill out again.")
+    form = RegisterForm()
     return render(request, 'account/signup.html', {'form': form})
