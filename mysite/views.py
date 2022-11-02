@@ -13,8 +13,9 @@ def signup(request):
             username = form.cleaned_data.get('username')
             raw_passwd = form.cleaned_data.get('password')
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('login')
         else:
             messages.error(request, "You form is invalid please fill out again.")
-    form = RegisterForm()
+        return redirect('login')
+    else:
+        form = RegisterForm()
     return render(request, 'account/signup.html', {'form': form})
