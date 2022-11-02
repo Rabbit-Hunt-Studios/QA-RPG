@@ -191,8 +191,8 @@ def check(request, question_id):
 
 
 def get_coins(damage: int):
-    for i in range(1, 6):
-        if i * 20 <= damage < (i + 1) * 20:
+    for i in range(2, 6):
+        if i * 10 <= damage < (i + 1) * 10:
             return random.randrange(start=i*8, stop=(i + 1)*8, step=1)
     return 50
 

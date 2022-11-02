@@ -27,8 +27,8 @@ class Question(models.Model):
         return Choice.objects.get(question=self, correct_answer=True)
 
     def add_coin(self):
-        if self.currency + 2 <= self.max_currency:
-            self.currency += 2
+        if self.currency + 5 <= self.max_currency:
+            self.currency += 5
             self.save()
 
     def __str__(self):
