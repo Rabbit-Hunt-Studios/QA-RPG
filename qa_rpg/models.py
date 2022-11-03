@@ -105,7 +105,6 @@ class Log(models.Model):
     log_questions = models.CharField(max_length=1000, default="")
 
     def split_log(self, log_type):
-        log = ""
         if log_type == "text":
             return self.log_text.split(';')[:-1]
         return self.log_questions.split(';')[:-1]
