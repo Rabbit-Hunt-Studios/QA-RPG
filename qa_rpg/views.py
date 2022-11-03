@@ -71,6 +71,7 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
         player.set_activity("index")
         player.reset_stats()
         log.clear_log()
+        log.clear_question()
         player.set_activity("index")
         return render(request, self.template_name, {"player": player})
 
@@ -130,6 +131,8 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player = get_player(request.user)
+        log = get_player_log(player)
+        admin = User.objects.get(pk=2)
 
         check_url = check_player_activity(player, ["battle", "found monster"])
         if check_url is not None:
@@ -138,8 +141,18 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
         if difflib.get_close_matches(player.activity, ["battle"]):
             question_id = int(player.activity[6:])
         else:
-            question_id = random.choice(Question.objects.filter(~Q(owner=request.user))
-                                        .values_list("id", flat=True))
+            if(len(log.split_log("question")) != 10):
+                question_id = random.choice(Question.objects.filter(~Q(owner=request.user))
+                                            .values_list("id", flat=True))
+                if(Question.objects.get(pk=question_id).owner == admin):
+                    log.add_question(question_id)
+                else:
+                    log.clear_question()
+            else:
+                question_id = random.choice(Question.objects.filter(~Q(owner=request.user), ~Q(owner=admin))
+                                            .values_list("id", flat=True))
+                log.clear_question()
+        print(log.split_log("question"))
         question = Question.objects.get(pk=question_id)
 
         player.set_activity(f"battle{question_id}")
