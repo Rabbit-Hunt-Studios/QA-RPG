@@ -84,7 +84,7 @@ class DungeonActionTest(TestCase):
         dungeon view."""
         random.seed(10)
         response = self.client.post(reverse("qa_rpg:action"), {"action": "walk"})
-        self.assertEqual(Player.objects.get(pk=1).luck, 0.26)
+        self.assertEqual(Player.objects.get(pk=1).luck, 0.27)
         self.assertNotEqual(Log.objects.get(pk=1).split_log("text")[9], "")
         self.assertEqual(response.status_code, 302)
         self.assertIn("dungeon", response.url)
@@ -117,8 +117,7 @@ class DungeonActionTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("dungeon", response.url)
         self.player = Player.objects.get(pk=1)
-        self.assertEqual(self.player.luck, 0.55)
-        self.assertTrue(self.player.dungeon_currency != 0)
+        self.assertEqual(self.player.luck, 0.5)
 
 
 class BattleViewTest(TestCase):
@@ -189,7 +188,7 @@ class BattleActionTest(TestCase):
         self.assertEqual(self.player.current_hp, self.player.max_hp)
         self.assertEqual(self.player.dungeon_currency, 23)
         self.assertEqual(self.question.currency, 0)
-        self.assertEqual(self.player.luck, BASE_LUCK + 0.03)
+        self.assertEqual(self.player.luck, BASE_LUCK + 0.04)
         self.assertEqual(self.player.activity, "dungeon")
 
     def test_player_answers_incorrectly(self):
