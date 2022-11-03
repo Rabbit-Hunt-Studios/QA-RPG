@@ -22,7 +22,7 @@ class IndexViewTest(TestCase):
         """When a player's log isn't in the database, it automatically creates one."""
         response = self.client.get(reverse("qa_rpg:index"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.log.split_log, empty_log)
+        self.assertEqual(self.log.split_log("text"), empty_log)
         self.log.delete()
         self.client.get(reverse("qa_rpg:index"))
         log = Log.objects.get(player=self.player)
@@ -85,7 +85,7 @@ class DungeonActionTest(TestCase):
         random.seed(10)
         response = self.client.post(reverse("qa_rpg:action"), {"action": "walk"})
         self.assertEqual(Player.objects.get(pk=1).luck, 0.26)
-        self.assertNotEqual(Log.objects.get(pk=1).split_log[9], "")
+        self.assertNotEqual(Log.objects.get(pk=1).split_log("text")[9], "")
         self.assertEqual(response.status_code, 302)
         self.assertIn("dungeon", response.url)
 
@@ -93,7 +93,7 @@ class DungeonActionTest(TestCase):
         """When a player encounters a monster, log is updated, and then redirected to battle view."""
         random.seed(100)
         response = self.client.post(reverse("qa_rpg:action"), {"action": "walk"})
-        self.assertNotEqual(Log.objects.get(pk=1).split_log[9], "")
+        self.assertNotEqual(Log.objects.get(pk=1).split_log("text")[9], "")
         self.assertEqual(response.status_code, 302)
         self.assertIn("battle", response.url)
 

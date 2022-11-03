@@ -114,13 +114,13 @@ class LogModelTest(TestCase):
                      'Exiting dungeon']
         for text in logs_text:
             self.log.add_log(text=text)
-            self.assertEqual(len(self.log.split_log), 10)
-        self.assertEqual(self.log.split_log, logs_text[1:])
-        self.assertEqual(len(self.log.split_log), 10)
+            self.assertEqual(len(self.log.split_log("text")), 10)
+        self.assertEqual(self.log.split_log("text"), logs_text[1:])
+        self.assertEqual(len(self.log.split_log("text")), 10)
 
     def test_clear_log(self):
         """clear_log method should empty out the log."""
         self.log.add_log(text='test')
-        self.assertEqual(self.log.split_log, ['', '', '', '', '', '', '', '', '', 'test'])
+        self.assertEqual(self.log.split_log("text"), ['', '', '', '', '', '', '', '', '', 'test'])
         self.log.clear_log()
-        self.assertEqual(self.log.split_log, empty_log)
+        self.assertEqual(self.log.split_log("text"), empty_log)
