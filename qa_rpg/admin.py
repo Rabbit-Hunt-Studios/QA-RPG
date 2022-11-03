@@ -14,10 +14,9 @@ class QuestionAdmin(admin.ModelAdmin):
     ]
     inlines = [ChoiceInline]
     list_display = ('question_text', 'damage', 'currency',
-                    'owner', 'category', 'enable', 'report',
-                    'commend', 'correct_choice')
+                    'owner', 'category', 'enable', 'correct_choice')
     list_filter = ['owner', 'enable', 'damage', 'currency',
-                   'category', 'report', 'commend']
+                   'category']
     search_fields = ['question_text', 'owner']
 
 

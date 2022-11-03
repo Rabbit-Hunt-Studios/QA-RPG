@@ -16,14 +16,14 @@ class QuestionModelTest(TestCase):
 
     def test_amount_report(self):
         """Report property should return amount of reports the question has."""
-        Report.objects.create(user=self.system, question=self.question)
-        Report.objects.create(user=self.system, question=self.question)
+        ReportAndCommend.objects.create(user=self.system, question=self.question, vote=0)
+        ReportAndCommend.objects.create(user=self.system, question=self.question, vote=0)
         self.assertEqual(self.question.report, 2)
 
     def test_amount_commend(self):
         """Commend property should return amount of commends the question has."""
-        Commend.objects.create(user=self.system, question=self.question)
-        Commend.objects.create(user=self.system, question=self.question)
+        ReportAndCommend.objects.create(user=self.system, question=self.question, vote=1)
+        ReportAndCommend.objects.create(user=self.system, question=self.question, vote=1)
         self.assertEqual(self.question.commend, 2)
 
     def test_get_correct_answer(self):

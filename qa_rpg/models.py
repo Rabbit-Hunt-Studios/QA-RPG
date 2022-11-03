@@ -16,11 +16,11 @@ class Question(models.Model):
 
     @property
     def report(self):
-        return Report.objects.filter(question=self).count()
+        return ReportAndCommend.objects.filter(question=self, vote=0).count()
 
     @property
     def commend(self):
-        return Commend.objects.filter(question=self).count()
+        return ReportAndCommend.objects.filter(question=self, vote=1).count()
 
     @property
     def correct_choice(self):
@@ -46,14 +46,10 @@ class Choice(models.Model):
         return self.choice_text
 
 
-class Report(models.Model):
+class ReportAndCommend(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-
-class Commend(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    vote = models.IntegerField()
 
 
 class Player(models.Model):
@@ -106,13 +102,20 @@ class Player(models.Model):
 class Log(models.Model):
     log_text = models.CharField(max_length=1000, default=";;;;;;;;;;")
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    log_questions = models.CharField(max_length=1000, default="")
 
-    @property
-    def split_log(self):
-        return self.log_text.split(';')[:-1]
+    def split_log(self, log_type):
+        log = ""
+        if log_type == "text":
+            return self.log_text.split(';')[:-1]
+        return self.log_questions.split(';')[:-1]
 
     def clear_log(self):
         self.log_text = ";;;;;;;;;;"
+        self.save()
+
+    def clear_question(self):
+        self.log_questions = ""
         self.save()
 
     def add_log(self, text):
@@ -122,7 +125,41 @@ class Log(models.Model):
         self.log_text += f"{text};"
         self.save()
 
+    def add_question(self, question_id:str):
+        self.log_questions += f"{question_id};"
+        self.save()
+
     def __str__(self):
         """Return Log string."""
         return self.log_text
+
+
+class Inventory(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    player_inventory = models.CharField(max_length=1000, default="")
+    dungeon_inventory = models.CharField(max_length=1000, default="")
+    max_inventory = models.IntegerField(default=3)
+    question_template = models.CharField(max_length=1000, default="")
+
+    def get_inventory(self, inventory_type):
+        dict_item = {}
+        inventory = []
+        if inventory_type == "player":
+            inventory = self.player_inventory.split(';')[:-1]
+        else:
+            inventory = self.dungeon_inventory.split(';')[:-1]
+        for item in inventory:
+            item_list = item.split(":")
+            dict_item[item_list[0]] = item_list[1]
+        return dict_item
+
+    def update_inventory(self, item:dict, inventory_type):
+        inventory = ""
+        for key, val in item.items():
+            inventory += f"key:val;"
+        if inventory_type == "player":
+            self.player_inventory = inventory
+        else:
+            self.dungeon_inventory = inventory
+        self.save()
 
