@@ -1,0 +1,40 @@
+<!doctype html>
+{% load static %}
+{% load tailwind_tags %}
+<head>
+    {% tailwind_css %}
+</head>
+
+<body class="font-serif bg-cover bg-no-repeat"
+  style="background-image: url('https://wallpaper.dog/large/10948486.jpg'); color: white;">
+  <div class="m-8 p-4">
+    <div class="h-20 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+      <div class="text-pink-50 text-3xl pl-2 pt-1">
+        HP: {{ player.current_hp }} / {{ player.max_hp }}
+        <br> <a> Current coins: {{ player.dungeon_currency }} </a> </br>
+      </div>
+    </div>
+  </div>
+
+
+<form action="{% url 'qa_rpg:treasure_action' %}" method="post">
+{% csrf_token %}
+    <div class="flex justify-center item-center gap-4 mt-96">
+        <input type="hidden" name="action" value="pick up" />
+        <p>
+            <button type="submit" class="text-5xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-green-700 duration-300 pl-2 pt-1 pb-1 pr-2">Open</button>
+        </p>
+
+</form>
+
+<form action="{% url 'qa_rpg:treasure_action' %}" method="post">
+        {% csrf_token %}
+            <div>
+        <input type="hidden" name="action" value="walk" />
+        <p>
+            <button type="submit" class="text-5xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-red-500 duration-300 pl-2 pt-1 pb-1 pr-2">Walk Away</button>
+        </p>
+            </div>
+        </form>
+    </div>
+</body>

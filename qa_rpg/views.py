@@ -13,8 +13,8 @@ from django.views.decorators.cache import never_cache
 from .models import Question, Choice, Player, Log
 from .dialogue import Dialogue
 
-TREASURE_AMOUNT = [5, 10, 15, 30, 35]
-TREASURE_THRESHOLD = 0.55
+TREASURE_AMOUNT = [1, 5, 10, 15, 30, 35, 40, 45, 50, 60, 69, 70, 77]
+TREASURE_THRESHOLD = 0.5
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
 
@@ -100,28 +100,67 @@ def action(request):
     log = get_player_log(player)
     event = random.random()
 
-    check_url = check_player_activity(player, ["dungeon"])
-    if check_url is not None:
-        return redirect(check_url)
-
     if request.POST['action'] == "walk":
         url = "qa_rpg:dungeon"
         if player.luck >= TREASURE_THRESHOLD and event <= (player.luck-TREASURE_THRESHOLD):
-            coins = random.choice(TREASURE_AMOUNT)
-            log.add_log(f"You found a treasure chest with {coins} coins in it.")
-            player.update_player_stats(dungeon_currency=coins, luck=-(player.luck - TREASURE_THRESHOLD))
+            log.add_log(f"You found a treasure chest")
+            player.update_player_stats(luck=-(player.luck - TREASURE_THRESHOLD))
+            url = "qa_rpg:treasure"
         elif event <= player.luck:
             log.add_log(Dialogue.MONSTER.get_text + Dialogue.BATTLE_DIALOGUE.get_text)
             player.set_activity("found monster")
             url = "qa_rpg:battle"
         else:
             log.add_log(Dialogue.WALK_DIALOGUE.get_text)
-            player.update_player_stats(luck=0.01)
+            player.update_player_stats(luck=0.02)
         return redirect(url)
     else:
         player.set_activity("index")
         player.add_dungeon_currency()
         return redirect("qa_rpg:index")
+
+
+class TreasureView(LoginRequiredMixin, generic.DetailView):
+
+    template_name = "qa_rpg/treasure.html"
+
+    @method_decorator(never_cache, name='self.get')
+    def get(self, request):
+        player = get_player(request.user)
+        log = get_player_log(player)
+
+        check_url = check_player_activity(player, ["dungeon", "treasure"])
+        if check_url is not None:
+            return redirect(check_url)
+
+        player.set_activity(f"treasure")
+        return render(request, self.template_name, {"player": player})
+
+
+def treasure_action(request):
+    player = get_player(request.user)
+    log = get_player_log(player)
+    event = random.random()
+
+    if request.POST['action'] == "pick up":
+        if player.luck >= event:
+            coins = random.choice(TREASURE_AMOUNT)
+            log.add_log(f"You found {coins} coins in treasure chest.")
+            player.update_player_stats(dungeon_currency=coins)
+        else:
+            log.add_log("Oh No!! Mimic chest bite your leg")
+            damages = random.randint(1, 10)
+            player.update_player_stats(health=-damages)
+            if player.check_death():
+                messages.error(request, "You lost consciousness in the dungeons.")
+                return render(request, "qa_rpg/index.html", {'player': player})
+
+            log.add_log(f"You lose {damages} health points.")
+    else:
+        log.add_log(f"You walk away from treasure chest.")
+
+    player.set_activity("dungeon")
+    return redirect("qa_rpg:dungeon")
 
 
 class BattleView(LoginRequiredMixin, generic.DetailView):
@@ -152,7 +191,6 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
                 question_id = random.choice(Question.objects.filter(~Q(owner=request.user), ~Q(owner=admin))
                                             .values_list("id", flat=True))
                 log.clear_question()
-        print(log.split_log("question"))
         question = Question.objects.get(pk=question_id)
 
         player.set_activity(f"battle{question_id}")
@@ -194,7 +232,7 @@ def check(request, question_id):
             log.add_log(Dialogue.WIN_DIALOGUE.get_text)
             earn_coins = get_coins(question.damage)
             log.add_log(f"You earn {earn_coins} coins.")
-            player.update_player_stats(dungeon_currency=earn_coins, luck=0.03)
+            player.update_player_stats(dungeon_currency=earn_coins, luck=0.04)
             player.set_activity("dungeon")
         else:
             log.add_log(Dialogue.LOSE_DIALOGUE.get_text)
@@ -304,6 +342,4 @@ def claim_coin(request, question_id):
     player.save()
     questions.save()
     return redirect('qa_rpg:profile')
-
-
 
