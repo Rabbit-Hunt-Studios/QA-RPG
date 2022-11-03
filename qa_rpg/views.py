@@ -89,7 +89,7 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
 
         player.set_activity("dungeon")
         log = get_player_log(player)
-        return render(request, self.template_name, {"logs": log.split_log, "player": player})
+        return render(request, self.template_name, {"logs": log.split_log("text"), "player": player})
 
 
 @never_cache
