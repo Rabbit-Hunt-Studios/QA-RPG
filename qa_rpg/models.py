@@ -124,7 +124,7 @@ class Log(models.Model):
         self.log_text += f"{text};"
         self.save()
 
-    def add_question(self, question_id:str):
+    def add_question(self, question_id: str):
         self.log_questions += f"{question_id};"
         self.save()
 
@@ -152,10 +152,10 @@ class Inventory(models.Model):
             dict_item[item_list[0]] = item_list[1]
         return dict_item
 
-    def update_inventory(self, item:dict, inventory_type):
+    def update_inventory(self, item: dict, inventory_type):
         inventory = ""
         for key, val in item.items():
-            inventory += f"key:val;"
+            inventory += f"{key}:{val};"
         if inventory_type == "player":
             self.player_inventory = inventory
         else:
