@@ -1,3 +1,4 @@
+from django.utils.decorators import method_decorator
 from django.views import generic
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -6,6 +7,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 import random
 import difflib
+
+from django.views.decorators.cache import never_cache
+
 from .models import Question, Choice, Player, Log
 from .dialogue import Dialogue
 
@@ -41,10 +45,12 @@ def check_player_activity(player: Player, activity: list):
     return None
 
 
+
 class HomeView(generic.TemplateView):
 
     template_name = 'qa_rpg/homepage.html'
 
+    @method_decorator(never_cache, name='self.get')
     def get(self, request):
         return render(request, self.template_name)
 
@@ -53,6 +59,7 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
 
     template_name = 'qa_rpg/index.html'
 
+    @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player = get_player(request.user)
         log = get_player_log(player)
@@ -72,6 +79,7 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
 
     template_name = "qa_rpg/dungeon.html"
 
+    @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player = get_player(request.user)
 
@@ -84,6 +92,7 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
         return render(request, self.template_name, {"logs": log.split_log, "player": player})
 
 
+@never_cache
 def action(request):
 
     player = get_player(request.user)
@@ -118,6 +127,7 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
 
     template_name = 'battle.html'
 
+    @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player = get_player(request.user)
 
@@ -136,6 +146,7 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
         return render(request, "qa_rpg/battle.html", {"question": question, "player": player})
 
 
+@never_cache
 def check(request, question_id):
 
     question = Question.objects.get(pk=question_id)
@@ -191,8 +202,8 @@ def check(request, question_id):
 
 
 def get_coins(damage: int):
-    for i in range(1, 6):
-        if i * 20 <= damage < (i + 1) * 20:
+    for i in range(2, 6):
+        if i * 10 <= damage < (i + 1) * 10:
             return random.randrange(start=i*8, stop=(i + 1)*8, step=1)
     return 50
 
@@ -201,6 +212,7 @@ class SummonView(LoginRequiredMixin, generic.DetailView):
 
     template_name = "summon.html"
 
+    @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player = get_player(request.user)
 
@@ -214,6 +226,7 @@ class SummonView(LoginRequiredMixin, generic.DetailView):
                                                       "category": CATEGORY, "player": player})  # fixed 4 choices for now
 
 
+@never_cache
 def create(request):
     player = get_player(request.user)
 
@@ -254,6 +267,7 @@ class ProfileView(LoginRequiredMixin, generic.TemplateView):
 
     template_name = 'qa_rpg/profile.html'
 
+    @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player = get_player(request.user)
         questions = Question.objects.filter(owner=player.user)
@@ -267,6 +281,7 @@ class ProfileView(LoginRequiredMixin, generic.TemplateView):
         return render(request, self.template_name, {"player": player, "questions": questions})
 
 
+@never_cache
 def claim_coin(request, question_id):
     player = get_player(request.user)
     questions = Question.objects.get(pk=question_id)
