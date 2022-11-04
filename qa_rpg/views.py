@@ -37,6 +37,8 @@ def get_player(user: User):
             continue
         except Inventory.DoesNotExist:
             inventory = Inventory.objects.create(player=player)
+            tmp = {0: 1, 1: 1}
+            inventory.update_templates(tmp)
             inventory.save()
             continue
     return player, log, inventory
