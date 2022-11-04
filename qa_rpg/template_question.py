@@ -5,8 +5,8 @@ class TemplateCatalog(Enum):
 
     TEMPLATES = [["Which of ", "the following ", "is ", "correct"],
                  ["Which of ", "the following ", "is ", "incorrect"],
-                 ["How many ", "", " in ", ""], ["When ", "did ", "", " happen"],
-                 ["Which ", "", " has ", ""], ["What is the ", "", " for " ""]]
+                 ["How many ", "___", " in ", ""], ["When ", "did ", "___", " happen"],
+                 ["Which ", "___", " has ", ""], ["What is the ", "___", " for " "___"]]
 
     def get_template(self, index: int):
         return self.value[index]
