@@ -126,6 +126,8 @@ class Log(models.Model):
 
     def add_question(self, question_id: str):
         self.log_questions += f"{question_id};"
+        if(len(self.split_log('question')) > 100):
+            self.clear_question()
         self.save()
 
     def __str__(self):
