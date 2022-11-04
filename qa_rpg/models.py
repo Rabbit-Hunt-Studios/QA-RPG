@@ -168,3 +168,11 @@ class Inventory(models.Model):
             value = value.split(":")
             owned[int(value[0])] = int(value[1])
         return owned
+
+    def update_templates(self, items: dict):
+        item_string = ""
+        for key, value in items.items():
+            if value > 0:
+                item_string += f"{key}:{value};"
+        self.question_template = item_string
+        self.save()

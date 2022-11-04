@@ -29,7 +29,7 @@
         <form action="{% url 'qa_rpg:create' %}" method="post">
             {% csrf_token %}
                 <div class="flex justify-center item-center w-screen">
-
+                    <input type="hidden" name="template_id" value="{{ id }}">
                     <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">Question:</label>
                     {% for part in question %}
                     {% if part != "___" %}

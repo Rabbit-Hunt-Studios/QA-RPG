@@ -299,6 +299,7 @@ class SummonView(LoginRequiredMixin, generic.DetailView):
         player.set_activity("summon4")
         return render(request, "qa_rpg/summon.html",
                       {"question": TemplateCatalog.TEMPLATES.get_template(template_index),
+                       "id": template_index,
                        "amount": range(4),
                        "fee": TemplateCatalog.TEMPLATES.get_price(template_index),
                        "category": CATEGORY, "player": player})
@@ -340,6 +341,9 @@ def create(request):
     player.set_activity("index")
     messages.error(request, "Successfully summoned a new monster.")
     player.currency -= summon_fee
+    owned = inventory.get_templates()
+    owned[int(request.POST["template_id"])] -= 1
+    inventory.update_templates(owned)
     player.save()
     return redirect('qa_rpg:index')
 
