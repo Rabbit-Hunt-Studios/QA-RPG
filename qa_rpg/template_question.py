@@ -1,12 +1,14 @@
 from enum import Enum
 
+BLANK = "___"
+
 
 class TemplateCatalog(Enum):
 
     TEMPLATES = [["Which of ", "the following ", "is ", "correct"],
                  ["Which of ", "the following ", "is ", "incorrect"],
-                 ["How many ", "___", " in ", ""], ["When ", "did ", "___", " happen"],
-                 ["Which ", "___", " has ", ""], ["What is the ", "___", " for " "___"]]
+                 ["How many ", BLANK, " in ", BLANK], ["When ", "did ", BLANK, " happen"],
+                 ["Which ", BLANK, " has ", BLANK], ["What is the ", BLANK, " for ", BLANK]]
 
     def get_template(self, index: int):
         return self.value[index]
