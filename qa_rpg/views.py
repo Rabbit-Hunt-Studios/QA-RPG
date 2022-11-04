@@ -192,7 +192,7 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
                     log.clear_question()
             else:
                 question_id = random.choice(Question.objects.exclude(id__in=seen_question, owner=request.user, enable=False)
-                    .value_list('id', flat=True))
+                    .values_list('id', flat=True))
                 log.add_question(question_id)
         question = Question.objects.get(pk=question_id)
 
@@ -247,7 +247,7 @@ def check(request, question_id):
 
             log.add_log(f"You lose {question.damage} health points.")
             player.set_activity("dungeon")
-        print(log.split_log('question'))
+
         return redirect("qa_rpg:dungeon")
 
     except KeyError:
