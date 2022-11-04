@@ -137,6 +137,7 @@ class TreasureView(LoginRequiredMixin, generic.DetailView):
         return render(request, self.template_name, {"player": player})
 
 
+@never_cache
 def treasure_action(request):
     player, log, inventory = get_player(request.user)
     event = random.random()
@@ -256,13 +257,30 @@ def get_coins(damage: int):
     return 50
 
 
-class TemplateView(LoginRequiredMixin, generic.ListView):
+class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
 
-    context_object_name = "available templates"
+    template_name = "qa_rpg/template_choose.html"
 
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
-        pass
+        player, log, inventory = get_player(request.user)
+
+        check_url = check_player_activity(player, ["summon", "index"])
+        if check_url is not None:
+            return redirect(check_url)
+
+        available = {}
+        for index in inventory.get_templates().keys():
+            available["+ ".join(TemplateCatalog.TEMPLATES.get_template(index))] = index
+
+        return render(request, self.template_name, {"selection": available})
+
+
+@never_cache
+def choose(request):
+    player, log, inventory = get_player(request.user)
+    player.set_activity(f"choose{request.GET['index']}")
+    return redirect("qa_rpg:summon")
 
 
 class SummonView(LoginRequiredMixin, generic.DetailView):
@@ -273,15 +291,17 @@ class SummonView(LoginRequiredMixin, generic.DetailView):
     def get(self, request):
         player, log, inventory = get_player(request.user)
 
-        check_url = check_player_activity(player, ["summon", "index"])
+        check_url = check_player_activity(player, ["choose", "summon"])
         if check_url is not None:
             return redirect(check_url)
 
+        template_index = int(player.activity[6:])
         player.set_activity("summon4")
-        return render(request, "qa_rpg/summon.html", {"question": TemplateCatalog.TEMPLATES.get_template(2),
-                                                      "amount": range(4),
-                                                      "fee": TemplateCatalog.TEMPLATES.get_price(2),
-                                                      "category": CATEGORY, "player": player})
+        return render(request, "qa_rpg/summon.html",
+                      {"question": TemplateCatalog.TEMPLATES.get_template(template_index),
+                       "amount": range(4),
+                       "fee": TemplateCatalog.TEMPLATES.get_price(template_index),
+                       "category": CATEGORY, "player": player})
 
 
 @never_cache

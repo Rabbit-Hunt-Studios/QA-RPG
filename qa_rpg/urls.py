@@ -6,6 +6,7 @@ app_name = 'qa_rpg'
 urlpatterns = [
     path('index/', views.IndexView.as_view(), name='index'),
     path('template/', views.TemplateChooseView.as_view(), name='template'),
+    path('template/choose', views.choose, name='choose'),
     path('template/summon/', views.SummonView.as_view(), name='summon'),
     path('template/summon/create', views.create, name='create'),
     path('dungeon/', views.DungeonView.as_view(), name='dungeon'),

@@ -162,3 +162,9 @@ class Inventory(models.Model):
             self.dungeon_inventory = inventory
         self.save()
 
+    def get_templates(self):
+        owned = {}
+        for value in self.question_template.split(';')[:-1]:
+            value = value.split(":")
+            owned[int(value[0])] = int(value[1])
+        return owned
