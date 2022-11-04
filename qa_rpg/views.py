@@ -297,8 +297,11 @@ class SummonView(LoginRequiredMixin, generic.DetailView):
         if check_url is not None:
             return redirect(check_url)
 
-        template_index = int(player.activity[6:])
-        player.set_activity("summon4")
+        if difflib.get_close_matches(player.activity, ['choose']):
+            template_index = int(player.activity[6:])
+            player.set_activity(f"summon4 {template_index}")
+        else:
+            template_index = int(player.activity.split(" ")[1])
         return render(request, "qa_rpg/summon.html",
                       {"question": TemplateCatalog.TEMPLATES.get_template(template_index),
                        "id": template_index,
