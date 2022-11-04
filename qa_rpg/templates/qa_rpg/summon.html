@@ -29,13 +29,18 @@
         <form action="{% url 'qa_rpg:create' %}" method="post">
             {% csrf_token %}
                 <div class="flex justify-center item-center w-screen">
-                    <input type="hidden" name="template_id" value="{{ id }}">
-                    <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">Question:</label>
+                    <div class="pr-2">
+                        <input type="hidden" name="template_id" value="{{ id }}">
+                        <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">Question:</label>
+                    </div>
                     {% for part in question %}
                     {% if part != "___" %}
-                        <input type="hidden" name="question{{ forloop.counter0 }}" value="{{ part }}">{{ part }}
+                        <input type="hidden" name="question{{ forloop.counter0 }}" value="{{ part }}">
+                        <label class="text-3xl pr-2">{{ part }}</label>
                     {% else %}
-                        <input type="text" name="question{{ forloop.counter0 }}" class="w-[32rem] text-black text-2l" required>
+                        <div class="pr-2">
+                            <input type="text" name="question{{ forloop.counter0 }}" class="w-40 text-black text-2l pr-2" required>
+                        </div>
                     {% endif  %}
                     {% endfor %}
                     </select>
