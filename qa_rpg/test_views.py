@@ -280,6 +280,8 @@ class CreateQuestionTest(TestCase):
         self.system = User.objects.create_user(username="test")
         self.player = Player.objects.create(user=self.user)
         self.player.set_activity("summon4")
+        self.inventory = Inventory.objects.create(player=self.player)
+        self.inventory.update_templates({0: 2})
 
     def test_remain_currency_after_summon(self):
         """Test remain currency after summoning."""
@@ -287,8 +289,15 @@ class CreateQuestionTest(TestCase):
         self.player.currency = 200
         self.player.save()
         response = self.client.post(reverse("qa_rpg:create"),
-                                    {"question": "What is?", "choice0": "1", "choice1": "2", "choice2": "3",
-                                     "choice3": "4", "fee": "150", "index": "0"})
+                                    {"question0": "What ",
+                                     "question1": "is ",
+                                     "question2": "this",
+                                     "question3": "?",
+                                     "choice0": "1",
+                                     "choice1": "2",
+                                     "choice2": "3",
+                                     "choice3": "4",
+                                     "fee": "150", "index": "0", "template_id": "0"})
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 50)
 
@@ -298,9 +307,15 @@ class CreateQuestionTest(TestCase):
         self.player.currency = 200
         self.player.save()
         response = self.client.post(reverse("qa_rpg:create"),
-                                    {"question": "What is?", "choice1": "2", "choice2": "3",
-                                     "choice3": "4", "fee": "150", "index": "0"})
-        self.assertEqual(response.status_code,302)
+                                    {"question0": "What ",
+                                     "question1": "is ",
+                                     "question2": "this",
+                                     "question3": "?",
+                                     "choice1": "2",
+                                     "choice2": "3",
+                                     "choice3": "4",
+                                     "fee": "150", "index": "0", "template_id": "0"})
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(self.player.currency, 200)
 
     def test_player_not_have_enough_coin(self):
@@ -309,9 +324,16 @@ class CreateQuestionTest(TestCase):
         self.player.currency = 20
         self.player.save()
         response = self.client.post(reverse("qa_rpg:create"),
-                                    {"question": "What is?","choice0": "1", "choice1": "2", "choice2": "3",
-                                     "choice3": "4", "fee": "150", "index": "0"})
-        self.assertEqual(response.status_code,302)
+                                    {"question0": "What ",
+                                     "question1": "is ",
+                                     "question2": "this",
+                                     "question3": "?",
+                                     "choice0": "1",
+                                     "choice1": "2",
+                                     "choice2": "3",
+                                     "choice3": "4",
+                                     "fee": "150", "index": "0", "template_id": "0"})
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(self.player.currency, 20)
 
 

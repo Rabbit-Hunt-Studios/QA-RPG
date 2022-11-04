@@ -309,6 +309,11 @@ class SummonView(LoginRequiredMixin, generic.DetailView):
 def create(request):
     player, log, inventory = get_player(request.user)
 
+    summon_fee = int(request.POST['fee'])
+    if summon_fee > player.currency:
+        messages.error(request, "You don't have enough coins to summon a monster.")
+        return redirect("qa_rpg:summon")
+
     try:
         question_text = ''
         for i in range(4):
@@ -323,11 +328,6 @@ def create(request):
                 choices[request.POST[f'choice{num}']] = False
     except KeyError:
         messages.error(request, "Please fill in every field and select a correct answer.")
-        return redirect("qa_rpg:summon")
-
-    summon_fee = int(request.POST['fee'])
-    if summon_fee > player.currency:
-        messages.error(request, "You don't have enough coins to summon a monster.")
         return redirect("qa_rpg:summon")
 
     question = Question.objects.create(question_text=question_text,
