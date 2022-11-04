@@ -326,7 +326,7 @@ def create(request):
         question_text += "?"
         choices = {}
         correct_index = int(request.POST['index'])
-        for num in range(int(player.activity[6:])):
+        for num in range(int(player.activity.split(" ")[0][6:])):
             if num == correct_index:
                 choices[request.POST[f'choice{num}']] = True
             else:
