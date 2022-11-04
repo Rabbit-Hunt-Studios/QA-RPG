@@ -303,7 +303,7 @@ class SummonView(LoginRequiredMixin, generic.DetailView):
                       {"question": TemplateCatalog.TEMPLATES.get_template(template_index),
                        "id": template_index,
                        "amount": range(4),
-                       "fee": TemplateCatalog.TEMPLATES.get_price(template_index),
+                       "fee": "50",
                        "category": CATEGORY, "player": player})
 
 
