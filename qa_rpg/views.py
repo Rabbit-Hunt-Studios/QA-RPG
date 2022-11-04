@@ -180,17 +180,20 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
         if difflib.get_close_matches(player.activity, ["battle"]):
             question_id = int(player.activity[6:])
         else:
-            if(len(log.split_log("question")) != 10):
-                question_id = random.choice(Question.objects.filter(~Q(owner=request.user))
-                                            .values_list("id", flat=True))
-                if(Question.objects.get(pk=question_id).owner == admin):
+            seen_question = log.split_log("question")
+            if(Question.objects.filter(~Q(owner=request.user), category='player', enable=True).count() != 0):
+                if(len(log.split_log("question")) < 10):
+                    question_id = random.choice(Question.objects.exclude(id__in=seen_question, owner=request.user, enable=False)
+                                                .values_list('id', flat=True))
                     log.add_question(question_id)
                 else:
+                    question_id = random.choice(Question.objects.filter(~Q(owner=request.user), category='player', enable=True)
+                                                .values_list("id", flat=True))
                     log.clear_question()
             else:
-                question_id = random.choice(Question.objects.filter(~Q(owner=request.user), ~Q(owner=admin))
-                                            .values_list("id", flat=True))
-                log.clear_question()
+                question_id = random.choice(Question.objects.exclude(id__in=seen_question, owner=request.user, enable=False)
+                    .value_list('id', flat=True))
+                log.add_question(question_id)
         question = Question.objects.get(pk=question_id)
 
         player.set_activity(f"battle{question_id}")
@@ -244,7 +247,7 @@ def check(request, question_id):
 
             log.add_log(f"You lose {question.damage} health points.")
             player.set_activity("dungeon")
-
+        print(log.split_log('question'))
         return redirect("qa_rpg:dungeon")
 
     except KeyError:
