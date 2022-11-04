@@ -12,6 +12,7 @@ from django.views.decorators.cache import never_cache
 
 from .models import Question, Choice, Player, Log, Inventory
 from .dialogue import Dialogue
+from .template_question import TemplateCatalog
 
 TREASURE_AMOUNT = [1, 5, 10, 15, 30, 35, 40, 45, 50, 60, 69, 70, 77]
 TREASURE_THRESHOLD = 0.5
@@ -177,10 +178,10 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
         if difflib.get_close_matches(player.activity, ["battle"]):
             question_id = int(player.activity[6:])
         else:
-            if(len(log.split_log("question")) != 10):
+            if len(log.split_log("question")) != 10:
                 question_id = random.choice(Question.objects.filter(~Q(owner=request.user))
                                             .values_list("id", flat=True))
-                if(Question.objects.get(pk=question_id).owner == admin):
+                if Question.objects.get(pk=question_id).owner == admin:
                     log.add_question(question_id)
                 else:
                     log.clear_question()
@@ -255,6 +256,15 @@ def get_coins(damage: int):
     return 50
 
 
+class TemplateView(LoginRequiredMixin, generic.ListView):
+
+    context_object_name = "available templates"
+
+    @method_decorator(never_cache, name='self.get')
+    def get(self, request):
+        pass
+
+
 class SummonView(LoginRequiredMixin, generic.DetailView):
 
     template_name = "summon.html"
@@ -267,9 +277,10 @@ class SummonView(LoginRequiredMixin, generic.DetailView):
         if check_url is not None:
             return redirect(check_url)
 
-        fee = 150 + Question.objects.filter(owner=request.user).count() * 20
         player.set_activity("summon4")
-        return render(request, "qa_rpg/summon.html", {"amount": range(4), "fee": fee,
+        return render(request, "qa_rpg/summon.html", {"question": TemplateCatalog.TEMPLATES.get_template(2),
+                                                      "amount": range(4),
+                                                      "fee": TemplateCatalog.TEMPLATES.get_price(2),
                                                       "category": CATEGORY, "player": player})
 
 
@@ -278,7 +289,10 @@ def create(request):
     player, log, inventory = get_player(request.user)
 
     try:
-        question_text = request.POST['question']
+        question_text = ''
+        for i in range(4):
+            question_text += request.POST[f'question{i}']
+        question_text += "?"
         choices = {}
         correct_index = int(request.POST['index'])
         for num in range(int(player.activity[6:])):
@@ -296,7 +310,7 @@ def create(request):
         return redirect("qa_rpg:summon")
 
     question = Question.objects.create(question_text=question_text,
-                                       owner=request.user)
+                                       owner=request.user, category="player")
     question.save()
     for choice_text in choices.keys():
         choice = Choice.objects.create(choice_text=choice_text,

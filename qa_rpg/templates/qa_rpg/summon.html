@@ -30,11 +30,13 @@
             {% csrf_token %}
                 <div class="flex justify-center item-center w-screen">
 
-                    <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">Question:</label> <input type="text" name="question" class="w-[32rem] text-black text-2xl">
-                    <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">Category:</label> <select name="category" aria-readonly="true" class="text-black text-2xl">
-                    <option value="" class="text-black">--Choose a category--</option>
-                    {% for type in category %}
-                        <option value="{{ type }}" class="text-black">{{ type }}</option>
+                    <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">Question:</label>
+                    {% for part in question %}
+                    {% if part %}
+                        <input type="hidden" name="question{{ forloop.counter0 }}" value="{{ part }}">{{ part }}
+                    {% else %}
+                        <input type="text" name="question{{ forloop.counter0 }}" class="w-[32rem] text-black text-2l">
+                    {% endif  %}
                     {% endfor %}
                     </select>
                 </div>
