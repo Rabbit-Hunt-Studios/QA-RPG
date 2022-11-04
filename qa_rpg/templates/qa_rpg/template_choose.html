@@ -1,10 +1,16 @@
 
-<form method="get" action="{% url 'qa_rpg:choose' %}">
-{% csrf_token %}
-{% for key, value in selection.items %}
-    <input type="radio" id="{{ key }}" name="index" value="{{ value }}" required>
-    <label for="{{ key }}">{{ key }}</label><br>
-{% endfor %}
+{% if selection%}
+    <form method="get" action="{% url 'qa_rpg:choose' %}">
+    {% csrf_token %}
+    {% for key, value in selection.items %}
+        <input type="radio" id="{{ key }}" name="index" value="{{ value }}" required>
+        <label for="{{ key }}">{{ key }}</label><br>
+    {% endfor %}
 
-    <button type="submit">Choose</button>
-</form>
+        <button type="submit">Choose</button>
+    </form>
+{% else %}
+    No templates available for use. <br>
+{% endif %}
+
+<a href="{% url 'qa_rpg:index' %}" type="button">Back</a>
