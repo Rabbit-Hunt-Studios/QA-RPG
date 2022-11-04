@@ -186,7 +186,7 @@ class BattleActionTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.question = Question.objects.get(pk=1)
         self.assertEqual(self.player.current_hp, self.player.max_hp)
-        self.assertEqual(self.player.dungeon_currency, 23)
+        self.assertEqual(self.player.dungeon_currency, 7)
         self.assertEqual(self.question.currency, 0)
         self.assertEqual(self.player.luck, BASE_LUCK + 0.04)
         self.assertEqual(self.player.activity, "dungeon")
@@ -246,6 +246,7 @@ class BattleActionTest(TestCase):
 
 
 class SummonViewTest(TestCase):
+
     def setUp(self):
         """Setup for testing summon view page."""
         self.user = User.objects.create_user(username="demo")
@@ -258,9 +259,10 @@ class SummonViewTest(TestCase):
 
     def test_rendering_summon_page(self):
         """Test that player actually in summon page"""
+        self.player.set_activity("choose1")
         response = self.client.get(reverse("qa_rpg:summon"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(Player.objects.get(user=self.user).activity, "summon4")
+        self.assertEqual(Player.objects.get(user=self.user).activity, "summon4 1")
 
     def test_rendering_summon_page_from_another_page(self):
         self.player.set_activity("battle")
@@ -280,6 +282,8 @@ class CreateQuestionTest(TestCase):
         self.system = User.objects.create_user(username="test")
         self.player = Player.objects.create(user=self.user)
         self.player.set_activity("summon4")
+        self.inventory = Inventory.objects.create(player=self.player)
+        self.inventory.update_templates({0: 2})
 
     def test_remain_currency_after_summon(self):
         """Test remain currency after summoning."""
@@ -287,8 +291,15 @@ class CreateQuestionTest(TestCase):
         self.player.currency = 200
         self.player.save()
         response = self.client.post(reverse("qa_rpg:create"),
-                                    {"question": "What is?", "choice0": "1", "choice1": "2", "choice2": "3",
-                                     "choice3": "4", "fee": "150", "index": "0"})
+                                    {"question0": "What ",
+                                     "question1": "is ",
+                                     "question2": "this",
+                                     "question3": "?",
+                                     "choice0": "1",
+                                     "choice1": "2",
+                                     "choice2": "3",
+                                     "choice3": "4",
+                                     "fee": "150", "index": "0", "template_id": "0"})
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 50)
 
@@ -298,9 +309,15 @@ class CreateQuestionTest(TestCase):
         self.player.currency = 200
         self.player.save()
         response = self.client.post(reverse("qa_rpg:create"),
-                                    {"question": "What is?", "choice1": "2", "choice2": "3",
-                                     "choice3": "4", "fee": "150", "index": "0"})
-        self.assertEqual(response.status_code,302)
+                                    {"question0": "What ",
+                                     "question1": "is ",
+                                     "question2": "this",
+                                     "question3": "?",
+                                     "choice1": "2",
+                                     "choice2": "3",
+                                     "choice3": "4",
+                                     "fee": "150", "index": "0", "template_id": "0"})
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(self.player.currency, 200)
 
     def test_player_not_have_enough_coin(self):
@@ -309,9 +326,16 @@ class CreateQuestionTest(TestCase):
         self.player.currency = 20
         self.player.save()
         response = self.client.post(reverse("qa_rpg:create"),
-                                    {"question": "What is?","choice0": "1", "choice1": "2", "choice2": "3",
-                                     "choice3": "4", "fee": "150", "index": "0"})
-        self.assertEqual(response.status_code,302)
+                                    {"question0": "What ",
+                                     "question1": "is ",
+                                     "question2": "this",
+                                     "question3": "?",
+                                     "choice0": "1",
+                                     "choice1": "2",
+                                     "choice2": "3",
+                                     "choice3": "4",
+                                     "fee": "150", "index": "0", "template_id": "0"})
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(self.player.currency, 20)
 
 

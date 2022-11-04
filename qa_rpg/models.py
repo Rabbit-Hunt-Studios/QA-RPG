@@ -124,7 +124,7 @@ class Log(models.Model):
         self.log_text += f"{text};"
         self.save()
 
-    def add_question(self, question_id:str):
+    def add_question(self, question_id: str):
         self.log_questions += f"{question_id};"
         if(len(self.split_log('question')) > 100):
             self.clear_question()
@@ -154,13 +154,27 @@ class Inventory(models.Model):
             dict_item[item_list[0]] = item_list[1]
         return dict_item
 
-    def update_inventory(self, item:dict, inventory_type):
+    def update_inventory(self, item: dict, inventory_type):
         inventory = ""
         for key, val in item.items():
-            inventory += f"key:val;"
+            inventory += f"{key}:{val};"
         if inventory_type == "player":
             self.player_inventory = inventory
         else:
             self.dungeon_inventory = inventory
         self.save()
 
+    def get_templates(self):
+        owned = {}
+        for value in self.question_template.split(';')[:-1]:
+            value = value.split(":")
+            owned[int(value[0])] = int(value[1])
+        return owned
+
+    def update_templates(self, items: dict):
+        item_string = ""
+        for key, value in items.items():
+            if value > 0:
+                item_string += f"{key}:{value};"
+        self.question_template = item_string
+        self.save()

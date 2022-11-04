@@ -1,0 +1,54 @@
+<!doctype html>
+{% load static %}
+{% load tailwind_tags %}
+<head>
+    {% tailwind_css %}
+</head>
+
+<body class="text-white font-serif bg-no-repeat bg-top bg-cover"
+  style="background-image: url('https://images.alphacoders.com/145/145201.jpg');">
+
+{% if selection%}
+<form method="get" action="{% url 'qa_rpg:choose' %}">
+    {% csrf_token %}
+
+        <div class="flex flex-col items-center py-8 w-screen h-80">
+            <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-3 pr-2 flex justify-left">Choose a spell to summon a monster</label> <br>
+            <div class=" bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-2 pr-2">
+
+        {% for key, value in selection.items %}
+            <div class="py-2 flex items-center">
+                <input type="radio" name="index" id="{{ key }}" value="{{ value }}" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700" required>
+                <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700" for="{{ key }}">{{ key }}</label><br>
+            </div>
+        {% endfor %}
+
+            </div>
+        </div>
+
+        <div class="flex justify-center item-center gap-4 py-10">
+            <button type="submit" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-green-700 duration-300 pl-2 pt-0 pb-1 pr-2">Choose</button>
+            <div>
+                <a href="{% url 'qa_rpg:index' %}"><button type="button" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-red-500 duration-300 pl-2 pt-0 pb-1 pr-2">Back</button></a>
+            </div>
+        </div>
+
+</form>
+{% else %}
+    <div class="m-8 p-4">
+        <div class="h-25 w-72 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+            <div class="text-pink-50 text-3xl pl-2 pt-1 text-center">
+                <a> No spells available in inventory </a> <br>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center item-center gap-4 py-10">
+        <div>
+            <a href="{% url 'qa_rpg:index' %}"><button type="button" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-red-500 duration-300 pl-2 pt-0 pb-1 pr-2">Back</button></a>
+        </div>
+    </div>
+
+{% endif %}
+
+</body>

@@ -10,31 +10,38 @@ import difflib
 
 from django.views.decorators.cache import never_cache
 
-from .models import Question, Choice, Player, Log
+from .models import Question, Choice, Player, Log, Inventory
 from .dialogue import Dialogue
+from .template_question import TemplateCatalog
 
-TREASURE_AMOUNT = [1, 5, 10, 15, 30, 35, 40, 45, 50, 60, 69, 70, 77]
+TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69, 70, 77]
 TREASURE_THRESHOLD = 0.5
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
 
 
 def get_player(user: User):
-    try:
-        player = Player.objects.get(user=user)
-    except Player.DoesNotExist:
-        player = Player.objects.create(user=user)
-        player.save()
-    return player
-
-
-def get_player_log(player: Player):
-    try:
-        log = Log.objects.get(player=player)
-    except Log.DoesNotExist:
-        log = Log.objects.create(player=player)
-        log.save()
-    return log
+    while True:
+        try:
+            player = Player.objects.get(user=user)
+            log = Log.objects.get(player=player)
+            inventory = Inventory.objects.get(player=player)
+            break
+        except Player.DoesNotExist:
+            player = Player.objects.create(user=user)
+            player.save()
+            continue
+        except Log.DoesNotExist:
+            log = Log.objects.create(player=player)
+            log.save()
+            continue
+        except Inventory.DoesNotExist:
+            inventory = Inventory.objects.create(player=player)
+            tmp = {0: 1, 1: 1}
+            inventory.update_templates(tmp)
+            inventory.save()
+            continue
+    return player, log, inventory
 
 
 def check_player_activity(player: Player, activity: list):
@@ -43,7 +50,6 @@ def check_player_activity(player: Player, activity: list):
             return f"qa_rpg:{player.activity[:6]}"
         return f"qa_rpg:{player.activity}"
     return None
-
 
 
 class HomeView(generic.TemplateView):
@@ -61,8 +67,7 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
 
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
-        player = get_player(request.user)
-        log = get_player_log(player)
+        player, log, inventory = get_player(request.user)
 
         check_url = check_player_activity(player, ["summon", "index", "profile"])
         if check_url is not None:
@@ -82,22 +87,20 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
 
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
-        player = get_player(request.user)
+        player, log, inventory = get_player(request.user)
 
         check_url = check_player_activity(player, ["index", "dungeon"])
         if check_url is not None:
             return redirect(check_url)
 
         player.set_activity("dungeon")
-        log = get_player_log(player)
         return render(request, self.template_name, {"logs": log.split_log("text"), "player": player})
 
 
 @never_cache
 def action(request):
 
-    player = get_player(request.user)
-    log = get_player_log(player)
+    player, log, inventory = get_player(request.user)
     event = random.random()
 
     if request.POST['action'] == "walk":
@@ -126,8 +129,7 @@ class TreasureView(LoginRequiredMixin, generic.DetailView):
 
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
-        player = get_player(request.user)
-        log = get_player_log(player)
+        player, log, inventory = get_player(request.user)
 
         check_url = check_player_activity(player, ["dungeon", "treasure"])
         if check_url is not None:
@@ -137,9 +139,9 @@ class TreasureView(LoginRequiredMixin, generic.DetailView):
         return render(request, self.template_name, {"player": player})
 
 
+@never_cache
 def treasure_action(request):
-    player = get_player(request.user)
-    log = get_player_log(player)
+    player, log, inventory = get_player(request.user)
     event = random.random()
 
     if request.POST['action'] == "pick up":
@@ -169,8 +171,7 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
 
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
-        player = get_player(request.user)
-        log = get_player_log(player)
+        player, log, inventory = get_player(request.user)
         admin = User.objects.get(pk=2)
 
         check_url = check_player_activity(player, ["battle", "found monster"])
@@ -204,8 +205,7 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
 def check(request, question_id):
 
     question = Question.objects.get(pk=question_id)
-    player = get_player(request.user)
-    log = get_player_log(player)
+    player, log, inventory = get_player(request.user)
 
     try:
         if request.POST['choice'] == "run away":
@@ -256,10 +256,40 @@ def check(request, question_id):
 
 
 def get_coins(damage: int):
-    for i in range(2, 6):
-        if i * 10 <= damage < (i + 1) * 10:
-            return random.randrange(start=i*8, stop=(i + 1)*8, step=1)
+    start = 20
+    end = 20
+    for i in range(0, 3):
+        start += i * 5
+        end += (i + 1) * 5
+        if start <= damage < end:
+            return random.randrange(start=i*9, stop=(i + 1)*9, step=1)
     return 50
+
+
+class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
+
+    template_name = "qa_rpg/template_choose.html"
+
+    @method_decorator(never_cache, name='self.get')
+    def get(self, request):
+        player, log, inventory = get_player(request.user)
+
+        check_url = check_player_activity(player, ["summon", "index"])
+        if check_url is not None:
+            return redirect(check_url)
+
+        available = {}
+        for index in inventory.get_templates().keys():
+            available["+ ".join(TemplateCatalog.TEMPLATES.get_template(index))] = index
+
+        return render(request, self.template_name, {"selection": available})
+
+
+@never_cache
+def choose(request):
+    player, log, inventory = get_player(request.user)
+    player.set_activity(f"choose{request.GET['index']}")
+    return redirect("qa_rpg:summon")
 
 
 class SummonView(LoginRequiredMixin, generic.DetailView):
@@ -268,27 +298,42 @@ class SummonView(LoginRequiredMixin, generic.DetailView):
 
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
-        player = get_player(request.user)
+        player, log, inventory = get_player(request.user)
 
-        check_url = check_player_activity(player, ["summon", "index"])
+        check_url = check_player_activity(player, ["choose", "summon"])
         if check_url is not None:
             return redirect(check_url)
 
-        fee = 150 + Question.objects.filter(owner=request.user).count() * 20
-        player.set_activity("summon4")
-        return render(request, "qa_rpg/summon.html", {"amount": range(4), "fee": fee,
-                                                      "category": CATEGORY, "player": player})  # fixed 4 choices for now
+        if difflib.get_close_matches(player.activity, ['choose']):
+            template_index = int(player.activity[6:])
+            player.set_activity(f"summon4 {template_index}")
+        else:
+            template_index = int(player.activity.split(" ")[1])
+        return render(request, "qa_rpg/summon.html",
+                      {"question": TemplateCatalog.TEMPLATES.get_template(template_index),
+                       "id": template_index,
+                       "amount": range(4),
+                       "fee": "50",
+                       "player": player})
 
 
 @never_cache
 def create(request):
-    player = get_player(request.user)
+    player, log, inventory = get_player(request.user)
+
+    summon_fee = int(request.POST['fee'])
+    if summon_fee > player.currency:
+        messages.error(request, "You don't have enough coins to summon a monster.")
+        return redirect("qa_rpg:summon")
 
     try:
-        question_text = request.POST['question']
+        question_text = ''
+        for i in range(4):
+            question_text += request.POST[f'question{i}']
+        question_text += "?"
         choices = {}
         correct_index = int(request.POST['index'])
-        for num in range(int(player.activity[6:])):
+        for num in range(int(player.activity.split(" ")[0][6:])):
             if num == correct_index:
                 choices[request.POST[f'choice{num}']] = True
             else:
@@ -297,13 +342,8 @@ def create(request):
         messages.error(request, "Please fill in every field and select a correct answer.")
         return redirect("qa_rpg:summon")
 
-    summon_fee = int(request.POST['fee'])
-    if summon_fee > player.currency:
-        messages.error(request, "You don't have enough coins to summon a monster.")
-        return redirect("qa_rpg:summon")
-
     question = Question.objects.create(question_text=question_text,
-                                       owner=request.user)
+                                       owner=request.user, category="player")
     question.save()
     for choice_text in choices.keys():
         choice = Choice.objects.create(choice_text=choice_text,
@@ -313,6 +353,9 @@ def create(request):
     player.set_activity("index")
     messages.error(request, "Successfully summoned a new monster.")
     player.currency -= summon_fee
+    owned = inventory.get_templates()
+    owned[int(request.POST["template_id"])] -= 1
+    inventory.update_templates(owned)
     player.save()
     return redirect('qa_rpg:index')
 
@@ -323,7 +366,7 @@ class ProfileView(LoginRequiredMixin, generic.TemplateView):
 
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
-        player = get_player(request.user)
+        player, log, inventory = get_player(request.user)
         questions = Question.objects.filter(owner=player.user)
 
         check_url = check_player_activity(player, ["index", "profile"])
@@ -337,7 +380,7 @@ class ProfileView(LoginRequiredMixin, generic.TemplateView):
 
 @never_cache
 def claim_coin(request, question_id):
-    player = get_player(request.user)
+    player, log, inventory = get_player(request.user)
     questions = Question.objects.get(pk=question_id)
 
     player.currency += questions.currency

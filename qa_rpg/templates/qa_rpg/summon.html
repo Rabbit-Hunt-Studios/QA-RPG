@@ -29,12 +29,19 @@
         <form action="{% url 'qa_rpg:create' %}" method="post">
             {% csrf_token %}
                 <div class="flex justify-center item-center w-screen">
-
-                    <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">Question:</label> <input type="text" name="question" class="w-[32rem] text-black text-2xl">
-                    <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">Category:</label> <select name="category" aria-readonly="true" class="text-black text-2xl">
-                    <option value="" class="text-black">--Choose a category--</option>
-                    {% for type in category %}
-                        <option value="{{ type }}" class="text-black">{{ type }}</option>
+                    <div class="pr-2">
+                        <input type="hidden" name="template_id" value="{{ id }}">
+                        <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">Question:</label>
+                    </div>
+                    {% for part in question %}
+                    {% if part != "___" %}
+                        <input type="hidden" name="question{{ forloop.counter0 }}" value="{{ part }}">
+                        <label class="text-3xl pr-2">{{ part }}</label>
+                    {% else %}
+                        <div class="pr-2">
+                            <input type="text" name="question{{ forloop.counter0 }}" class="w-40 text-black text-2l pr-2" required>
+                        </div>
+                    {% endif  %}
                     {% endfor %}
                     </select>
                 </div>
@@ -45,8 +52,8 @@
             <div class=" bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2">
             {% for num in amount %}
                 <div class="py-2 flex items-center">
-                    <input type="radio" name="index" id="choice{{ forloop.counter0 }}" value="{{ forloop.counter0 }}" class="peer checked:bg-green-700 checked:focus:ring-green-700 checked:focus:bg-green-700">
-                    <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-green-700 " for="choice{{ forloop.counter0 }}">Choice {{ forloop.counter }}:</label><input type="text" name="choice{{ forloop.counter0 }}" class="w-[32rem] text-black text-2xl"><br>
+                    <input type="radio" name="index" id="choice{{ forloop.counter0 }}" value="{{ forloop.counter0 }}" class="peer checked:bg-green-700 checked:focus:ring-green-700 checked:focus:bg-green-700" required>
+                    <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-green-700 " for="choice{{ forloop.counter0 }}">Choice {{ forloop.counter }}:</label><input type="text" name="choice{{ forloop.counter0 }}" class="w-[32rem] text-black text-2xl" required><br>
                 </div>
             {% endfor %}
             </div>
