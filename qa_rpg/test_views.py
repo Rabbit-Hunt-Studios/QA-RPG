@@ -246,6 +246,7 @@ class BattleActionTest(TestCase):
 
 
 class SummonViewTest(TestCase):
+
     def setUp(self):
         """Setup for testing summon view page."""
         self.user = User.objects.create_user(username="demo")
@@ -258,9 +259,10 @@ class SummonViewTest(TestCase):
 
     def test_rendering_summon_page(self):
         """Test that player actually in summon page"""
+        self.player.set_activity("choose1")
         response = self.client.get(reverse("qa_rpg:summon"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(Player.objects.get(user=self.user).activity, "summon4")
+        self.assertEqual(Player.objects.get(user=self.user).activity, "summon4 1")
 
     def test_rendering_summon_page_from_another_page(self):
         self.player.set_activity("battle")
