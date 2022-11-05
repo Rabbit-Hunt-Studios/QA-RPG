@@ -26,8 +26,7 @@ class PlayerAdmin(admin.ModelAdmin):
                                     'max_hp', 'currency', 'luck']}),
         ('Action', {'fields': ['activity']}),
     ]
-    readonly_fields = ('player_name', 'user', 'max_hp',
-                       'currency', 'luck')
+    readonly_fields = ('player_name', 'user', 'luck')
     list_display = ('player_name', 'user', 'max_hp',
                     'currency', 'luck', 'activity')
     list_filter = ['max_hp', 'currency', 'activity']
