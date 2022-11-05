@@ -69,7 +69,7 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
     def get(self, request):
         player, log, inventory = get_player(request.user)
 
-        check_url = check_player_activity(player, ["summon", "index", "profile"])
+        check_url = check_player_activity(player, ["summon", "index", "profile", "shop"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -262,7 +262,7 @@ def get_coins(damage: int):
         start += i * 5
         end += (i + 1) * 5
         if start <= damage < end:
-            return random.randrange(start=i*9, stop=(i + 1)*9, step=1)
+            return random.randrange(start=(i*9)+1, stop=(i + 1)*9, step=1)
     return 50
 
 
@@ -279,8 +279,8 @@ class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
             return redirect(check_url)
 
         available = {}
-        for index in inventory.get_templates().keys():
-            available["+ ".join(TemplateCatalog.TEMPLATES.get_template(index))] = index
+        for index, value in inventory.get_templates().items():
+            available[" ".join(TemplateCatalog.TEMPLATES.get_template(index))+" ?"] = [index, value]
 
         return render(request, self.template_name, {"selection": available})
 
@@ -351,7 +351,7 @@ def create(request):
                                        question=question)
         choice.save()
     player.set_activity("index")
-    messages.error(request, "Successfully summoned a new monster.")
+    messages.success(request, "Successfully summoned a new monster.")
     player.currency -= summon_fee
     owned = inventory.get_templates()
     owned[int(request.POST["template_id"])] -= 1
@@ -388,4 +388,51 @@ def claim_coin(request, question_id):
     player.save()
     questions.save()
     return redirect('qa_rpg:profile')
+
+
+class ShopView(LoginRequiredMixin, generic.DetailView):
+
+    template_name = "qa_rpg/shop.html"
+
+    @method_decorator(never_cache, name='self.get')
+    def get(self, request):
+        player, log, inventory = get_player(request.user)
+
+        check_url = check_player_activity(player, ["index", "shop"])
+        if check_url is not None:
+            return redirect(check_url)
+
+        template = {}
+        for index in range(len(TemplateCatalog.TEMPLATES.value)):
+            template[" ".join(TemplateCatalog.TEMPLATES.get_template(index))+" ?"] = [TemplateCatalog.TEMPLATES.get_price(index), index]
+
+        player.set_activity("shop")
+        return render(request, self.template_name, {"player": player, "template": template})
+
+
+def select():
+    pass
+
+
+@never_cache
+def buy(request):
+    player, log, inventory = get_player(request.user)
+    player_template = inventory.get_templates()
+    amount = int(request.POST["amount"])
+    template = request.POST["index"][1:-1].split(",")
+    if int(template[0]) > player.currency:
+        messages.error(request, "You don't have enough coins to purchase.")
+        return redirect("qa_rpg:shop")
+
+    try:
+        player_template[int(template[1])] += amount
+    except:
+        player_template[int(template[1])] = amount
+    inventory.update_templates(player_template)
+    player.currency -= int(template[0])
+    player.save()
+    messages.success(request, "Successfully purchase")
+    return redirect('qa_rpg:shop')
+
+
 
