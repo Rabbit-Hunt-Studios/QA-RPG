@@ -5,33 +5,26 @@
 
 
 <title>Register</title>
-<body class="bg-no-repeat bg-cover"
-style="background-image: url('https://cdn.wallpapersafari.com/42/19/RzUIa4.jpg');">
-
-      {% if messages %}
-        {% for message in messages %}
-        <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
-    <div class="m-1 p-1">
-        <div>
-            <div>
-        <p class="text-red-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
-            </div>
-        </div>
-    </div>
-  </div>
-        {% endfor %}
-    {% endif %}
-
-    <div class="flex justify-center items-center w-screen h-screen font-serif">
+<body class="bg-no-repeat bg-cover" style="background-image: url('https://cdn.wallpapersafari.com/42/19/RzUIa4.jpg');">
+    <div class="flex justify-center items-center w-screen h-screen font-serif flex-row">
         <form method="POST" action="{% url 'signup' %}" enctype="multipart/form-data" class="box-border border-gray-600 border-2  bg-white bg-opacity-70 px-5 py-10"> 
+            <div class="container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                        <div class="m-1 p-1">
+                            <p class="text-red-700 text-center text-xl  border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2 bg-black bg-opacity-20"><strong>{{ message }}</strong></p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            </div>
             {% csrf_token %}
-            <table class="text-center text-2xl">
+            <table class="text-center text-xl m-5">
             {{ form.as_table }}
             <tr>
-            <td colspan="2">
-            <div class ="flex flex-row w-full justify-center items-center">
-            <button class=" px-10 py-2 m-10 text-white hover:text-white bg-green-600 hover:bg-green-900 duration-300 rounded" type="submit">Register</button> | <a href="{% url 'qa_rpg:home' %}"><button class=" px-10 py-2 m-10 bg-red-600 text-white hover:text-white hover:bg-red-900 duration-300 rounded" type="button">back</button></a>
-            </div>
+            <td colspan="2" class>
+            <button class=" px-10 py-2 m-10 text-white hover:text-white border-green-400 border-2 bg-green-600 hover:bg-green-900 duration-300 rounded" type="submit">Register</button> | <a href="{% url 'qa_rpg:home' %}"><button class=" px-10 py-2 m-10 border-red-400 border-2 bg-red-600 text-white hover:text-white hover:bg-red-900 duration-300 rounded" type="button">Back</button></a>
             </td>
             </tr>
             </table>

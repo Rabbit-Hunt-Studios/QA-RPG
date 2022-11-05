@@ -5,20 +5,20 @@
 
 <html>
     <body style="background-image: url('https://images5.alphacoders.com/116/1164046.png');" class = "bg-cover bg-center">
-        <div class = "justify-center flex  items-center h-screen w-screen font-serif ">
+        <div class ="justify-center flex  items-center h-screen w-screen font-serif ">
         <title>Login</title>
-        <div class = "box-border border-gray-600 border-2 bg-white bg-opacity-70 px-10 py-10 justify-items-center">
-        <form method="post">
+        <div class = "box-content border-gray-600 border-2 bg-white bg-opacity-70 px-10 py-10 justify-items-center w-1/4 h-1/2 flex-row">
+        <form method="post" class="w-full justify-center items-center">
           {% csrf_token %}
-          <table class="w-100 h-100 text-2xl ">
+          <table class="w-100 h-100 text-xl w-full justify-center items-center m-2">
                 {{ form.as_table }}
           </table>
           <div class ="flex flex-row w-full items-center justify-center">
-              <button class="text-center px-10 py-2 m-4 text-2xl text-white hover:text-white bg-green-600 hover:bg-green-900 duration-300 rounded" type="submit">Login</button> | <a href="{% url 'qa_rpg:home'%}"><button class="text-center px-10 py-2 m-4 text-2xl text-white hover:text-white bg-red-600 hover:bg-red-900 duration-300 rounded" type="button">Back</button></a>
+              <button class="text-center px-10 py-2 m-4 text-xl text-white hover:text-white border-green-300 border-2 bg-green-600 hover:bg-green-900 hover:border-green-700 hover:border-2 duration-300 rounded" type="submit">Login</button> | <a href="{% url 'qa_rpg:home'%}"><button class="text-center px-10 py-2 m-4 text-xl text-white hover:text-white border-red-400 border-2 bg-red-600 hover:bg-red-900 hover:border-red-700 hover:border-2 duration-300 rounded" type="button">Back</button></a>
           </div>
               <input type="hidden" name="next" value="{{next}}"/>
             <div class = "justify-center items-center flex-row flex w-full">
-                <button class="px-10 py-2 m-8 justify-center text-center text-2xl text-black bg-white hover:text-white hover:bg-red-500 border-black border-2 hover:border-transparent duration-300 rounded" onclick="document.location='{% provider_login_url 'google' %}'"> 
+                <button class="px-10 py-2 m-8 justify-center text-center text-xl text-black bg-white hover:text-white hover:bg-red-500 border-black border-2 hover:border-transparent duration-150 rounded" onclick="document.location='{% provider_login_url 'google' %}'"> 
                     <img src="https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-webinar-optimizing-for-success-google-business-webinar-13.png" width="35px" height="25px" class='float-left'>Login with google
                 </button>
             </div>

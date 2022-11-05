@@ -14,7 +14,8 @@ def signup(request):
             raw_passwd = form.cleaned_data.get('password')
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         else:
-            messages.error(request, "You form is invalid please fill out again.")
+            messages.error(request, "Your form is invalid! please fill out again.")
+            return redirect('signup')
         return redirect('login')
     else:
         form = RegisterForm()
