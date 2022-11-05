@@ -14,7 +14,7 @@ from .models import Question, Choice, Player, Log, Inventory
 from .dialogue import Dialogue
 from .template_question import TemplateCatalog
 
-TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69, 70, 77]
+TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
 TREASURE_THRESHOLD = 0.5
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
