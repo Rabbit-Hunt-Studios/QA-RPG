@@ -426,7 +426,7 @@ def buy(request):
     player_template = inventory.get_templates()
     amount = int(request.POST["amount"])
     template = request.POST["index"][1:-1].split(",")
-    if int(template[0]) > player.currency:
+    if int(template[0])*amount > player.currency:
         messages.error(request, "You don't have enough coins to purchase.")
         return redirect("qa_rpg:shop")
 
@@ -435,7 +435,7 @@ def buy(request):
     except:
         player_template[int(template[1])] = amount
     inventory.update_templates(player_template)
-    player.currency -= int(template[0])
+    player.currency -= int(template[0])*amount
     player.save()
     messages.success(request, "Purchase Successful")
     return redirect('qa_rpg:shop')
