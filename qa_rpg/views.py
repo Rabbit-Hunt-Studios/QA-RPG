@@ -203,7 +203,6 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
                     .values_list('id', flat=True))
                 log.add_question(question_id)
         question = Question.objects.get(pk=question_id)
-
         player.set_activity(f"battle{question_id}")
         return render(request, "qa_rpg/battle.html", {"question": question, "player": player})
 
@@ -215,27 +214,6 @@ def check(request, question_id):
     player, log, inventory = get_player(request.user)
 
     try:
-        if request.POST['choice'] == "run away":
-            if random.random() >= player.luck:
-                log.add_log(Dialogue.RUN_DIALOGUE.get_text)
-                player.set_activity("dungeon")
-                return redirect("qa_rpg:dungeon")
-            else:
-                run_fail = Dialogue.RUN_FAIL_DIALOGUE.get_text
-                log.add_log(run_fail)
-
-                player.update_player_stats(health=-question.damage)
-                question.add_coin()
-                if player.check_death():
-                    messages.error(request, "You lost consciousness in the dungeons.")
-                    return render(request, "qa_rpg/index.html", {'player': player})
-
-                messages.error(request, run_fail)
-                return render(request,
-                              'qa_rpg/battle.html',
-                              {'question': question,
-                               'player': player})
-
         check_choice = Choice.objects.get(pk=request.POST['choice'])
 
         if check_choice.correct_answer:
@@ -261,6 +239,31 @@ def check(request, question_id):
         messages.error(request, "You didn't select a attack move.")
         return redirect("qa_rpg:battle")
 
+
+def run_away(request, question_id):
+
+    question = Question.objects.get(pk=question_id)
+    player, log, inventory = get_player(request.user)
+
+    if random.random() >= player.luck:
+        log.add_log(Dialogue.RUN_DIALOGUE.get_text)
+        player.set_activity("dungeon")
+        return redirect("qa_rpg:dungeon")
+    else:
+        run_fail = Dialogue.RUN_FAIL_DIALOGUE.get_text
+        log.add_log(run_fail)
+
+        player.update_player_stats(health=-question.damage)
+        question.add_coin()
+        if player.check_death():
+            messages.error(request, "You lost consciousness in the dungeons.")
+            return render(request, "qa_rpg/index.html", {'player': player})
+
+        messages.error(request, run_fail)
+        return render(request,
+                      'qa_rpg/battle.html',
+                      {'question': question,
+                       'player': player})
 
 def get_coins(damage: int):
     start = 20

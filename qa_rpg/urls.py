@@ -13,6 +13,7 @@ urlpatterns = [
     path('dungeon/action', views.action, name='action'),
     path('dungeon/battle', views.BattleView.as_view(), name='battle'),
     path('dungeon/battle/check/<int:question_id>', views.check, name='check'),
+    path('dungeon/battle/run_away/<int:question_id>', views.run_away, name='run_away'),
     path('dungeon/treasure', views.TreasureView.as_view(), name='treasure'),
     path('dungeon/treasure/treasure_action', views.treasure_action, name='treasure_action'),
     path('shop/', views.ShopView.as_view(), name='shop'),
