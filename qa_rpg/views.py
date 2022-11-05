@@ -52,6 +52,13 @@ def check_player_activity(player: Player, activity: list):
     return None
 
 
+def get_available_template(inventory: Inventory):
+    available = {}
+    for index, value in inventory.get_templates().items():
+        available[" ".join(TemplateCatalog.TEMPLATES.get_template(index)) + " ?"] = [index, value]
+    return available
+
+
 class HomeView(generic.TemplateView):
 
     template_name = 'qa_rpg/homepage.html'
@@ -181,18 +188,18 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
             question_id = int(player.activity[6:])
         else:
             seen_question = log.split_log("question")
-            if(Question.objects.filter(~Q(owner=request.user), category='player', enable=True).count() != 0):
-                if(len(log.split_log("question")) < 10):
+            player_question_amount = Question.objects.filter(~Q(owner=request.user), category='player', enable=True).count()
+            if player_question_amount > 11:
+                if len(log.split_log("question")) < 10:
                     question_id = random.choice(Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
                                                 .values_list('id', flat=True))
-                    if(Question.objects.get(pk=question_id).category != 'player'):
-                        log.add_question(question_id)
+                    log.add_question(question_id)
                 else:
                     question_id = random.choice(Question.objects.filter(~Q(owner=request.user), category='player', enable=True)
                                                 .values_list("id", flat=True))
                     log.clear_question()
             else:
-                question_id = random.choice(Question.objects.exclude(id__in=seen_question, owner=request.user, enable=False)
+                question_id = random.choice(Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
                     .values_list('id', flat=True))
                 log.add_question(question_id)
         question = Question.objects.get(pk=question_id)
@@ -278,9 +285,7 @@ class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
         if check_url is not None:
             return redirect(check_url)
 
-        available = {}
-        for index, value in inventory.get_templates().items():
-            available[" ".join(TemplateCatalog.TEMPLATES.get_template(index))+" ?"] = [index, value]
+        available = get_available_template(inventory)
 
         return render(request, self.template_name, {"selection": available})
 
@@ -373,9 +378,10 @@ class ProfileView(LoginRequiredMixin, generic.TemplateView):
         if check_url is not None:
             return redirect(check_url)
 
-        player.set_activity("profile")
+        template = get_available_template(inventory)
 
-        return render(request, self.template_name, {"player": player, "questions": questions})
+        player.set_activity("profile")
+        return render(request, self.template_name, {"player": player, "questions": questions, "template": template})
 
 
 @never_cache
