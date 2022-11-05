@@ -44,15 +44,15 @@
     </div>
 </div>
 
-    <div class="flex justify-center item-center gap-4 py-5">
+    <div class="flex justify-center item-center gap-4 pt-3 pb-2">
         <div class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 duration-300 pl-2 pt-1 pb-1 pr-2">
-            Amount: <input type="number" name="amount" min="1"  required>
+            Amount: <input type="number" name="amount" min="1"  required class="text-black text-2xl">
         </div>
     </div>
     <div class="flex justify-center item-center gap-4">
-            <button type="submit" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-yellow-600 duration-300 pl-2 pt-0 pb-1 pr-2">Buy</button>
+            <button type="submit" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-yellow-600 duration-300 px-5 py-2">Buy</button>
         <div>
-            <a href="{% url 'qa_rpg:index' %}"><button type="button" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-red-500 duration-300 pl-2 pt-0 pb-1 pr-2">Back</button></a>
+            <a href="{% url 'qa_rpg:index' %}"><button type="button" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-red-500 duration-300 px-5 py-2">Back</button></a>
         </div>
     </div>
 </form>
