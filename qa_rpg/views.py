@@ -240,6 +240,7 @@ def check(request, question_id):
         return redirect("qa_rpg:battle")
 
 
+@never_cache
 def run_away(request, question_id):
 
     question = Question.objects.get(pk=question_id)
@@ -264,6 +265,7 @@ def run_away(request, question_id):
                       'qa_rpg/battle.html',
                       {'question': question,
                        'player': player})
+
 
 def get_coins(damage: int):
     start = 20
