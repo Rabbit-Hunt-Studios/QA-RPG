@@ -217,8 +217,7 @@ class BattleActionTest(TestCase):
     def test_player_runs_away_successfully(self):
         """When player chooses run away and randoms high enough float, return to dungeon page."""
         random.seed(10)
-        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
-                                    {"choice": "run away"})
+        response = self.client.post(reverse("qa_rpg:run_away", args=(self.question.id,)))
         self.assertEqual(response.status_code, 302)
         self.assertIn("dungeon", response.url)
         self.assertEqual(Player.objects.get(pk=1).activity, "dungeon")
@@ -226,8 +225,7 @@ class BattleActionTest(TestCase):
     def test_player_does_not_run_away_successfully(self):
         """When player chooses run away and randoms low float, stay in battle page and deduct health."""
         random.seed(100)
-        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
-                                    {"choice": "run away"})
+        response = self.client.post(reverse("qa_rpg:run_away", args=(self.question.id,)))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Player.objects.get(pk=1).activity, "battle1")
 
@@ -237,8 +235,7 @@ class BattleActionTest(TestCase):
         self.player.current_hp = 10
         self.player.save()
         random.seed(100)
-        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
-                                    {"choice": "run away"})
+        response = self.client.post(reverse("qa_rpg:run_away", args=(self.question.id,)))
         self.assertEqual(response.status_code, 200)
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 0)
