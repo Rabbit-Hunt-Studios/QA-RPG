@@ -172,7 +172,6 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player, log, inventory = get_player(request.user)
-        admin = User.objects.get(pk=2)
 
         check_url = check_player_activity(player, ["battle", "found monster"])
         if check_url is not None:
@@ -184,9 +183,10 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
             seen_question = log.split_log("question")
             if(Question.objects.filter(~Q(owner=request.user), category='player', enable=True).count() != 0):
                 if(len(log.split_log("question")) < 10):
-                    question_id = random.choice(Question.objects.exclude(id__in=seen_question, owner=request.user, enable=False)
+                    question_id = random.choice(Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
                                                 .values_list('id', flat=True))
-                    log.add_question(question_id)
+                    if(Question.objects.get(pk=question_id).category != 'player'):
+                        log.add_question(question_id)
                 else:
                     question_id = random.choice(Question.objects.filter(~Q(owner=request.user), category='player', enable=True)
                                                 .values_list("id", flat=True))
