@@ -14,7 +14,7 @@ from .models import Question, Choice, Player, Log, Inventory
 from .dialogue import Dialogue
 from .template_question import TemplateCatalog
 
-TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69, 70, 77]
+TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
 TREASURE_THRESHOLD = 0.5
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
@@ -52,6 +52,13 @@ def check_player_activity(player: Player, activity: list):
     return None
 
 
+def get_available_template(inventory: Inventory):
+    available = {}
+    for index, value in inventory.get_templates().items():
+        available[" ".join(TemplateCatalog.TEMPLATES.get_template(index)) + " ?"] = [index, value]
+    return available
+
+
 class HomeView(generic.TemplateView):
 
     template_name = 'qa_rpg/homepage.html'
@@ -69,7 +76,7 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
     def get(self, request):
         player, log, inventory = get_player(request.user)
 
-        check_url = check_player_activity(player, ["summon", "index", "profile"])
+        check_url = check_player_activity(player, ["summon", "index", "profile", "shop"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -181,18 +188,18 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
             question_id = int(player.activity[6:])
         else:
             seen_question = log.split_log("question")
-            if(Question.objects.filter(~Q(owner=request.user), category='player', enable=True).count() != 0):
-                if(len(log.split_log("question")) < 10):
+            player_question_amount = Question.objects.filter(~Q(owner=request.user), category='player', enable=True).count()
+            if player_question_amount > 11:
+                if len(log.split_log("question")) < 10:
                     question_id = random.choice(Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
                                                 .values_list('id', flat=True))
-                    if(Question.objects.get(pk=question_id).category != 'player'):
-                        log.add_question(question_id)
+                    log.add_question(question_id)
                 else:
                     question_id = random.choice(Question.objects.filter(~Q(owner=request.user), category='player', enable=True)
                                                 .values_list("id", flat=True))
                     log.clear_question()
             else:
-                question_id = random.choice(Question.objects.exclude(id__in=seen_question, owner=request.user, enable=False)
+                question_id = random.choice(Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
                     .values_list('id', flat=True))
                 log.add_question(question_id)
         question = Question.objects.get(pk=question_id)
@@ -262,7 +269,7 @@ def get_coins(damage: int):
         start += i * 5
         end += (i + 1) * 5
         if start <= damage < end:
-            return random.randrange(start=i*9, stop=(i + 1)*9, step=1)
+            return random.randrange(start=(i*9)+1, stop=(i + 1)*9, step=1)
     return 50
 
 
@@ -278,9 +285,7 @@ class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
         if check_url is not None:
             return redirect(check_url)
 
-        available = {}
-        for index in inventory.get_templates().keys():
-            available["+ ".join(TemplateCatalog.TEMPLATES.get_template(index))] = index
+        available = get_available_template(inventory)
 
         return render(request, self.template_name, {"selection": available})
 
@@ -351,7 +356,7 @@ def create(request):
                                        question=question)
         choice.save()
     player.set_activity("index")
-    messages.error(request, "Successfully summoned a new monster.")
+    messages.success(request, "Successfully summoned a new monster.")
     player.currency -= summon_fee
     owned = inventory.get_templates()
     owned[int(request.POST["template_id"])] -= 1
@@ -373,9 +378,10 @@ class ProfileView(LoginRequiredMixin, generic.TemplateView):
         if check_url is not None:
             return redirect(check_url)
 
-        player.set_activity("profile")
+        template = get_available_template(inventory)
 
-        return render(request, self.template_name, {"player": player, "questions": questions})
+        player.set_activity("profile")
+        return render(request, self.template_name, {"player": player, "questions": questions, "template": template})
 
 
 @never_cache
@@ -388,4 +394,51 @@ def claim_coin(request, question_id):
     player.save()
     questions.save()
     return redirect('qa_rpg:profile')
+
+
+class ShopView(LoginRequiredMixin, generic.DetailView):
+
+    template_name = "qa_rpg/shop.html"
+
+    @method_decorator(never_cache, name='self.get')
+    def get(self, request):
+        player, log, inventory = get_player(request.user)
+
+        check_url = check_player_activity(player, ["index", "shop"])
+        if check_url is not None:
+            return redirect(check_url)
+
+        template = {}
+        for index in range(len(TemplateCatalog.TEMPLATES.value)):
+            template[" ".join(TemplateCatalog.TEMPLATES.get_template(index))+" ?"] = [TemplateCatalog.TEMPLATES.get_price(index), index]
+
+        player.set_activity("shop")
+        return render(request, self.template_name, {"player": player, "template": template})
+
+
+def select():
+    pass
+
+
+@never_cache
+def buy(request):
+    player, log, inventory = get_player(request.user)
+    player_template = inventory.get_templates()
+    amount = int(request.POST["amount"])
+    template = request.POST["index"][1:-1].split(",")
+    if int(template[0])*amount > player.currency:
+        messages.error(request, "You don't have enough coins to purchase.")
+        return redirect("qa_rpg:shop")
+
+    try:
+        player_template[int(template[1])] += amount
+    except:
+        player_template[int(template[1])] = amount
+    inventory.update_templates(player_template)
+    player.currency -= int(template[0])*amount
+    player.save()
+    messages.success(request, "Purchase Successful")
+    return redirect('qa_rpg:shop')
+
+
 

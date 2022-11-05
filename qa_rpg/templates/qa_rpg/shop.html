@@ -1,0 +1,59 @@
+<!doctype html>
+{% load static %}
+{% load tailwind_tags %}
+<head>
+    {% tailwind_css %}
+</head>
+
+<body class="text-white font-serif bg-no-repeat bg-top bg-cover"
+  style="background-image: url('https://images-ext-1.discordapp.net/external/VdxTiSHG-qdH-zpR231HbYISM93iBKYG1UeGkz8TrAQ/%3Fcb%3D20201123104850/https/static.wikia.nocookie.net/etrian/images/1/12/Marketplace_%2528EOV%2529.jpg/revision/latest?width=1193&height=671');">
+
+<div class="m-8 p-4">
+    <div class="h-25 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+      <div class="text-pink-50 text-3xl pl-2 pt-1">
+        <a> Coins: {{ player.currency }} </a> </br>
+      </div>
+    </div>
+  </div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
+        <div class="mb-2 px-2">
+            <div>
+                <p class="text-red-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
+            </div>
+    </div>
+  </div>
+    {% endfor %}
+{% endif %}
+
+<div class="flex px-4 mx-8">
+    <div class="h-96 w-1/2 box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl, overflow-auto">
+
+    </div>
+    <form action="{% url 'qa_rpg:buy'%}" method="post">
+        {% csrf_token %}
+    <div class=" h-96 w-[48rem] box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl overflow-auto">
+        {% for key, value in template.items %}
+            <div class="py-2 px-2 flex items-center sticky">
+                <input type="radio" name="index" id="{{ key }}" value="{{ value }}" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700" required>
+                <label class=" text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700" for="{{ key }}">{{ key }} <br> Price: {{value.0}}</label><br>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+    <div class="flex justify-center item-center gap-4 pt-3 pb-2">
+        <div class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 duration-300 pl-2 pt-1 pb-1 pr-2">
+            Amount: <input type="number" name="amount" min="1"  required class="text-black text-2xl">
+        </div>
+    </div>
+    <div class="flex justify-center item-center gap-4">
+            <button type="submit" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-yellow-600 duration-300 px-5 py-2">Buy</button>
+        <div>
+            <a href="{% url 'qa_rpg:index' %}"><button type="button" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-red-500 duration-300 px-5 py-2">Back</button></a>
+        </div>
+    </div>
+</form>
+</body>
