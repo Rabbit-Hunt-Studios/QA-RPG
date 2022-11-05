@@ -437,7 +437,7 @@ def buy(request):
     inventory.update_templates(player_template)
     player.currency -= int(template[0])
     player.save()
-    messages.success(request, "Successfully purchase")
+    messages.success(request, "Purchase Successful")
     return redirect('qa_rpg:shop')
 
 
