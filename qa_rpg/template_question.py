@@ -15,7 +15,7 @@ class TemplateCatalog(Enum):
 
     def get_template(self, index: int):
         if self.value[index][0] == "*":
-            return self.value[index][0:]
+            return self.value[index][1:]
         return self.value[index]
 
     def get_price(self, index: int):
