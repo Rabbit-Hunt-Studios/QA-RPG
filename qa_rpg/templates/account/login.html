@@ -7,8 +7,8 @@
     <body style="background-image: url('https://images5.alphacoders.com/116/1164046.png');" class = "bg-cover bg-center">
         <div class ="justify-center flex  items-center h-screen w-screen font-serif ">
         <title>Login</title>
-        <div class = "box-content border-gray-600 border-2 bg-white bg-opacity-70 px-10 py-10 justify-items-center w-1/4 h-1/2 flex-row">
-        <form method="post" class="w-full justify-center items-center">
+        <div class = "box-content border-gray-600 border-2 bg-white bg-opacity-70 px-10 py-10 justify-items-center w-4/12 h-1/2 flex">
+            <form method="post" class="w-full justify-center items-center">
           {% csrf_token %}
           <table class="w-100 h-100 text-xl w-full justify-center items-center m-2">
                 {{ form.as_table }}
