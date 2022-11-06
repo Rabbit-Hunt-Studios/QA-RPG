@@ -103,11 +103,15 @@ class Log(models.Model):
     log_text = models.CharField(max_length=1000, default=";;;;;;;;;;")
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     log_questions = models.CharField(max_length=1000, default="")
+    log_report_question = models.CharField(max_length=1000, default="")
 
     def split_log(self, log_type):
         if log_type == "text":
             return self.log_text.split(';')[:-1]
-        return self.log_questions.split(';')[:-1]
+        elif log_type == "question":
+            return self.log_questions.split(';')[:-1]
+        elif log_type == "report":
+            return self.log_report_question.split(';')[:-1]
 
     def clear_log(self):
         self.log_text = ";;;;;;;;;;"
@@ -119,15 +123,20 @@ class Log(models.Model):
 
     def add_log(self, text):
         list_log = self.log_text.split(';')
-        del(list_log[0])
+        del (list_log[0])
         self.log_text = ";".join(list_log)
         self.log_text += f"{text};"
         self.save()
 
     def add_question(self, question_id: str):
         self.log_questions += f"{question_id};"
-        if(len(self.split_log('question')) > 100):
+        if len(self.split_log('question')) > 100:
             self.clear_question()
+        self.save()
+
+    def add_report_question(self, question_id: int):
+        if str(question_id) not in self.split_log("report"):
+            self.log_report_question += f"{question_id};"
         self.save()
 
     def __str__(self):

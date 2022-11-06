@@ -10,7 +10,7 @@ import difflib
 
 from django.views.decorators.cache import never_cache
 
-from .models import Question, Choice, Player, Log, Inventory
+from .models import Question, Choice, Player, Log, Inventory, ReportAndCommend
 from .dialogue import Dialogue
 from .template_question import TemplateCatalog
 
@@ -18,6 +18,7 @@ TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
 TREASURE_THRESHOLD = 0.5
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
+SPECIAL = [8, 9, 10, 11, 12, 13, 14]
 
 
 def get_player(user: User):
@@ -60,7 +61,6 @@ def get_available_template(inventory: Inventory):
 
 
 class HomeView(generic.TemplateView):
-
     template_name = 'qa_rpg/homepage.html'
 
     @method_decorator(never_cache, name='self.get')
@@ -69,7 +69,6 @@ class HomeView(generic.TemplateView):
 
 
 class IndexView(LoginRequiredMixin, generic.TemplateView):
-
     template_name = 'qa_rpg/index.html'
 
     @method_decorator(never_cache, name='self.get')
@@ -89,7 +88,6 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
 
 
 class DungeonView(LoginRequiredMixin, generic.ListView):
-
     template_name = "qa_rpg/dungeon.html"
 
     @method_decorator(never_cache, name='self.get')
@@ -106,13 +104,12 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
 
 @never_cache
 def action(request):
-
     player, log, inventory = get_player(request.user)
     event = random.random()
 
     if request.POST['action'] == "walk":
         url = "qa_rpg:dungeon"
-        if player.luck >= TREASURE_THRESHOLD and event <= (player.luck-TREASURE_THRESHOLD):
+        if player.luck >= TREASURE_THRESHOLD and event <= (player.luck - TREASURE_THRESHOLD):
             log.add_log(f"You found a treasure chest")
             player.update_player_stats(luck=-(player.luck - TREASURE_THRESHOLD))
             url = "qa_rpg:treasure"
@@ -131,7 +128,6 @@ def action(request):
 
 
 class TreasureView(LoginRequiredMixin, generic.DetailView):
-
     template_name = "qa_rpg/treasure.html"
 
     @method_decorator(never_cache, name='self.get')
@@ -173,7 +169,6 @@ def treasure_action(request):
 
 
 class BattleView(LoginRequiredMixin, generic.DetailView):
-
     template_name = 'battle.html'
 
     @method_decorator(never_cache, name='self.get')
@@ -188,19 +183,26 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
             question_id = int(player.activity[6:])
         else:
             seen_question = log.split_log("question")
-            player_question_amount = Question.objects.filter(~Q(owner=request.user), category='player', enable=True).count()
-            if player_question_amount > 11:
+            report_question = log.split_log("report")
+            filter_question = seen_question + report_question
+            player_question_amount = Question.objects.filter(~Q(owner=request.user), category='player',
+                                                             enable=True).count()
+            if player_question_amount - len(report_question) > 11:
                 if len(log.split_log("question")) < 10:
-                    question_id = random.choice(Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
-                                                .values_list('id', flat=True))
+                    question_id = random.choice(
+                        Question.objects.exclude(id__in=filter_question).filter(~Q(owner=request.user), enable=True)
+                            .values_list('id', flat=True))
                     log.add_question(question_id)
                 else:
-                    question_id = random.choice(Question.objects.filter(~Q(owner=request.user), category='player', enable=True)
-                                                .values_list("id", flat=True))
+                    question_id = random.choice(
+                        Question.objects.exclude(id__in=filter_question).filter(~Q(owner=request.user),
+                                                                                category='player', enable=True)
+                            .values_list("id", flat=True))
                     log.clear_question()
             else:
-                question_id = random.choice(Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
-                    .values_list('id', flat=True))
+                question_id = random.choice(
+                    Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
+                        .values_list('id', flat=True))
                 log.add_question(question_id)
         question = Question.objects.get(pk=question_id)
         player.set_activity(f"battle{question_id}")
@@ -209,9 +211,10 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
 
 @never_cache
 def check(request, question_id):
-
     question = Question.objects.get(pk=question_id)
     player, log, inventory = get_player(request.user)
+    one_user_per_report(request, question, log, question_id)
+    set_question_activation(question_id)
 
     try:
         check_choice = Choice.objects.get(pk=request.POST['choice'])
@@ -242,9 +245,11 @@ def check(request, question_id):
 
 @never_cache
 def run_away(request, question_id):
-
     question = Question.objects.get(pk=question_id)
     player, log, inventory = get_player(request.user)
+
+    one_user_per_report(request, question, log, question_id)
+    set_question_activation(question_id)
 
     if random.random() >= player.luck:
         log.add_log(Dialogue.RUN_DIALOGUE.get_text)
@@ -267,6 +272,44 @@ def run_away(request, question_id):
                        'player': player})
 
 
+def add_reports_or_commends(request, question, log, question_id):
+    if request.POST['option'] == 'report':
+        report = ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
+        report.save()
+        log.add_report_question(question.id)
+    elif request.POST['option'] == 'commend':
+        commend = ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
+        commend.save()
+
+
+def one_user_per_report(request, question, log, question_id):
+    user = request.user
+    try:
+        option_select = ReportAndCommend.objects.get(question=question, user=user)
+        if request.POST['option'] == 'report':
+            option_select.vote = 0
+            option_select.save()
+            log.add_report_question(question.id)
+        elif request.POST['option'] == 'commend':
+            option_select.vote = 1
+            option_select.save()
+    except:
+        add_reports_or_commends(request, question, log, question_id)
+
+
+def set_question_activation(question_id):
+    question = Question.objects.get(pk=question_id)
+    report_num = ReportAndCommend.objects.filter(question=question).count()
+    commend_num = ReportAndCommend.objects.filter(question=question).count()
+    report_score = report_num
+    commend_score = commend_num * 0.5
+    limit = 1
+    if question.owner != User.objects.get(pk=2):
+        if report_score - commend_score > limit:
+            question.enable = False
+            question.save()
+
+
 def get_coins(damage: int):
     start = 20
     end = 20
@@ -274,12 +317,11 @@ def get_coins(damage: int):
         start += i * 5
         end += (i + 1) * 5
         if start <= damage < end:
-            return random.randrange(start=(i*9)+1, stop=(i + 1)*9, step=1)
+            return random.randrange(start=(i * 9) + 1, stop=(i + 1) * 9, step=1)
     return 50
 
 
 class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
-
     template_name = "qa_rpg/template_choose.html"
 
     @method_decorator(never_cache, name='self.get')
@@ -303,7 +345,6 @@ def choose(request):
 
 
 class SummonView(LoginRequiredMixin, generic.DetailView):
-
     template_name = "summon.html"
 
     @method_decorator(never_cache, name='self.get')
@@ -338,9 +379,14 @@ def create(request):
 
     try:
         question_text = ''
-        for i in range(4):
-            question_text += request.POST[f'question{i}']
-        question_text += "?"
+        if int(player.activity.split(" ")[1]) in SPECIAL:
+            question_text += request.POST['question0']
+            question_text += request.POST['question1']
+        else:
+            for i in range(4):
+                question_text += request.POST[f'question{i}']
+        if question_text[-1] != "?":
+            question_text += "?"
         choices = {}
         correct_index = int(request.POST['index'])
         for num in range(int(player.activity.split(" ")[0][6:])):
@@ -371,7 +417,6 @@ def create(request):
 
 
 class ProfileView(LoginRequiredMixin, generic.TemplateView):
-
     template_name = 'qa_rpg/profile.html'
 
     @method_decorator(never_cache, name='self.get')
@@ -402,7 +447,6 @@ def claim_coin(request, question_id):
 
 
 class ShopView(LoginRequiredMixin, generic.DetailView):
-
     template_name = "qa_rpg/shop.html"
 
     @method_decorator(never_cache, name='self.get')
@@ -415,7 +459,8 @@ class ShopView(LoginRequiredMixin, generic.DetailView):
 
         template = {}
         for index in range(len(TemplateCatalog.TEMPLATES.value)):
-            template[" ".join(TemplateCatalog.TEMPLATES.get_template(index))+" ?"] = [TemplateCatalog.TEMPLATES.get_price(index), index]
+            template[" ".join(TemplateCatalog.TEMPLATES.get_template(index)) + " ?"] = [
+                TemplateCatalog.TEMPLATES.get_price(index), index]
 
         player.set_activity("shop")
         return render(request, self.template_name, {"player": player, "template": template})
@@ -431,7 +476,7 @@ def buy(request):
     player_template = inventory.get_templates()
     amount = int(request.POST["amount"])
     template = request.POST["index"][1:-1].split(",")
-    if int(template[0])*amount > player.currency:
+    if int(template[0]) * amount > player.currency:
         messages.error(request, "You don't have enough coins to purchase.")
         return redirect("qa_rpg:shop")
 
@@ -440,10 +485,7 @@ def buy(request):
     except:
         player_template[int(template[1])] = amount
     inventory.update_templates(player_template)
-    player.currency -= int(template[0])*amount
+    player.currency -= int(template[0]) * amount
     player.save()
     messages.success(request, "Purchase Successful")
     return redirect('qa_rpg:shop')
-
-
-
