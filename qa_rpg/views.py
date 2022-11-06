@@ -184,10 +184,9 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
         else:
             seen_question = log.split_log("question")
             report_question = log.split_log("report")
-            filter_question = seen_question+report_question
+            filter_question = seen_question + report_question
             player_question_amount = Question.objects.filter(~Q(owner=request.user), category='player',
                                                              enable=True).count()
-
             if player_question_amount - len(report_question) > 11:
                 if len(log.split_log("question")) < 10:
                     question_id = random.choice(
@@ -196,7 +195,8 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
                     log.add_question(question_id)
                 else:
                     question_id = random.choice(
-                        Question.objects.exclude(id__in=filter_question).filter(~Q(owner=request.user), category='player', enable=True)
+                        Question.objects.exclude(id__in=filter_question).filter(~Q(owner=request.user),
+                                                                                category='player', enable=True)
                             .values_list("id", flat=True))
                     log.clear_question()
             else:
@@ -296,18 +296,18 @@ def one_user_per_report(request, question, log, question_id):
     except:
         add_reports_or_commends(request, question, log, question_id)
 
+
 def set_question_activation(question_id):
     question = Question.objects.get(pk=question_id)
     report_num = ReportAndCommend.objects.filter(question=question).count()
     commend_num = ReportAndCommend.objects.filter(question=question).count()
     report_score = report_num
     commend_score = commend_num * 0.5
-    limit = 2
-    if report_score - commend_score > limit:
-        print(report_score, commend_score)
-        question.enable = False
-        question.save()
-        print(question.enable)
+    limit = 1
+    if question.owner != User.objects.get(pk=2):
+        if report_score - commend_score > limit:
+            question.enable = False
+            question.save()
 
 
 def get_coins(damage: int):
