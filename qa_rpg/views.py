@@ -182,17 +182,20 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
             question_id = int(player.activity[6:])
         else:
             seen_question = log.split_log("question")
+            report_question = log.split_log("report")
+            filter_question = seen_question+report_question
             player_question_amount = Question.objects.filter(~Q(owner=request.user), category='player',
                                                              enable=True).count()
-            if player_question_amount > 11:
+
+            if player_question_amount - len(report_question) > 11:
                 if len(log.split_log("question")) < 10:
                     question_id = random.choice(
-                        Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
+                        Question.objects.exclude(id__in=filter_question).filter(~Q(owner=request.user), enable=True)
                             .values_list('id', flat=True))
                     log.add_question(question_id)
                 else:
                     question_id = random.choice(
-                        Question.objects.filter(~Q(owner=request.user), category='player', enable=True)
+                        Question.objects.exclude(id__in=filter_question).filter(~Q(owner=request.user), category='player', enable=True)
                             .values_list("id", flat=True))
                     log.clear_question()
             else:
@@ -267,20 +270,24 @@ def run_away(request, question_id):
 
 def report_commend(request, question_id):
     question = Question.objects.get(pk=question_id)
+    player, log, inventory = get_player(request.user)
     report_num = ReportAndCommend.objects.filter(question=question).count()
     commend_num = ReportAndCommend.objects.filter(question=question).count()
-    try:
-        if request.POST['option'] == 'report':
-            ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
-        elif request.POST['option'] == 'commend':
-            ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
-        selection = ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
-        selection.save()
-        report_num = ReportAndCommend.objects.filter(question=question, vote=0).count()
-        commend_num = ReportAndCommend.objects.filter(question=question, vote=1).count()
-        print(report_num, commend_num)
-    except KeyError:
-        print("key error")
+    print(request.POST['option'])
+    if request.POST['option'] == 'report':
+        report = ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
+        report.save()
+        log.add_report_question(question_id)
+        print(log.log_report_question)
+        print(log.split_log('report'))
+    elif request.POST['option'] == 'commend':
+        commend = ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
+        commend.save()
+
+    report_num = ReportAndCommend.objects.filter(question=question, vote=0).count()
+    commend_num = ReportAndCommend.objects.filter(question=question, vote=1).count()
+    print(question.question_text)
+    print(report_num, commend_num)
 
 
 def set_question_activation(question_id):
@@ -289,9 +296,9 @@ def set_question_activation(question_id):
     commend_num = ReportAndCommend.objects.filter(question=question).count()
     report_score = report_num
     commend_score = commend_num * 0.5
-    limit = 1
+    limit = 7
     if report_score - commend_score > limit:
-        print(report_score,commend_score)
+        print(report_score, commend_score)
         question.enable = False
         question.save()
         print(question.enable)
