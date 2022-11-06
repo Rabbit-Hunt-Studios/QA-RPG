@@ -284,6 +284,7 @@ class CreateQuestionTest(TestCase):
 
     def test_remain_currency_after_summon(self):
         """Test remain currency after summoning."""
+        self.player.set_activity("summon4 1")
         self.player = Player.objects.get(pk=1)
         self.player.currency = 200
         self.player.save()
@@ -302,6 +303,7 @@ class CreateQuestionTest(TestCase):
 
     def test_player_not_fill_every_field(self):
         """Test player not fill all field in create question."""
+        self.player.set_activity("summon4 1")
         self.player = Player.objects.get(pk=1)
         self.player.currency = 200
         self.player.save()
