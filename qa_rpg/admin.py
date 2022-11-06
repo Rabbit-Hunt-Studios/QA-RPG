@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Question, Choice, Player, Log, Inventory
+from .models import Question, Choice, Player, Log, Inventory, ReportAndCommend
 
 class ChoiceInline(admin.TabularInline):
     model = Choice
@@ -35,7 +35,7 @@ class PlayerAdmin(admin.ModelAdmin):
 class LogAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Text Log Info', {'fields': ['log_text', 'player']}),
-        ('Question Log Info', {'fields': ['log_questions']})
+        ('Question Log Info', {'fields': ['log_questions', 'log_report_question']})
     ]
     readonly_fields = ('player',)
     list_display = ('player',)
@@ -53,7 +53,17 @@ class InventoryAdmin(admin.ModelAdmin):
     list_filter = ['player', 'max_inventory']
 
 
+class ReportCommendAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ('Report and Commend Info', {'fields': ['question', 'user', 'vote']}),
+    ]
+    readonly_fields = ('question', 'user', 'vote')
+    list_display = ('question', 'user', 'vote')
+    list_filter = ['question', 'user', 'vote']
+
+
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Player, PlayerAdmin)
 admin.site.register(Log, LogAdmin)
 admin.site.register(Inventory, InventoryAdmin)
+admin.site.register(ReportAndCommend, ReportCommendAdmin)

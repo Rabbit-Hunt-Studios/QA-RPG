@@ -212,7 +212,14 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
 def check(request, question_id):
     question = Question.objects.get(pk=question_id)
     player, log, inventory = get_player(request.user)
-    report_commend(request, question_id)
+
+    if request.POST['option'] == 'report':
+        report = ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
+        report.save()
+        log.add_report_question(question_id)
+    elif request.POST['option'] == 'commend':
+        commend = ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
+        commend.save()
     set_question_activation(question_id)
 
     try:
@@ -247,6 +254,15 @@ def run_away(request, question_id):
     question = Question.objects.get(pk=question_id)
     player, log, inventory = get_player(request.user)
 
+    if request.POST['option'] == 'report':
+        report = ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
+        report.save()
+        log.add_report_question(question_id)
+    elif request.POST['option'] == 'commend':
+        commend = ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
+        commend.save()
+    set_question_activation(question_id)
+
     if random.random() >= player.luck:
         log.add_log(Dialogue.RUN_DIALOGUE.get_text)
         player.set_activity("dungeon")
@@ -268,42 +284,18 @@ def run_away(request, question_id):
                        'player': player})
 
 
-def report_commend(request, question_id):
-    question = Question.objects.get(pk=question_id)
-    player, log, inventory = get_player(request.user)
-    report_num = ReportAndCommend.objects.filter(question=question).count()
-    commend_num = ReportAndCommend.objects.filter(question=question).count()
-    print(request.POST['option'])
-    if request.POST['option'] == 'report':
-        report = ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
-        report.save()
-        log.add_report_question(question_id)
-        print(log.log_report_question)
-        print(log.split_log('report'))
-    elif request.POST['option'] == 'commend':
-        commend = ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
-        commend.save()
-
-    report_num = ReportAndCommend.objects.filter(question=question, vote=0).count()
-    commend_num = ReportAndCommend.objects.filter(question=question, vote=1).count()
-    print(question.question_text)
-    print(report_num, commend_num)
-
-
 def set_question_activation(question_id):
     question = Question.objects.get(pk=question_id)
     report_num = ReportAndCommend.objects.filter(question=question).count()
     commend_num = ReportAndCommend.objects.filter(question=question).count()
     report_score = report_num
     commend_score = commend_num * 0.5
-    limit = 7
+    limit = 2
     if report_score - commend_score > limit:
         print(report_score, commend_score)
         question.enable = False
         question.save()
         print(question.enable)
-    else:
-        pass
 
 
 def get_coins(damage: int):
