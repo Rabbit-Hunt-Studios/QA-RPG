@@ -130,12 +130,13 @@ class Log(models.Model):
 
     def add_question(self, question_id: str):
         self.log_questions += f"{question_id};"
-        if (len(self.split_log('question')) > 100):
+        if len(self.split_log('question')) > 100:
             self.clear_question()
         self.save()
 
-    def add_report_question(self, question_id: str):
-        self.log_report_question += f"{question_id};"
+    def add_report_question(self, question_id: int):
+        if str(question_id) not in self.split_log("report"):
+            self.log_report_question += f"{question_id};"
         self.save()
 
     def __str__(self):

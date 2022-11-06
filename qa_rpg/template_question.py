@@ -10,8 +10,8 @@ class TemplateCatalog(Enum):
                  ["How many ", BLANK, " in ", BLANK], ["When ", "did ", BLANK, " happen"],
                  ["Which ", BLANK, " has ", BLANK], ["What is the ", BLANK, " for ", BLANK],
                  ["Who ", BLANK, " in ", BLANK], ["Which feature ", "does ", BLANK, "have"],
-                 ["*", "How", BLANK], ["*", "Who", BLANK], ["*", "What", BLANK], ["*", "Where", BLANK],
-                 ["*", "When", BLANK], ["*", "Why", BLANK]]
+                 ["*", "How ", BLANK], ["*", "Who ", BLANK], ["*", "What ", BLANK], ["*", "Where ", BLANK],
+                 ["*", "When ", BLANK], ["*", "Why ", BLANK], ["*", "Which ", BLANK]]
 
     def get_template(self, index: int):
         if self.value[index][0] == "*":

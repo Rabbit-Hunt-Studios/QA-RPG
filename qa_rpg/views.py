@@ -18,6 +18,7 @@ TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
 TREASURE_THRESHOLD = 0.5
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
+SPECIAL = [8, 9, 10, 11, 12, 13, 14]
 
 
 def get_player(user: User):
@@ -212,14 +213,7 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
 def check(request, question_id):
     question = Question.objects.get(pk=question_id)
     player, log, inventory = get_player(request.user)
-
-    if request.POST['option'] == 'report':
-        report = ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
-        report.save()
-        log.add_report_question(question_id)
-    elif request.POST['option'] == 'commend':
-        commend = ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
-        commend.save()
+    one_user_per_report(request, question, log, question_id)
     set_question_activation(question_id)
 
     try:
@@ -254,13 +248,7 @@ def run_away(request, question_id):
     question = Question.objects.get(pk=question_id)
     player, log, inventory = get_player(request.user)
 
-    if request.POST['option'] == 'report':
-        report = ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
-        report.save()
-        log.add_report_question(question_id)
-    elif request.POST['option'] == 'commend':
-        commend = ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
-        commend.save()
+    one_user_per_report(request, question, log, question_id)
     set_question_activation(question_id)
 
     if random.random() >= player.luck:
@@ -283,6 +271,30 @@ def run_away(request, question_id):
                       {'question': question,
                        'player': player})
 
+
+def add_reports_or_commends(request, question, log, question_id):
+    if request.POST['option'] == 'report':
+        report = ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
+        report.save()
+        log.add_report_question(question.id)
+    elif request.POST['option'] == 'commend':
+        commend = ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
+        commend.save()
+
+
+def one_user_per_report(request, question, log, question_id):
+    user = request.user
+    try:
+        option_select = ReportAndCommend.objects.get(question=question, user=user)
+        if request.POST['option'] == 'report':
+            option_select.vote = 0
+            option_select.save()
+            log.add_report_question(question.id)
+        elif request.POST['option'] == 'commend':
+            option_select.vote = 1
+            option_select.save()
+    except:
+        add_reports_or_commends(request, question, log, question_id)
 
 def set_question_activation(question_id):
     question = Question.objects.get(pk=question_id)
@@ -367,9 +379,14 @@ def create(request):
 
     try:
         question_text = ''
-        for i in range(4):
-            question_text += request.POST[f'question{i}']
-        question_text += "?"
+        if int(player.activity.split(" ")[1]) in SPECIAL:
+            question_text += request.POST['question0']
+            question_text += request.POST['question1']
+        else:
+            for i in range(4):
+                question_text += request.POST[f'question{i}']
+        if question_text[-1] != "?":
+            question_text += "?"
         choices = {}
         correct_index = int(request.POST['index'])
         for num in range(int(player.activity.split(" ")[0][6:])):
