@@ -408,11 +408,11 @@ class TreasureActionTest(TestCase):
         self.player = Player.objects.create(user=self.user)
         self.player.set_activity("treasure")
     
-    def test_claim_coin_after_pick_up(self):
-        """Test that after pick up a treasure a player gain a bonus coin."""
+    def test_claim_coin_after_pick_up_treasure(self):
+        """Test that after pick up a treasure,the player gains bonus coins."""
+        random.seed(100)
         self.player.dungeon_currency = 10
         self.player.luck = 0.75
-        self.event = 0.5
         self.player.save()
         response = self.client.post(reverse("qa_rpg:treasure_action"), {"action": "pick up"})
         self.assertEqual(response.status_code, 302)
@@ -423,10 +423,10 @@ class TreasureActionTest(TestCase):
         
         
     def test_lose_health_after_pick_up_treasure(self):
-        """Test that after pick up a treasure a player lose health."""
+        """Test that after pick up a treasure, the player loses health."""
+        random.seed(150)
         self.player.dungeon_currency = 20
         self.player.luck = 0.25
-        self.event = 0.5
         self.player.save()
         response = self.client.post(reverse("qa_rpg:treasure_action"), {"action": "pick up"})
         self.assertEqual(response.status_code, 302)
@@ -437,6 +437,7 @@ class TreasureActionTest(TestCase):
     
     def test_run_away_from_treasure(self):
         """Test that user return to dungeon page after run away from treasure."""
+        random.seed(100)        
         self.player.dungeon_currency = 20
         self.player.current_hp = 75
         self.player.save()
