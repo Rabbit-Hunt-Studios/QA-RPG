@@ -148,7 +148,7 @@ class Inventory(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     player_inventory = models.CharField(max_length=1000, default="")
     dungeon_inventory = models.CharField(max_length=1000, default="")
-    max_inventory = models.IntegerField(default=3)
+    max_inventory = models.IntegerField(default=2)
     question_template = models.CharField(max_length=1000, default="")
 
     def get_inventory(self, inventory_type):
@@ -172,6 +172,21 @@ class Inventory(models.Model):
         else:
             self.dungeon_inventory = inventory
         self.save()
+
+    def clear_dungeon_inventory(self):
+        self.dungeon_inventory = ""
+        self.save()
+
+    def reset_inventory(self):
+        p_inventory = self.get_inventory("player")
+        d_inventory = self.get_inventory("dungeon")
+        for item, amount in d_inventory.items():
+            if item in p_inventory:
+                p_inventory[item] += amount
+            else:
+                p_inventory[item] = amount
+        self.update_inventory(p_inventory, "player")
+        self.clear_dungeon_inventory()
 
     def get_templates(self):
         owned = {}

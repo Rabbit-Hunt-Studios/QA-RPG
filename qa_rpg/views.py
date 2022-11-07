@@ -83,6 +83,7 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
         player.reset_stats()
         log.clear_log()
         log.clear_question()
+        inventory.reset_inventory()
         player.set_activity("index")
         return render(request, self.template_name, {"player": player})
 
@@ -157,6 +158,7 @@ def treasure_action(request):
             damages = random.randint(1, 10)
             player.update_player_stats(health=-damages)
             if player.check_death():
+                inventory.clear_dungeon_inventory()
                 messages.error(request, "You lost consciousness in the dungeons.")
                 return render(request, "qa_rpg/index.html", {'player': player})
 
@@ -234,6 +236,7 @@ def check(request, question_id):
             player.update_player_stats(health=-question.damage)
             question.add_coin()
             if player.check_death():
+                inventory.clear_dungeon_inventory()
                 messages.error(request, "You lost consciousness in the dungeons.")
                 return render(request, "qa_rpg/index.html", {'player': player})
 
@@ -266,6 +269,7 @@ def run_away(request, question_id):
         player.update_player_stats(health=-question.damage)
         question.add_coin()
         if player.check_death():
+            inventory.clear_dungeon_inventory()
             messages.error(request, "You lost consciousness in the dungeons.")
             return render(request, "qa_rpg/index.html", {'player': player})
 
