@@ -187,8 +187,12 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
             filter_question = seen_question + report_question
             player_question_amount = Question.objects.filter(~Q(owner=request.user), category='player',
                                                              enable=True).count()
-            if player_question_amount - len(report_question) > 11:
-                if len(log.split_log("question")) < 10:
+            amount = len(log.split_log("question"))
+
+            if amount > 30:
+                log.clear_question()
+            try:
+                if ((amount % 10) != 0) or amount == 0:
                     question_id = random.choice(
                         Question.objects.exclude(id__in=filter_question).filter(~Q(owner=request.user), enable=True)
                             .values_list('id', flat=True))
@@ -198,14 +202,15 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
                         Question.objects.exclude(id__in=filter_question).filter(~Q(owner=request.user),
                                                                                 category='player', enable=True)
                             .values_list("id", flat=True))
-                    log.clear_question()
-            else:
+                    log.add_question(question_id)
+            except IndexError:
                 question_id = random.choice(
                     Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
                         .values_list('id', flat=True))
                 log.add_question(question_id)
         question = Question.objects.get(pk=question_id)
         player.set_activity(f"battle{question_id}")
+        print(log.split_log("question"))
         return render(request, "qa_rpg/battle.html", {"question": question, "player": player})
 
 
