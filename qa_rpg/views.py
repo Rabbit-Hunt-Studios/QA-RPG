@@ -210,7 +210,6 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
                 log.add_question(question_id)
         question = Question.objects.get(pk=question_id)
         player.set_activity(f"battle{question_id}")
-        print(log.split_log("question"))
         return render(request, "qa_rpg/battle.html", {"question": question, "player": player})
 
 
