@@ -173,6 +173,21 @@ class Inventory(models.Model):
             self.dungeon_inventory = inventory
         self.save()
 
+    def clear_dungeon_inventory(self):
+        self.dungeon_inventory = ""
+        self.save()
+
+    def reset_inventory(self):
+        p_inventory = self.get_inventory("player")
+        d_inventory = self.get_inventory("dungeon")
+        for item, amount in d_inventory.items():
+            if item in p_inventory:
+                p_inventory[item] += amount
+            else:
+                p_inventory[item] = amount
+        self.update_inventory(p_inventory, "player")
+        self.clear_dungeon_inventory()
+
     def get_templates(self):
         owned = {}
         for value in self.question_template.split(';')[:-1]:
