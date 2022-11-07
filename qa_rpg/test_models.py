@@ -16,14 +16,14 @@ class QuestionModelTest(TestCase):
 
     def test_amount_report(self):
         """Report property should return amount of reports the question has."""
-        Report.objects.create(user=self.system, question=self.question)
-        Report.objects.create(user=self.system, question=self.question)
+        ReportAndCommend.objects.create(user=self.system, question=self.question, vote=0)
+        ReportAndCommend.objects.create(user=self.system, question=self.question, vote=0)
         self.assertEqual(self.question.report, 2)
 
     def test_amount_commend(self):
         """Commend property should return amount of commends the question has."""
-        Commend.objects.create(user=self.system, question=self.question)
-        Commend.objects.create(user=self.system, question=self.question)
+        ReportAndCommend.objects.create(user=self.system, question=self.question, vote=1)
+        ReportAndCommend.objects.create(user=self.system, question=self.question, vote=1)
         self.assertEqual(self.question.commend, 2)
 
     def test_get_correct_answer(self):
@@ -114,13 +114,13 @@ class LogModelTest(TestCase):
                      'Exiting dungeon']
         for text in logs_text:
             self.log.add_log(text=text)
-            self.assertEqual(len(self.log.split_log), 10)
-        self.assertEqual(self.log.split_log, logs_text[1:])
-        self.assertEqual(len(self.log.split_log), 10)
+            self.assertEqual(len(self.log.split_log("text")), 10)
+        self.assertEqual(self.log.split_log("text"), logs_text[1:])
+        self.assertEqual(len(self.log.split_log("text")), 10)
 
     def test_clear_log(self):
         """clear_log method should empty out the log."""
         self.log.add_log(text='test')
-        self.assertEqual(self.log.split_log, ['', '', '', '', '', '', '', '', '', 'test'])
+        self.assertEqual(self.log.split_log("text"), ['', '', '', '', '', '', '', '', '', 'test'])
         self.log.clear_log()
-        self.assertEqual(self.log.split_log, empty_log)
+        self.assertEqual(self.log.split_log("text"), empty_log)

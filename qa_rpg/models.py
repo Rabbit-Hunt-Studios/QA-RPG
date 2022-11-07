@@ -16,19 +16,19 @@ class Question(models.Model):
 
     @property
     def report(self):
-        return Report.objects.filter(question=self).count()
+        return ReportAndCommend.objects.filter(question=self, vote=0).count()
 
     @property
     def commend(self):
-        return Commend.objects.filter(question=self).count()
+        return ReportAndCommend.objects.filter(question=self, vote=1).count()
 
     @property
     def correct_choice(self):
         return Choice.objects.get(question=self, correct_answer=True)
 
     def add_coin(self):
-        if self.currency + 2 <= self.max_currency:
-            self.currency += 2
+        if self.currency + 5 <= self.max_currency:
+            self.currency += 5
             self.save()
 
     def __str__(self):
@@ -46,14 +46,10 @@ class Choice(models.Model):
         return self.choice_text
 
 
-class Report(models.Model):
+class ReportAndCommend(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-
-class Commend(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    vote = models.IntegerField()
 
 
 class Player(models.Model):
@@ -106,23 +102,88 @@ class Player(models.Model):
 class Log(models.Model):
     log_text = models.CharField(max_length=1000, default=";;;;;;;;;;")
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    log_questions = models.CharField(max_length=1000, default="")
+    log_report_question = models.CharField(max_length=1000, default="")
 
-    @property
-    def split_log(self):
-        return self.log_text.split(';')[:-1]
+    def split_log(self, log_type):
+        if log_type == "text":
+            return self.log_text.split(';')[:-1]
+        elif log_type == "question":
+            return self.log_questions.split(';')[:-1]
+        elif log_type == "report":
+            return self.log_report_question.split(';')[:-1]
 
     def clear_log(self):
         self.log_text = ";;;;;;;;;;"
         self.save()
 
+    def clear_question(self):
+        self.log_questions = ""
+        self.save()
+
     def add_log(self, text):
         list_log = self.log_text.split(';')
-        del(list_log[0])
+        del (list_log[0])
         self.log_text = ";".join(list_log)
         self.log_text += f"{text};"
+        self.save()
+
+    def add_question(self, question_id: str):
+        self.log_questions += f"{question_id};"
+        if len(self.split_log('question')) > 100:
+            self.clear_question()
+        self.save()
+
+    def add_report_question(self, question_id: int):
+        if str(question_id) not in self.split_log("report"):
+            self.log_report_question += f"{question_id};"
         self.save()
 
     def __str__(self):
         """Return Log string."""
         return self.log_text
 
+
+class Inventory(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    player_inventory = models.CharField(max_length=1000, default="")
+    dungeon_inventory = models.CharField(max_length=1000, default="")
+    max_inventory = models.IntegerField(default=3)
+    question_template = models.CharField(max_length=1000, default="")
+
+    def get_inventory(self, inventory_type):
+        dict_item = {}
+        inventory = []
+        if inventory_type == "player":
+            inventory = self.player_inventory.split(';')[:-1]
+        else:
+            inventory = self.dungeon_inventory.split(';')[:-1]
+        for item in inventory:
+            item_list = item.split(":")
+            dict_item[item_list[0]] = item_list[1]
+        return dict_item
+
+    def update_inventory(self, item: dict, inventory_type):
+        inventory = ""
+        for key, val in item.items():
+            inventory += f"{key}:{val};"
+        if inventory_type == "player":
+            self.player_inventory = inventory
+        else:
+            self.dungeon_inventory = inventory
+        self.save()
+
+    def get_templates(self):
+        owned = {}
+        for value in self.question_template.split(';')[:-1]:
+            value = value.split(":")
+            owned[int(value[0])] = int(value[1])
+        return owned
+
+    def update_templates(self, items: dict):
+        item_string = ""
+        for key, value in items.items():
+            if value > 0:
+                item_string += f"{key}:{value};"
+        self.question_template = item_string
+        self.save()

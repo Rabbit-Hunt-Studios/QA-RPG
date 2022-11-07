@@ -45,32 +45,29 @@
 
 
     <div class="flex justify-center item-center gap-4">
-        <input type="hidden" value="Fight">
         <p>
             <button type="submit" class="text-5xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-green-700 duration-300 pl-2 pt-1 pb-1 pr-2">Fight</button>
         </p>
 
-</form>
-
-        <form action="{% url 'qa_rpg:check' question.id %}" method="post">
-        {% csrf_token %}
-            <div>
-        <input type="hidden" name="choice" value="run away">
-        <p>
-            <button type="submit" class="text-5xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-red-500 duration-300 pl-2 pt-1 pb-1 pr-2">Run Away</button>
-        </p>
-            </div>
-        </form>
+        <div>
+            <p>
+                <button type="submit" class="text-5xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-red-500 duration-300 pl-2 pt-1 pb-1 pr-2" formaction="{% url 'qa_rpg:run_away' question.id %}">Run Away</button>
+            </p>
+        </div>
     </div>
 
-<div class="absolute top-0 right-0 my-10 mx-10 py-2 text-2xl" >
+    <div class="absolute top-0 right-0 my-10 mx-10 py-2 text-2xl" >
+        <input type="hidden" name="option" id="not select" value="not select">
         <div class="py-2">
             <input type="radio" name="option" id="report" value="report" >
             <label for="report" class="bg-black bg-opacity-50 border-gray-600 border-2 hover:text-red-500 pl-2 pt-1 pb-1 pr-2">Report</label><br>
         </div>
 
-    <div class="py-2">
-        <input type="radio" name="option" id="commend" value="commend" class="">
-        <label for="commend" class="bg-black bg-opacity-50 border-gray-600 border-2 hover:text-green-500 pl-2 pt-1 pb-1 pr-2">Commend</label><br>
+        <div class="py-2">
+            <input type="radio" name="option" id="commend" value="commend" class="">
+            <label for="commend" class="bg-black bg-opacity-50 border-gray-600 border-2 hover:text-green-500 pl-2 pt-1 pb-1 pr-2">Commend</label><br>
+        </div>
     </div>
-</div>
+</form>
+
+</body>
