@@ -7,6 +7,7 @@ import random
 empty_log = ['', '', '', '', '', '', '', '', '', '']
 
 
+
 class IndexViewTest(TestCase):
 
     def setUp(self):
@@ -375,3 +376,73 @@ class ProfileViewTest(TestCase):
         respond = self.client.post(reverse("qa_rpg:claim", args=(self.question.id,)))
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 10)
+
+class TreasureViewTest(TestCase):
+
+    def setUp(self):
+        """Setup user for the treasure page."""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.system = User.objects.create_user(username="test")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("dungeon")
+
+    def test_rendering_treasure_page(self):
+        """Test that player in treasure page."""
+        self.player.set_activity("treasure")
+        response = self.client.get(reverse("qa_rpg:treasure"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Player.objects.get(user=self.user).activity, "treasure")
+       
+        
+class TreasureActionTest(TestCase):
+
+    def setUp(self):
+        """Setup for testing actions in treasure page."""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("treasure")
+    
+    def test_claim_coin_after_pick_up(self):
+        """Test that after pick up a treasure a player gain a bonus coin."""
+        self.player.dungeon_currency = 10
+        self.player.luck = 0.75
+        self.event = 0.5
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:treasure_action"), {"action": "pick up"})
+        self.assertEqual(response.status_code, 302)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.activity, "dungeon")
+        self.assertEqual(self.player.current_hp, self.player.max_hp)
+        self.assertNotEqual(self.player.dungeon_currency, 10)
+        
+        
+    def test_lose_health_after_pick_up_treasure(self):
+        """Test that after pick up a treasure a player lose health."""
+        self.player.dungeon_currency = 20
+        self.player.luck = 0.25
+        self.event = 0.5
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:treasure_action"), {"action": "pick up"})
+        self.assertEqual(response.status_code, 302)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.activity, "dungeon")
+        self.assertEqual(self.player.dungeon_currency, 20)
+        self.assertNotEqual(self.player.current_hp, self.player.max_hp)
+    
+    def test_run_away_from_treasure(self):
+        """Test that user return to dungeon page after run away from treasure."""
+        self.player.dungeon_currency = 20
+        self.player.current_hp = 75
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:treasure_action"), {"action": "run away"})
+        self.assertEqual(response.status_code, 302)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.activity, "dungeon")
+        self.assertEqual(self.player.dungeon_currency, 20)
+        self.assertEqual(self.player.current_hp, 75)
