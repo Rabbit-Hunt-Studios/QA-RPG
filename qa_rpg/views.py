@@ -151,9 +151,20 @@ def treasure_action(request):
 
     if request.POST['action'] == "pick up":
         if player.luck >= event:
-            coins = random.choice(TREASURE_AMOUNT)
-            log.add_log(f"You found {coins} coins in treasure chest.")
-            player.update_player_stats(dungeon_currency=coins)
+            if (player.luck * 0.3) >= event:
+                item_id = random.choice(ItemCatalog.ITEMS.get_chest_items())
+                random_item = ItemCatalog.ITEMS.get_item(item_id)
+                log.add_log(f"You got the item '{str(random_item)}' from the chest !")
+                dungeon_inventory = inventory.get_inventory("dungeon")
+                try:
+                    dungeon_inventory[item_id] += 1
+                except KeyError:
+                    dungeon_inventory[item_id] = 1
+                inventory.update_inventory(dungeon_inventory, "dungeon")
+            else:
+                coins = random.choice(TREASURE_AMOUNT)
+                log.add_log(f"You found {coins} coins in treasure chest.")
+                player.update_player_stats(dungeon_currency=coins)
         else:
             log.add_log("Oh No!! Mimic chest bite your leg")
             damages = random.randint(1, 10)
@@ -267,14 +278,25 @@ def check(request, question_id):
 
         if check_choice.correct_answer:
             log.add_log(Dialogue.WIN_DIALOGUE.get_text)
-            earn_coins = get_coins(question.damage)
-            bonus = applied_item.coin_modifier(earn_coins)
-            earn_coins += bonus
-            if bonus > 0:
-                log.add_log(f"You earn {earn_coins} coins ({bonus} bonus coins).")
+            if player.luck * 0.3 >= random.random():
+                item_id = random.choice(ItemCatalog.ITEMS.get_cursed_items())
+                random_item = ItemCatalog.ITEMS.get_item(item_id)
+                log.add_log(f"You loot the item '{str(random_item)}' from the monster's corpse !")
+                dungeon_inventory = inventory.get_inventory("dungeon")
+                try:
+                    dungeon_inventory[item_id] += 1
+                except KeyError:
+                    dungeon_inventory[item_id] = 1
+                inventory.update_inventory(dungeon_inventory, "dungeon")
             else:
-                log.add_log(f"You earn {earn_coins} coins.")
-            player.update_player_stats(dungeon_currency=earn_coins, luck=0.04)
+                earn_coins = get_coins(question.damage)
+                bonus = applied_item.coin_modifier(earn_coins)
+                earn_coins += bonus
+                if bonus > 0:
+                    log.add_log(f"You earn {earn_coins} coins ({bonus} bonus coins).")
+                else:
+                    log.add_log(f"You earn {earn_coins} coins.")
+                player.update_player_stats(dungeon_currency=earn_coins, luck=0.04)
             player.set_activity("dungeon")
         else:
             log.add_log(Dialogue.LOSE_DIALOGUE.get_text)

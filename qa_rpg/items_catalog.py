@@ -201,3 +201,9 @@ class ItemCatalog(Enum):
             if key <= 9:
                 in_store[str(item)] = [key, 75]
         return in_store
+
+    def get_chest_items(self):
+        return [key for key in self.value.keys() if (10 <= key < 20)]
+
+    def get_cursed_items(self):
+        return [key for key in self.value.keys() if (50 <= key < 60)]
