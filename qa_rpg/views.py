@@ -13,6 +13,7 @@ from django.views.decorators.cache import never_cache
 from .models import Question, Choice, Player, Log, Inventory, ReportAndCommend
 from .dialogue import Dialogue
 from .template_question import TemplateCatalog
+from .items_catalog import ItemCatalog
 
 TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
 TREASURE_THRESHOLD = 0.5
@@ -38,6 +39,7 @@ def get_player(user: User):
         except Inventory.DoesNotExist:
             inventory = Inventory.objects.create(player=player)
             inventory.update_templates({0: 1, 1: 1})
+            inventory.update_inventory({0: 5}, "player")
             inventory.save()
             continue
     return player, log, inventory
@@ -121,6 +123,7 @@ def action(request):
         return redirect(url)
     else:
         player.set_activity("index")
+        player.status = ""
         player.add_dungeon_currency()
         inventory.reset_inventory()
         return redirect("qa_rpg:index")
@@ -148,9 +151,20 @@ def treasure_action(request):
 
     if request.POST['action'] == "pick up":
         if player.luck >= event:
-            coins = random.choice(TREASURE_AMOUNT)
-            log.add_log(f"You found {coins} coins in treasure chest.")
-            player.update_player_stats(dungeon_currency=coins)
+            if (player.luck * 0.3) >= event:
+                item_id = random.choice(ItemCatalog.ITEMS.get_chest_items())
+                random_item = ItemCatalog.ITEMS.get_item(item_id)
+                log.add_log(f"You got the item '{str(random_item)}' from the chest !")
+                dungeon_inventory = inventory.get_inventory("dungeon")
+                try:
+                    dungeon_inventory[item_id] += 1
+                except KeyError:
+                    dungeon_inventory[item_id] = 1
+                inventory.update_inventory(dungeon_inventory, "dungeon")
+            else:
+                coins = random.choice(TREASURE_AMOUNT)
+                log.add_log(f"You found {coins} coins in treasure chest.")
+                player.update_player_stats(dungeon_currency=coins)
         else:
             log.add_log("Oh No!! Mimic chest bite your leg")
             damages = random.randint(1, 10)
@@ -206,11 +220,43 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
             except IndexError:
                 question_id = random.choice(
                     Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
-                        .values_list('id', flat=True))
+                    .values_list('id', flat=True))
                 log.add_question(question_id)
         question = Question.objects.get(pk=question_id)
         player.set_activity(f"battle{question_id}")
-        return render(request, "qa_rpg/battle.html", {"question": question, "player": player})
+        items = {}
+        for key, value in inventory.get_inventory("dungeon").items():
+            items[str(ItemCatalog.ITEMS.get_item(key))] = [key, value]
+        if player.status == "":
+            status = ""
+        else:
+            status = str(ItemCatalog.ITEMS.get_item(int(player.status)))
+        return render(request, "qa_rpg/battle.html", {"question": question, "player": player,
+                                                      "items": items,
+                                                      "status": status})
+
+
+@never_cache
+def item(request):
+    player, log, inventory = get_player(request.user)
+    try:
+        index = int(request.POST['item'])
+        used_item = ItemCatalog.ITEMS.get_item(index)
+        dungeon_inventory = inventory.get_inventory("dungeon")
+        dungeon_inventory[index] -= 1
+        inventory.update_inventory(dungeon_inventory, "dungeon")
+        log.add_log("You used an item: " + str(used_item) + " !")
+        if used_item.instant:
+            healing = used_item.health_modifier(player.max_hp)
+            player.update_player_stats(health=healing)
+            log.add_log(f"You healed {healing} health points.")
+        if used_item.lingering:
+            player.status = str(index)
+            player.save()
+    except KeyError:
+        messages.error(request, "No item selected.")
+
+    return redirect("qa_rpg:battle")
 
 
 @never_cache
@@ -223,22 +269,52 @@ def check(request, question_id):
     try:
         check_choice = Choice.objects.get(pk=request.POST['choice'])
 
+        if player.status == "":
+            applied_item = ItemCatalog.ITEMS.get_item(999)
+        else:
+            applied_item = ItemCatalog.ITEMS.get_item(int(player.status))
+        player.status = ""
+        player.save()
+
         if check_choice.correct_answer:
             log.add_log(Dialogue.WIN_DIALOGUE.get_text)
-            earn_coins = get_coins(question.damage)
-            log.add_log(f"You earn {earn_coins} coins.")
-            player.update_player_stats(dungeon_currency=earn_coins, luck=0.04)
+            if player.luck * 0.3 >= random.random():
+                item_id = random.choice(ItemCatalog.ITEMS.get_cursed_items())
+                random_item = ItemCatalog.ITEMS.get_item(item_id)
+                log.add_log(f"You loot the item '{str(random_item)}' from the monster's corpse !")
+                dungeon_inventory = inventory.get_inventory("dungeon")
+                try:
+                    dungeon_inventory[item_id] += 1
+                except KeyError:
+                    dungeon_inventory[item_id] = 1
+                inventory.update_inventory(dungeon_inventory, "dungeon")
+            else:
+                earn_coins = get_coins(question.damage)
+                bonus = applied_item.coin_modifier(earn_coins)
+                earn_coins += bonus
+                if bonus > 0:
+                    log.add_log(f"You earn {earn_coins} coins ({bonus} bonus coins).")
+                else:
+                    log.add_log(f"You earn {earn_coins} coins.")
+                player.update_player_stats(dungeon_currency=earn_coins, luck=0.04)
             player.set_activity("dungeon")
         else:
             log.add_log(Dialogue.LOSE_DIALOGUE.get_text)
-            player.update_player_stats(health=-question.damage)
+            nullified = applied_item.damage_modifier(question.damage)
+            if nullified > 0:
+                log.add_log(f"{nullified} damage from monster was blocked by your item.")
+            elif nullified < 0:
+                log.add_log(f"{-nullified} damage suffered from cursed item.")
+            player.update_player_stats(health=-(question.damage - nullified))
             question.add_coin()
             if player.check_death():
                 inventory.clear_dungeon_inventory()
+                player.status = ""
+                player.save()
                 messages.error(request, "You lost consciousness in the dungeons.")
                 return render(request, "qa_rpg/index.html", {'player': player})
 
-            log.add_log(f"You lose {question.damage} health points.")
+            log.add_log(f"You lose {question.damage - nullified} health points.")
             player.set_activity("dungeon")
 
         return redirect("qa_rpg:dungeon")
@@ -256,26 +332,41 @@ def run_away(request, question_id):
     one_user_per_report(request, question, log, question_id)
     set_question_activation(question_id)
 
-    if random.random() >= player.luck:
+    if player.status == "":
+        applied_item = ItemCatalog.ITEMS.get_item(999)
+    else:
+        applied_item = ItemCatalog.ITEMS.get_item(int(player.status))
+    player.status = ""
+    player.save()
+
+    if random.random() >= player.luck - applied_item.escape_modifier(player.luck):
         log.add_log(Dialogue.RUN_DIALOGUE.get_text)
         player.set_activity("dungeon")
         return redirect("qa_rpg:dungeon")
     else:
         run_fail = Dialogue.RUN_FAIL_DIALOGUE.get_text
         log.add_log(run_fail)
-
-        player.update_player_stats(health=-question.damage)
+        player.update_player_stats(health=-(question.damage - applied_item.damage_modifier(question.damage)))
         question.add_coin()
         if player.check_death():
             inventory.clear_dungeon_inventory()
+            player.status = ""
+            player.save()
             messages.error(request, "You lost consciousness in the dungeons.")
             return render(request, "qa_rpg/index.html", {'player': player})
 
         messages.error(request, run_fail)
+        items = {}
+        for key, value in inventory.get_inventory("dungeon").items():
+            items[str(ItemCatalog.ITEMS.get_item(key))] = [key, value]
+        if player.status == "":
+            status = ""
+        else:
+            status = str(ItemCatalog.ITEMS.get_item(int(player.status)))
         return render(request,
                       'qa_rpg/battle.html',
                       {'question': question,
-                       'player': player})
+                       'player': player, "status": status, "items": items})
 
 
 def add_reports_or_commends(request, question, log, question_id):
