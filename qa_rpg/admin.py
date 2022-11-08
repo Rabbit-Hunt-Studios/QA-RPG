@@ -23,7 +23,7 @@ class QuestionAdmin(admin.ModelAdmin):
 class PlayerAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Player Info', {'fields': ['player_name', 'user',
-                                    'max_hp', 'currency', 'luck']}),
+                                    'max_hp', 'currency', 'luck', 'awake']}),
         ('Action', {'fields': ['activity']}),
     ]
     readonly_fields = ('player_name', 'user', 'luck')
