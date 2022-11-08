@@ -1,0 +1,89 @@
+<!doctype html>
+{% load static %}
+{% load tailwind_tags %}
+<head>
+    {% tailwind_css %}
+</head>
+
+<body class="text-white font-serif bg-no-repeat bg-cover  "
+  style="background-image: url('https://wallpapercave.com/wp/wp3323556.jpg');">
+
+  <div class="m-8 p-4">
+    <div class="h-25 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+      <div class="text-pink-50 text-3xl pl-2 pt-1">
+        <a> Coins: {{ player.currency }} </a> </br>
+      </div>
+    </div>
+  </div>
+
+  {% if messages %}
+        {% for message in messages %}
+        <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
+    <div class="mb-8">
+        <div>
+    <p class="text-red-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
+        </div>
+    </div>
+  </div>
+      {% endfor %}
+{% endif %}
+
+
+<div class="flex m-8 p-4">
+    <div class="h-80 w-1/2 box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl">
+        <form action="{% url 'qa_rpg:upgrade_action'%}" method="post">
+        {% csrf_token %}
+         <div class="w-auto flex flex-col bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 mt-3">
+             {% if upgrade_check.0 %}
+             Max HP: {{player.max_hp}}/{{upgrade_list.0}} Price: {{price.0}}
+             <input type="hidden" name="upgrade" value="max_hp">
+             <input type="hidden" name="price" value="{{price.0}}">
+             <button type="submit" class="bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2">Upgrade</button>
+             {% else %}
+             Max HP: {{player.max_hp}}/{{upgrade_list.0}}
+             <div class="text-center bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pr-2">Fully upgraded</div>
+             {% endif %}
+        </div>
+        </form>
+
+        <form action="{% url 'qa_rpg:upgrade_action'%}" method="post">
+        {% csrf_token %}
+        <div class="w-auto flex flex-col bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 mt-3">
+            {% if upgrade_check.1 %}
+             Max coin gain per monster: {{player.question_max_currency}}/{{upgrade_list.1}} Price: {{price.1}}
+             <input type="hidden" name="upgrade" value="max_earn">
+             <input type="hidden" name="price" value="{{price.1}}">
+             <button type="submit" class="bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2">Upgrade</button>
+            {% else %}
+             Max coin gain per monster: {{player.question_max_currency}}/{{upgrade_list.1}}
+             <div class="text-center bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pr-2">Fully upgraded</div>
+             {% endif %}
+        </div>
+        </form>
+
+        <form action="{% url 'qa_rpg:upgrade_action'%}" method="post">
+        {% csrf_token %}
+        <div class="w-auto flex flex-col bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 mt-3">
+            {% if upgrade_check.2 %}
+             Rate coin gain per monster: {{player.question_rate_currency}}/{{upgrade_list.2}} Price: {{price.2}}
+             <input type="hidden" name="upgrade" value="rate_earn">
+             <input type="hidden" name="price" value="{{price.2}}">
+             <button type="submit" class="bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2">Upgrade</button>
+            {% else %}
+             Rate coin gain per monster: {{player.question_rate_currency}}/{{upgrade_list.2}}
+             <div class="text-center bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pr-2">Fully upgraded</div>
+             {% endif %}
+        </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="ml-[3.1rem]">
+      <div class="h-25 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+          <div class="text-pink-50 text-3xl ">
+                <a href="{% url 'qa_rpg:profile' %}"><button class=" h-25 w-60 bg-Neutral-900 hover:bg-red-900 duration-300" type="button">Back</button></a>
+          </div>
+      </div>
+</div>
+</body>

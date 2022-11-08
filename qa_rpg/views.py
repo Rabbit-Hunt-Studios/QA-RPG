@@ -405,7 +405,9 @@ def create(request):
         return redirect("qa_rpg:summon")
 
     question = Question.objects.create(question_text=question_text,
-                                       owner=request.user, category="player")
+                                       owner=request.user, category="player",
+                                       max_currency=player.question_max_currency,
+                                       rate=player.question_rate_currency)
     question.save()
     for choice_text in choices.keys():
         choice = Choice.objects.create(choice_text=choice_text,
@@ -430,7 +432,7 @@ class ProfileView(LoginRequiredMixin, generic.TemplateView):
         player, log, inventory = get_player(request.user)
         questions = Question.objects.filter(owner=player.user)
 
-        check_url = check_player_activity(player, ["index", "profile"])
+        check_url = check_player_activity(player, ["index", "profile", "upgrade"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -453,6 +455,7 @@ def claim_coin(request, question_id):
 
 
 class ShopView(LoginRequiredMixin, generic.DetailView):
+
     template_name = "qa_rpg/shop.html"
 
     @method_decorator(never_cache, name='self.get')
@@ -470,10 +473,6 @@ class ShopView(LoginRequiredMixin, generic.DetailView):
 
         player.set_activity("shop")
         return render(request, self.template_name, {"player": player, "template": template})
-
-
-def select():
-    pass
 
 
 @never_cache
@@ -495,3 +494,65 @@ def buy(request):
     player.save()
     messages.success(request, "Purchase Successful")
     return redirect('qa_rpg:shop')
+
+
+class UpgradeView(LoginRequiredMixin, generic.DetailView):
+
+    template_name = "qa_rpg/upgrade.html"
+
+    @method_decorator(never_cache, name='self.get')
+    def get(self, request):
+        player, log, inventory = get_player(request.user)
+
+        check_url = check_player_activity(player, ["profile", "upgrade"])
+        if check_url is not None:
+            return redirect(check_url)
+
+        price = [100 + (int((player.max_hp - 100) / 20) * 50),
+                 100 + (int((player.question_max_currency - 20) / 2) * 50),
+                 100 + (int((player.question_rate_currency - 5)) * 50),
+                 200 + (player.awake * 100)]
+
+        upgrade_list = [100 + (100 * (player.awake + 1)),
+                        20 + (10 * (player.awake + 1)),
+                        5 + (5 * (player.awake + 1))]
+
+        upgrade_check = [(player.max_hp < upgrade_list[0]),
+                         (player.question_max_currency < upgrade_list[1]),
+                         (player.question_rate_currency < upgrade_list[2])]
+
+        player.set_activity("upgrade")
+        return render(request, self.template_name, {"player": player, "price": price,
+                                                    "upgrade_list": upgrade_list, "upgrade_check": upgrade_check})
+
+
+@never_cache
+def upgrade(request):
+    player, log, inventory = get_player(request.user)
+    player_question = Question.objects.filter(owner=request.user)
+    price = int(request.POST["price"])
+    print(request.POST["upgrade"])
+    if player.currency > price:
+        player.currency -= price
+        if request.POST["upgrade"] == "max_hp":
+            if player.max_hp + 20 <= 100 + (100 * (player.awake+1)):
+                player.max_hp += 20
+
+        elif request.POST["upgrade"] == "max_earn":
+            if player.question_max_currency + 2 <= 20 + (10 * (player.awake+1)):
+                player.question_max_currency += 2
+
+        elif request.POST["upgrade"] == "rate_earn":
+            if player.question_rate_currency + 1 <= 5 + (5 * (player.awake+1)):
+                player.question_rate_currency += 1
+
+        for question in player_question:
+            question.max_currency = player.question_max_currency
+            question.rate = player.question_rate_currency
+            question.save()
+        messages.success(request, "Upgrade Successful")
+    else:
+        messages.success(request, "You don't have enough coins to upgrade.")
+
+    player.save()
+    return redirect('qa_rpg:upgrade')

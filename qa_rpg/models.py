@@ -10,6 +10,7 @@ class Question(models.Model):
     damage = models.IntegerField(default=20)
     currency = models.IntegerField(default=0)
     max_currency = models.IntegerField(default=20)
+    rate = models.IntegerField(default=5)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.CharField(max_length=100, null=False, default="test")
     enable = models.BooleanField(default=True)
@@ -27,8 +28,8 @@ class Question(models.Model):
         return Choice.objects.get(question=self, correct_answer=True)
 
     def add_coin(self):
-        if self.currency + 5 <= self.max_currency:
-            self.currency += 5
+        if self.currency + self.rate <= self.max_currency:
+            self.currency += self.rate
             self.save()
 
     def __str__(self):
@@ -60,6 +61,9 @@ class Player(models.Model):
     dungeon_currency = models.IntegerField(default=0)
     activity = models.CharField(max_length=100, default="index")
     luck = models.FloatField(default=BASE_LUCK)
+    awake = models.IntegerField(default=0)
+    question_max_currency = models.IntegerField(default=20)
+    question_rate_currency = models.IntegerField(default=5)
 
     @property
     def player_name(self):
