@@ -9,20 +9,23 @@
   style="background-image: url('https://wallup.net/wp-content/uploads/2018/09/30/118900-fantasy-castle-room-dark.jpg');">
 <div class="flex">
 <div class="m-8 p-4 flex">
-    <div class="h-40 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+    <div class="h-50 box-border bg-black bg-opacity-50 border-gray-600  border-2">
       <div class="flex justify-center text-pink-50 text-5xl pl-2 pt-1 pb-1 pr-2">
-        <a class="m-11">{{ player.player_name }}</a> </br>
+        <a class="ml-11 mr-11 mt-14">{{ player.player_name }}</a><br>
       </div>
     </div>
-    <div class="h-40 w-[19rem] box-border bg-black bg-opacity-50 border-gray-600  border-2">
-        <label class="bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl ">Player Stats</label><br>
+    <div class="h-50 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+        <label class="bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl ">Player Stats</label>
+        <br>
         <div class="flex mt-3 justify-between px-3">
             <div class="text-3xl">
+                Awaken Level: <br>
                 Max HP: <br>
                 Coin: <br>
                 Total Monsters: <br>
             </div>
-            <div class="flex text-3xl text-right">
+            <div class="flex text-3xl text-right pl-5">
+                {{player.awake}}<br>
                 {{ player.max_hp }}<br>
                 {{player.currency}}<br>
                 {{questions.count}}
