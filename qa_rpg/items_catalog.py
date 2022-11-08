@@ -1,4 +1,5 @@
 from abc import ABC
+from enum import Enum
 
 
 class Item(ABC):
@@ -184,19 +185,19 @@ class BrokenShieldItem(Item):
         return "Broken Shield"
 
 
-class ItemCatalog:
+class ItemCatalog(Enum):
 
-    items = {0: PotionItem, 1: CrossBowItem, 2: ShieldItem, 3: CoinBagItem,
-             10: MegaPotionItem, 11: SmokeBombItem, 12: GreatShieldItem,
-             50: GreedyBagItem, 51: BloodPactItem, 52: PoisonousSmokeBombItem, 53: AdrenalineItem,
-             54: BrokenShieldItem, 999: Item}
+    ITEMS = {0: PotionItem(), 1: CrossBowItem(), 2: ShieldItem(), 3: CoinBagItem(),
+             10: MegaPotionItem(), 11: SmokeBombItem(), 12: GreatShieldItem(),
+             50: GreedyBagItem(), 51: BloodPactItem(), 52: PoisonousSmokeBombItem(), 53: AdrenalineItem(),
+             54: BrokenShieldItem(), 999: Item()}
 
     def get_item(self, index: int):
-        return self.items[index]
+        return self.value[index]
 
     def get_store_items(self):
         in_store = {}
-        for key, item in self.items.items():
+        for key, item in self.value.items():
             if key <= 9:
                 in_store[str(item)] = [key, 75]
         return in_store
