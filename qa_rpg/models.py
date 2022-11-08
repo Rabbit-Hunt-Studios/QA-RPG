@@ -64,6 +64,8 @@ class Player(models.Model):
     awake = models.IntegerField(default=0)
     question_max_currency = models.IntegerField(default=20)
     question_rate_currency = models.IntegerField(default=5)
+    status = models.CharField(max_length=50, default="")
+
 
     @property
     def player_name(self):
@@ -71,6 +73,8 @@ class Player(models.Model):
 
     def update_player_stats(self, health: int = 0, dungeon_currency: int = 0, luck: float = 0):
         self.current_hp += health
+        if self.current_hp > 100:
+            self.current_hp = 100
         self.dungeon_currency += dungeon_currency
         self.luck += luck
         self.save()
@@ -157,20 +161,20 @@ class Inventory(models.Model):
 
     def get_inventory(self, inventory_type):
         dict_item = {}
-        inventory = []
         if inventory_type == "player":
             inventory = self.player_inventory.split(';')[:-1]
         else:
             inventory = self.dungeon_inventory.split(';')[:-1]
         for item in inventory:
             item_list = item.split(":")
-            dict_item[item_list[0]] = item_list[1]
+            dict_item[int(item_list[0])] = int(item_list[1])
         return dict_item
 
     def update_inventory(self, item: dict, inventory_type):
         inventory = ""
         for key, val in item.items():
-            inventory += f"{key}:{val};"
+            if val > 0:
+                inventory += f"{key}:{val};"
         if inventory_type == "player":
             self.player_inventory = inventory
         else:

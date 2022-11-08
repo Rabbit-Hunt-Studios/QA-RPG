@@ -187,7 +187,7 @@ class BattleActionTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.question = Question.objects.get(pk=1)
         self.assertEqual(self.player.current_hp, self.player.max_hp)
-        self.assertEqual(self.player.dungeon_currency, 8)
+        self.assertEqual(self.player.dungeon_currency, 1)
         self.assertEqual(self.question.currency, 0)
         self.assertEqual(self.player.luck, BASE_LUCK + 0.04)
         self.assertEqual(self.player.activity, "dungeon")
@@ -410,7 +410,7 @@ class TreasureActionTest(TestCase):
     
     def test_claim_coin_after_pick_up_treasure(self):
         """Test that after pick up a treasure,the player gains bonus coins."""
-        random.seed(100)
+        random.seed(10)
         self.player.dungeon_currency = 10
         self.player.luck = 0.75
         self.player.save()
