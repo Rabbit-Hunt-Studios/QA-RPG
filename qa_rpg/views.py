@@ -19,6 +19,7 @@ TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
 TREASURE_THRESHOLD = 0.5
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
+ITEM_CHANCE = 0.34
 
 
 def get_player(user: User):
@@ -151,7 +152,7 @@ def treasure_action(request):
 
     if request.POST['action'] == "pick up":
         if player.luck >= event:
-            if (player.luck * 0.3) >= event:
+            if (player.luck * ITEM_CHANCE) >= event:
                 item_id = random.choice(ItemCatalog.ITEMS.get_chest_items())
                 random_item = ItemCatalog.ITEMS.get_item(item_id)
                 log.add_log(f"You got the item '{str(random_item)}' from the chest !")
@@ -249,7 +250,10 @@ def item(request):
         if used_item.instant:
             healing = used_item.health_modifier(player.max_hp)
             player.update_player_stats(health=healing)
-            log.add_log(f"You healed {healing} health points.")
+            if healing > 0:
+                log.add_log(f"You healed {healing} health points.")
+            elif healing < 0:
+                log.add_log(f"You sacrificed {-healing} health points.")
         if used_item.lingering:
             player.status = str(index)
             player.save()
@@ -278,7 +282,7 @@ def check(request, question_id):
 
         if check_choice.correct_answer:
             log.add_log(Dialogue.WIN_DIALOGUE.get_text)
-            if player.luck * 0.3 >= random.random():
+            if player.luck * ITEM_CHANCE >= random.random():
                 item_id = random.choice(ItemCatalog.ITEMS.get_cursed_items())
                 random_item = ItemCatalog.ITEMS.get_item(item_id)
                 log.add_log(f"You loot the item '{str(random_item)}' from the monster's corpse !")
