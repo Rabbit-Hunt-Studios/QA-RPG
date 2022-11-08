@@ -18,7 +18,6 @@ TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
 TREASURE_THRESHOLD = 0.5
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
-SPECIAL = [8, 9, 10, 11, 12, 13, 14]
 
 
 def get_player(user: User):
@@ -38,8 +37,7 @@ def get_player(user: User):
             continue
         except Inventory.DoesNotExist:
             inventory = Inventory.objects.create(player=player)
-            tmp = {0: 1, 1: 1}
-            inventory.update_templates(tmp)
+            inventory.update_templates({0: 1, 1: 1})
             inventory.save()
             continue
     return player, log, inventory
@@ -83,7 +81,6 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
         player.reset_stats()
         log.clear_log()
         log.clear_question()
-        inventory.reset_inventory()
         player.set_activity("index")
         return render(request, self.template_name, {"player": player})
 
@@ -125,6 +122,7 @@ def action(request):
     else:
         player.set_activity("index")
         player.add_dungeon_currency()
+        inventory.reset_inventory()
         return redirect("qa_rpg:index")
 
 
@@ -387,7 +385,7 @@ def create(request):
 
     try:
         question_text = ''
-        if int(player.activity.split(" ")[1]) in SPECIAL:
+        if int(player.activity.split(" ")[1]) >= 100:
             question_text += request.POST['question0']
             question_text += request.POST['question1']
         else:
@@ -466,7 +464,7 @@ class ShopView(LoginRequiredMixin, generic.DetailView):
             return redirect(check_url)
 
         template = {}
-        for index in range(len(TemplateCatalog.TEMPLATES.value)):
+        for index in TemplateCatalog.TEMPLATES.value.keys():
             template[" ".join(TemplateCatalog.TEMPLATES.get_template(index)) + " ?"] = [
                 TemplateCatalog.TEMPLATES.get_price(index), index]
 
