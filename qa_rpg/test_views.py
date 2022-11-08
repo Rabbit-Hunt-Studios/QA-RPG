@@ -447,3 +447,58 @@ class TreasureActionTest(TestCase):
         self.assertEqual(self.player.activity, "dungeon")
         self.assertEqual(self.player.dungeon_currency, 20)
         self.assertEqual(self.player.current_hp, 75)
+
+class ReportandCommendTest(TestCase):
+
+    def setUp(self):
+        """Setup user for testing report and commend."""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.user2 = User.objects.create_user(username="test1")
+        self.user2.set_password("54321")
+        self.user2.save()
+        self.user3 = User.objects.create_user(username="test2")
+        self.user3.set_password("23456")
+        self.user3.save()
+        self.client.login(username="demo", password="12345")
+        self.system = User.objects.create_user(username="test")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("battle1")
+        self.question = Question.objects.create(question_text="test", owner=self.system)
+        self.question.save()
+        self.correct = Choice.objects.create(question=self.question, choice_text='yes', correct_answer=True)
+        self.correct.save()
+        self.wrong = Choice.objects.create(question=self.question, choice_text='no', correct_answer=False)
+        self.wrong.save()
+        
+        
+    def test_one_report_commend_per_user(self):
+        """Test that user can only report or commend 1 time for each question."""
+        random.seed(100)
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),  {"choice": self.correct.id, "option": "report"})
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),  {"choice": self.correct.id, "option": "commend"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(ReportAndCommend.objects.filter(question=self.question).count(), 1)
+
+    def test_deactivate_question(self):
+        """Test that after the report exceed the limit, the question will be disabled."""
+        random.seed(100)
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {"choice": self.correct.id, "option": "report"})
+        self.assertEqual(response.status_code, 302)
+        self.client.logout()
+        self.client.login(username="test1", password="54321")
+        self.player2 = Player.objects.create(user=self.user2)
+        self.player2.set_activity("battle1")
+        self.player2.save()
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {"choice": self.correct.id, "option": "report"})
+        self.client.logout()
+        self.client.login(username="test2", password="23456")
+        self.player3 = Player.objects.create(user=self.user3)
+        self.player3.set_activity("battle1")
+        self.player3.save()
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {"choice": self.correct.id, "option": "report"})
+        self.question = Question.objects.get(pk=self.question.id,)
+        self.report_commend = ReportAndCommend.objects.filter(question=self.question).count()
+        self.assertEqual(self.report_commend, 3)
+        self.assertEqual(self.question.enable, False)
