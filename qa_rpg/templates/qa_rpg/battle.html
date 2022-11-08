@@ -7,6 +7,8 @@
 
 <body class="font-serif text-white bg-cover "
   style="background-image: url('https://assets.dicebreaker.com/dungeons-and-dragons-players-handbook-art-8png.jpg/BROK/resize/1920x1920%3E/format/jpg/quality/80/dungeons-and-dragons-players-handbook-art-8png.jpg;">
+
+<div class="flex">
   <div class="m-8 p-4">
     <div class="h-20 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
       <div class="text-pink-50 text-3xl pl-2 pt-1">
@@ -15,15 +17,35 @@
       </div>
     </div>
     <div class="h-15 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
-    <div class="text-white text-3xl pl-2 pt-1">
-        {% if status %}
-            {{ status }}
-        {% else %}
-            No item applied.
-        {% endif%}
+        <div class="text-white text-3xl pl-2 pt-1">
+            {% if status %}
+                {{ status }}
+            {% else %}
+                No item applied.
+            {% endif%}
+        </div>
     </div>
-</div>
   </div>
+
+  <div class="text-white text-3xl pl-2 pt-1 m-8 bg-black bg-opacity-50 border-gray-600 border-2">
+    <form method="post" action="{% url 'qa_rpg:item' %}">
+        {% csrf_token %}
+
+        <label for="item" class="p-2">Select an item to use:</label>
+            <div class="text-black text-3xl pl-2 pt-1">
+            <select name="item" id="item" aria-readonly="true">
+                <option value="None">--Choose an item--</option>
+                {% for key, value in items.items %}
+                    <option value="{{ value.0 }}">{{ key }}: {{ value.1 }}</option>
+                {% endfor %}
+            </select>
+            </div>
+        <div class="py-2 px-2">
+            <button type="submit" class="bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-green-700 duration-300 pl-2 pt-1 pb-1 pr-2">Use item</button>
+        </div>
+    </form>
+  </div>
+</div>
 
 <form action="{% url 'qa_rpg:check' question.id %}" method="post">
 {% csrf_token %}
@@ -78,24 +100,5 @@
         </div>
     </div>
 </form>
-
-  <div class="text-white text-3xl pl-2 pt-1">
-    <form method="post" action="{% url 'qa_rpg:item' %}">
-        {% csrf_token %}
-
-        <label for="item">Select an item to use:</label>
-            <div class="text-black text-3xl pl-2 pt-1">
-            <select name="item" id="item" aria-readonly="true">
-                <option value="None">--Choose an item--</option>
-                {% for key, value in items.items %}
-                    <option value="{{ value.0 }}">{{ key }}: {{ value.1 }}</option>
-                {% endfor %}
-            </select>
-            </div>
-
-        <button type="submit">Use item</button>
-
-    </form>
-  </div>
 
 </body>
