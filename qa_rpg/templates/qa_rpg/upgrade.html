@@ -30,15 +30,15 @@
 
 
 <div class="flex m-8 p-4">
-    <div class="h-80 w-1/2 box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl">
+    <div class="h-[18rem] w-1/2 box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl">
         <form action="{% url 'qa_rpg:upgrade_action'%}" method="post">
         {% csrf_token %}
          <div class="w-auto flex flex-col bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 mt-3">
              {% if upgrade_check.0 %}
-             Max HP: {{player.max_hp}}/{{upgrade_list.0}} Price: {{price.0}}
+             Max HP: {{player.max_hp}}/{{upgrade_list.0}}
              <input type="hidden" name="upgrade" value="max_hp">
              <input type="hidden" name="price" value="{{price.0}}">
-             <button type="submit" class="bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2">Upgrade</button>
+             <button type="submit" class="bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2">Upgrade : {{price.0}} Coins</button>
              {% else %}
              Max HP: {{player.max_hp}}/{{upgrade_list.0}}
              <div class="text-center bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pr-2">Fully upgraded</div>
@@ -50,10 +50,10 @@
         {% csrf_token %}
         <div class="w-auto flex flex-col bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 mt-3">
             {% if upgrade_check.1 %}
-             Max coin gain per monster: {{player.question_max_currency}}/{{upgrade_list.1}} Price: {{price.1}}
+             Max coin gain per monster: {{player.question_max_currency}}/{{upgrade_list.1}}
              <input type="hidden" name="upgrade" value="max_earn">
              <input type="hidden" name="price" value="{{price.1}}">
-             <button type="submit" class="bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2">Upgrade</button>
+             <button type="submit" class="bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2">Upgrade : {{price.1}} Coins</button>
             {% else %}
              Max coin gain per monster: {{player.question_max_currency}}/{{upgrade_list.1}}
              <div class="text-center bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pr-2">Fully upgraded</div>
@@ -65,10 +65,10 @@
         {% csrf_token %}
         <div class="w-auto flex flex-col bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 mt-3">
             {% if upgrade_check.2 %}
-             Rate coin gain per monster: {{player.question_rate_currency}}/{{upgrade_list.2}} Price: {{price.2}}
+             Rate coin gain per monster: {{player.question_rate_currency}}/{{upgrade_list.2}}
              <input type="hidden" name="upgrade" value="rate_earn">
              <input type="hidden" name="price" value="{{price.2}}">
-             <button type="submit" class="bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2">Upgrade</button>
+             <button type="submit" class="bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2">Upgrade : {{price.2}} Coins</button>
             {% else %}
              Rate coin gain per monster: {{player.question_rate_currency}}/{{upgrade_list.2}}
              <div class="text-center bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pr-2">Fully upgraded</div>
@@ -76,14 +76,17 @@
         </div>
         </form>
     </div>
-    <div class="h-80 w-1/2 box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl">
+    <div class="h-60 w-1/2 box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl ml-4">
         {% if upgrade_check.3 %}
         <form action="{% url 'qa_rpg:awake'%}" method="post">
         {% csrf_token %}
-            Awake: {{player.awake}}/3 Price: {{price.3}}
+            <div class="flex flex-col justify-center items-center text-5xl mt-7">
+            Awaken Level: {{player.awake}}/3<br>
             <input type="hidden" name="upgrade" value="awake">
              <input type="hidden" name="price" value="{{price.3}}">
-             <button type="submit" class="bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2">Awake</button>
+             <button type="submit" class="w-[30rem] bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2 py-3 mt-3">Awaken : {{price.3}} Coins</button>
+                Success Rate: {{awaken_rate}}
+                </div>
         </form>
         {% else %}
          Awake: {{player.awake}}/3

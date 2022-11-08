@@ -521,10 +521,13 @@ class UpgradeView(LoginRequiredMixin, generic.DetailView):
                          (player.question_max_currency < upgrade_list[1]),
                          (player.question_rate_currency < upgrade_list[2]),
                          (player.awake < 3)]
-        print(inventory.max_inventory)
+
+        awaken_rate = 0.5 - (0.1*player.awake)
+
         player.set_activity("upgrade")
         return render(request, self.template_name, {"player": player, "price": price,
-                                                    "upgrade_list": upgrade_list, "upgrade_check": upgrade_check})
+                                                    "upgrade_list": upgrade_list, "upgrade_check": upgrade_check,
+                                                    "awaken_rate":awaken_rate})
 
 
 @never_cache
