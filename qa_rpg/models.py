@@ -60,6 +60,7 @@ class Player(models.Model):
     dungeon_currency = models.IntegerField(default=0)
     activity = models.CharField(max_length=100, default="index")
     luck = models.FloatField(default=BASE_LUCK)
+    status = models.CharField(max_length=50, default="")
 
     @property
     def player_name(self):
