@@ -255,15 +255,15 @@ def check(request, question_id):
     one_user_per_report(request, question, log, question_id)
     set_question_activation(question_id)
 
-    if player.status == "":
-        applied_item = ItemCatalog.ITEMS.get_item(999)
-    else:
-        applied_item = ItemCatalog.ITEMS.get_item(int(player.status))
-    player.status = ""
-    player.save()
-
     try:
         check_choice = Choice.objects.get(pk=request.POST['choice'])
+
+        if player.status == "":
+            applied_item = ItemCatalog.ITEMS.get_item(999)
+        else:
+            applied_item = ItemCatalog.ITEMS.get_item(int(player.status))
+        player.status = ""
+        player.save()
 
         if check_choice.correct_answer:
             log.add_log(Dialogue.WIN_DIALOGUE.get_text)
@@ -281,6 +281,8 @@ def check(request, question_id):
             nullified = applied_item.damage_modifier(question.damage)
             if nullified > 0:
                 log.add_log(f"{nullified} damage from monster was blocked by your item.")
+            elif nullified < 0:
+                log.add_log(f"{-nullified} damage suffered from cursed item.")
             player.update_player_stats(health=-(question.damage - nullified))
             question.add_coin()
             if player.check_death():
@@ -322,7 +324,6 @@ def run_away(request, question_id):
     else:
         run_fail = Dialogue.RUN_FAIL_DIALOGUE.get_text
         log.add_log(run_fail)
-
         player.update_player_stats(health=-(question.damage - applied_item.damage_modifier(question.damage)))
         question.add_coin()
         if player.check_death():
@@ -333,10 +334,17 @@ def run_away(request, question_id):
             return render(request, "qa_rpg/index.html", {'player': player})
 
         messages.error(request, run_fail)
+        items = {}
+        for key, value in inventory.get_inventory("dungeon").items():
+            items[str(ItemCatalog.ITEMS.get_item(key))] = [key, value]
+        if player.status == "":
+            status = ""
+        else:
+            status = str(ItemCatalog.ITEMS.get_item(int(player.status)))
         return render(request,
                       'qa_rpg/battle.html',
                       {'question': question,
-                       'player': player})
+                       'player': player, "status": status, "items": items})
 
 
 def add_reports_or_commends(request, question, log, question_id):

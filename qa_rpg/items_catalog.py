@@ -66,7 +66,7 @@ class SmokeBombItem(Item):
     lingering = True
 
     def escape_modifier(self, chance):
-        return chance * 2
+        return chance - 0.05
 
     def __str__(self):
         return "Smoke Bomb"
@@ -177,7 +177,7 @@ class BrokenShieldItem(Item):
     lingering = True
 
     def damage_modifier(self, incoming_damage):
-        if incoming_damage <= 30:
+        if incoming_damage <= 27:
             return incoming_damage
         return -int(incoming_damage * 0.5)
 
