@@ -39,7 +39,7 @@ def get_player(user: User):
         except Inventory.DoesNotExist:
             inventory = Inventory.objects.create(player=player)
             inventory.update_templates({0: 1, 1: 1})
-            inventory.update_inventory({0: 5})
+            inventory.update_inventory({0: 5}, "player")
             inventory.save()
             continue
     return player, log, inventory
