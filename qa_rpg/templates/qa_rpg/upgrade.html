@@ -76,6 +76,20 @@
         </div>
         </form>
     </div>
+    <div class="h-80 w-1/2 box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl">
+        {% if upgrade_check.3 %}
+        <form action="{% url 'qa_rpg:awake'%}" method="post">
+        {% csrf_token %}
+            Awake: {{player.awake}}/3 Price: {{price.3}}
+            <input type="hidden" name="upgrade" value="awake">
+             <input type="hidden" name="price" value="{{price.3}}">
+             <button type="submit" class="bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2">Awake</button>
+        </form>
+        {% else %}
+         Awake: {{player.awake}}/3
+         <div class="text-center bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pr-2">Reached Pinnacle</div>
+         {% endif %}
+    </div>
 </div>
 
 

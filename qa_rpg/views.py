@@ -511,7 +511,7 @@ class UpgradeView(LoginRequiredMixin, generic.DetailView):
         price = [100 + (int((player.max_hp - 100) / 20) * 50),
                  100 + (int((player.question_max_currency - 20) / 2) * 50),
                  100 + (int((player.question_rate_currency - 5)) * 50),
-                 200 + (player.awake * 100)]
+                 200 + (player.awake * 200)]
 
         upgrade_list = [100 + (100 * (player.awake + 1)),
                         20 + (10 * (player.awake + 1)),
@@ -519,8 +519,9 @@ class UpgradeView(LoginRequiredMixin, generic.DetailView):
 
         upgrade_check = [(player.max_hp < upgrade_list[0]),
                          (player.question_max_currency < upgrade_list[1]),
-                         (player.question_rate_currency < upgrade_list[2])]
-
+                         (player.question_rate_currency < upgrade_list[2]),
+                         (player.awake < 3)]
+        print(inventory.max_inventory)
         player.set_activity("upgrade")
         return render(request, self.template_name, {"player": player, "price": price,
                                                     "upgrade_list": upgrade_list, "upgrade_check": upgrade_check})
@@ -531,7 +532,6 @@ def upgrade(request):
     player, log, inventory = get_player(request.user)
     player_question = Question.objects.filter(owner=request.user)
     price = int(request.POST["price"])
-    print(request.POST["upgrade"])
     if player.currency > price:
         player.currency -= price
         if request.POST["upgrade"] == "max_hp":
@@ -552,7 +552,32 @@ def upgrade(request):
             question.save()
         messages.success(request, "Upgrade Successful")
     else:
-        messages.success(request, "You don't have enough coins to upgrade.")
+        messages.error(request, "You don't have enough coins to upgrade.")
 
     player.save()
     return redirect('qa_rpg:upgrade')
+
+
+@never_cache
+def awake(request):
+    player, log, inventory = get_player(request.user)
+    event = random.random()
+    price = int(request.POST["price"])
+    if player.currency > price:
+        player.currency -= price
+        if event < 0.5 - (0.1*player.awake):
+            player.awake += 1
+            inventory.max_inventory += 3
+            messages.success(request, "Awaken Successful")
+        else:
+            messages.error(request, "Awaken Fail")
+    else:
+        messages.error(request, "You don't have enough coins to upgrade.")
+
+    player.save()
+    inventory.save()
+    return redirect('qa_rpg:upgrade')
+
+
+
+
