@@ -9,12 +9,12 @@
   style="background-image: url('https://wallup.net/wp-content/uploads/2018/09/30/118900-fantasy-castle-room-dark.jpg');">
 
 <div class="m-8 p-4 flex">
-    <div class="h-40 w-60 box-border bg-black bg-opacity-50 border-gray-600  border-2">
+    <div class="h-40 box-border bg-black bg-opacity-50 border-gray-600  border-2">
       <div class="flex justify-center text-pink-50 text-5xl pl-2 pt-1 pb-1 pr-2">
         <a class="m-11">{{ player.player_name }}</a> </br>
       </div>
     </div>
-    <div class="h-40 w-[18rem] box-border bg-black bg-opacity-50 border-gray-600  border-2">
+    <div class="h-40 w-[19rem] box-border bg-black bg-opacity-50 border-gray-600  border-2">
         <label class="bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl ">Player Stats</label><br>
         <div class="flex mt-3 justify-between px-3">
             <div class="text-3xl">
@@ -45,7 +45,10 @@
                     <div class="w-auto flex flex-col bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 mt-3 sticky">
                 <li>{{ question.question_text }} <br>
                     {{question.currency}}/{{question.max_currency}}  <button type="submit" class="bg-black bg-opacity-50 hover:text-yellow-500 border-gray-600 border-2 pl-2 pr-2">Claim</button>
-                        <br></li>
+                    {% if not question.enable %}
+                    <a class="text-red-600">Your monsters are imprisoned by GM.</a>
+                    {% endif %}
+                    <br></li>
                     </div>
                     </form>
             {% endfor %}
