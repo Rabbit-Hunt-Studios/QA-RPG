@@ -303,11 +303,11 @@ def one_user_per_report(request, question, log, question_id):
 
 def set_question_activation(question_id):
     question = Question.objects.get(pk=question_id)
-    report_num = ReportAndCommend.objects.filter(question=question).count()
-    commend_num = ReportAndCommend.objects.filter(question=question).count()
+    report_num = question.report
+    commend_num = question.commend
     report_score = report_num
     commend_score = commend_num * 0.5
-    limit = 1
+    limit = 7
     if question.owner != User.objects.get(pk=2):
         if report_score - commend_score > limit:
             question.enable = False
