@@ -531,10 +531,14 @@ class ProfileView(LoginRequiredMixin, generic.TemplateView):
         if check_url is not None:
             return redirect(check_url)
 
-        template = get_available_template(inventory)
+        player_inventory = []
+        for key, val in inventory.get_inventory("player").items():
+            player_inventory.append([str(ItemCatalog.ITEMS.get_item(key)), val])
 
+        check_items = True
         player.set_activity("profile")
-        return render(request, self.template_name, {"player": player, "questions": questions, "template": template})
+        return render(request, self.template_name, {"player": player, "questions": questions,
+                                                    "inventory": player_inventory, "check": check_items})
 
 
 @never_cache
@@ -547,6 +551,22 @@ def claim_coin(request, question_id):
     player.save()
     questions.save()
     return redirect('qa_rpg:profile')
+
+
+@never_cache
+def select(request):
+    if request.POST["select"] == "template":
+        template_name = 'qa_rpg/profile.html'
+
+        player, log, inventory = get_player(request.user)
+        questions = Question.objects.filter(owner=player.user)
+        template = get_available_template(inventory)
+
+        check_items = False
+        return render(request, template_name, {"player": player, "questions": questions,
+                                               "template": template, "check": check_items})
+    else:
+        return redirect("qa_rpg:profile")
 
 
 class ShopView(LoginRequiredMixin, generic.DetailView):
@@ -617,7 +637,7 @@ class UpgradeView(LoginRequiredMixin, generic.DetailView):
                          (player.question_rate_currency < upgrade_list[2]),
                          (player.awake < 3)]
 
-        awaken_rate = 0.5 - (0.1*player.awake)
+        awaken_rate = (0.5 - (0.1*player.awake)) * 100
 
         player.set_activity("upgrade")
         return render(request, self.template_name, {"player": player, "price": price,
@@ -670,7 +690,7 @@ def awake(request):
         else:
             messages.error(request, "Awaken Fail")
     else:
-        messages.error(request, "You don't have enough coins to upgrade.")
+        messages.error(request, "You don't have enough coins to Awaken.")
 
     player.save()
     inventory.save()

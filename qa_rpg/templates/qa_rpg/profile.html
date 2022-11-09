@@ -72,24 +72,58 @@
         </div>
     </div>
     <div class="h-80 w-1/2 box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl">
-
-        <label class="bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl">Inventory</label>
+        <div class="flex justify-center">
+        <div class="w-full bg-black bg-opacity-50 hover:text-red-600 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl text-center">
+         <form action="{% url 'qa_rpg:select' %}" method="post">
+            {% csrf_token %}
+             <input type="hidden" name="select" value="item">
+                 <button type="submit" >Items Inventory</button>
+         </form>
+            </div>
+        <div class="w-full bg-black bg-opacity-50 hover:text-red-600 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl text-center">
+         <form action="{% url 'qa_rpg:select' %}" method="post">
+            {% csrf_token %}
+             <input type="hidden" name="select" value="template">
+            <button type="submit">Templates Inventory</button>
+         </form>
+        </div>
+        </div>
         <div class="mt-3 px-2">
             <div class="h-64 overflow-auto">
-        {% if template %}
-            <ul class="list-disc">
-            {% for key, val in template.items %}
-                    <div class="w-auto flex flex-col bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 mt-3 sticky">
-                     <li>{{ key }} <br>
-                        In inventory: {{val.1}}
-                        <br></li>
-                    </div>
-            {% endfor %}
-            </ul>
 
-        {% else %}
-            <p>You haven't summoned any monsters.</p>
-        {% endif %}
+                {% if check %}
+                {% if inventory %}
+                    <ul class="list-disc">
+                    {% for item in inventory %}
+                            <div class="w-auto flex flex-col bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 mt-3 sticky">
+                             <li>{{ item.0 }} <br>
+                                In inventory: {{item.1}}
+                                <br></li>
+                            </div>
+                    {% endfor %}
+                    </ul>
+
+                {% else %}
+                    <p>You don't have any item.</p>
+                {% endif %}
+                {% else %}
+                {% if template %}
+                <ul class="list-disc">
+                {% for key, val in template.items %}
+                        <div class="w-auto flex flex-col bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 mt-3 sticky">
+                         <li>{{ key }} <br>
+                            In inventory: {{val.1}}
+                            <br></li>
+                        </div>
+                {% endfor %}
+                </ul>
+
+            {% else %}
+                <p>You don't have any template.</p>
+            {% endif %}
+            {% endif %}
+                </div>
+
             </div>
         </div>
     </div>
