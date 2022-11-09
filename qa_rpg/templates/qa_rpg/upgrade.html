@@ -85,12 +85,14 @@
             <input type="hidden" name="upgrade" value="awake">
              <input type="hidden" name="price" value="{{price.3}}">
              <button type="submit" class="w-[30rem] bg-black bg-opacity-50 hover:text-green-500 border-gray-600 border-2 pl-2 pr-2 py-3 mt-3">Awaken : {{price.3}} Coins</button>
-                Success Rate: {{awaken_rate}}
+                Success Rate: {{awaken_rate}}%
                 </div>
         </form>
         {% else %}
+        <div class="flex flex-col justify-center items-center text-5xl mt-7">
          Awake: {{player.awake}}/3
-         <div class="text-center bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pr-2">Reached Pinnacle</div>
+         <div class="w-[30rem] bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pr-2 py-3 mt-3 text-center">Reached Pinnacle</div>
+        </div>
          {% endif %}
     </div>
 </div>
