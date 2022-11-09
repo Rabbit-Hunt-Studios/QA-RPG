@@ -21,6 +21,7 @@ urlpatterns = [
     path('shop/buy/', views.buy, name='buy'),
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('profile/claim/<int:question_id>', views.claim_coin, name='claim'),
+    path('profile/select_template', views.select, name='select'),
     path('profile/upgrade/', views.UpgradeView.as_view(), name='upgrade'),
     path('profile/upgrade/upgrade_action', views.upgrade, name='upgrade_action'),
     path('profile/upgrade/awake', views.awake, name='awake'),
