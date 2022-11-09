@@ -474,7 +474,7 @@ def create(request):
     player, log, inventory = get_player(request.user)
 
     summon_fee = int(request.POST['fee'])
-    if summon_fee > player.currency:
+    if summon_fee >= player.currency:
         messages.error(request, "You don't have enough coins to summon a monster.")
         return redirect("qa_rpg:summon")
 
@@ -576,7 +576,7 @@ def buy(request):
     player_template = inventory.get_templates()
     amount = int(request.POST["amount"])
     template = request.POST["index"][1:-1].split(",")
-    if int(template[0]) * amount > player.currency:
+    if int(template[0]) * amount >= player.currency:
         messages.error(request, "You don't have enough coins to purchase.")
         return redirect("qa_rpg:shop")
 
@@ -630,7 +630,7 @@ def upgrade(request):
     player, log, inventory = get_player(request.user)
     player_question = Question.objects.filter(owner=request.user)
     price = int(request.POST["price"])
-    if player.currency > price:
+    if player.currency >= price:
         player.currency -= price
         if request.POST["upgrade"] == "max_hp":
             if player.max_hp + 20 <= 100 + (100 * (player.awake+1)):
@@ -661,7 +661,7 @@ def awake(request):
     player, log, inventory = get_player(request.user)
     event = random.random()
     price = int(request.POST["price"])
-    if player.currency > price:
+    if player.currency >= price:
         player.currency -= price
         if event < 0.5 - (0.1*player.awake):
             player.awake += 1
