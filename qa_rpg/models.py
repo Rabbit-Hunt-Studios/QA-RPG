@@ -73,7 +73,7 @@ class Player(models.Model):
 
     def update_player_stats(self, health: int = 0, dungeon_currency: int = 0, luck: float = 0):
         self.current_hp += health
-        if self.current_hp > 100:
+        if self.current_hp > self.max_hp:
             self.current_hp = 100
         self.dungeon_currency += dungeon_currency
         self.luck += luck
