@@ -465,6 +465,7 @@ class ReportandCommendTest(TestCase):
         self.system = User.objects.create_user(username="test")
         self.player = Player.objects.create(user=self.user)
         self.player.set_activity("battle1")
+        self.player.save()
         self.question = Question.objects.create(question_text="test", owner=self.system)
         self.question.save()
         self.correct = Choice.objects.create(question=self.question, choice_text='yes', correct_answer=True)
@@ -485,6 +486,7 @@ class ReportandCommendTest(TestCase):
         """Test that after the report exceed the limit, the question will be disabled."""
         random.seed(100)
         response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {"choice": self.correct.id, "option": "report"})
+        self.question = Question.objects.get(pk=1)
         self.assertEqual(response.status_code, 302)
         self.client.logout()
         self.client.login(username="test1", password="54321")
@@ -498,7 +500,25 @@ class ReportandCommendTest(TestCase):
         self.player3.set_activity("battle1")
         self.player3.save()
         response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {"choice": self.correct.id, "option": "report"})
-        self.question = Question.objects.get(pk=self.question.id,)
         self.report_commend = ReportAndCommend.objects.filter(question=self.question).count()
         self.assertEqual(self.report_commend, 3)
         self.assertEqual(self.question.enable, False)
+
+class ShopViewPageTest(TestCase):
+
+    def setUp(self) -> None:
+        """Setup user for testing the shop page."""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("shop")
+        self.player.save()
+
+    def test_rendering_shop_page(self):
+        """Test that player is actually in the shop page."""
+        self.player.set_activity("index")
+        response = self.client.get(reverse("qa_rpg:shop"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Player.objects.get(user=self.user).activity, "shop")
