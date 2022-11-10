@@ -17,9 +17,14 @@
               <button class="text-center px-10 py-2 m-4 text-xl text-white hover:text-white border-green-300 border-2 bg-green-600 hover:bg-green-900 hover:border-green-700 hover:border-2 duration-300 rounded" type="submit">Login</button> | <a href="{% url 'qa_rpg:home'%}"><button class="text-center px-10 py-2 m-4 text-xl text-white hover:text-white border-red-400 border-2 bg-red-600 hover:bg-red-900 hover:border-red-700 hover:border-2 duration-300 rounded" type="button">Back</button></a>
           </div>
               <input type="hidden" name="next" value="{{next}}"/>
-            <div class = "justify-center items-center flex-row flex w-full">
-                <button class="px-10 py-2 m-8 justify-center text-center text-xl text-black bg-white hover:text-white hover:bg-red-500 border-black border-2 hover:border-transparent duration-150 rounded" onclick="document.location='{% provider_login_url 'google' %}'"> 
+            <div class = "justify-center items-center flex-col flex w-full font">
+                <button class="px-10 py-2 m-4 justify-center text-center text-2xl text-black bg-white hover:text-white hover:bg-red-500 border-black border-2 hover:border-transparent duration-150 rounded" onclick="document.location='{% provider_login_url 'google' %}'"> 
                     <img src="https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-webinar-optimizing-for-success-google-business-webinar-13.png" width="35px" height="25px" class='float-left'>Login with google
+                </button>
+                <button class="px-10 py-2 m-4 text-black bg-blue-500 hover:text-white hover:bg-blue-700 border-black border-2 hover:border-transparent duration-150 rounded" onclick="document.location='{% provider_login_url 'discord' %}'"> 
+                    <div class="justify-center text-center text-2xl">
+                    <img src="https://support.discord.com/hc/user_images/PRywUXcqg0v5DD6s7C3LyQ.jpeg" width="35px" height="25px" class='float-left'>Login with discord
+                    </div>
                 </button>
             </div>
           </div>
