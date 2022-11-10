@@ -450,19 +450,6 @@ class TreasureActionTest(TestCase):
 
 class ReportandCommendTest(TestCase):
 
-    def setUp(self):
-        """Setup user for testing report and commend."""
-        self.user = User.objects.create_user(username="demo")
-        self.user.set_password("12345")
-        self.user.save()
-        self.client.login(username="demo", password="12345")
-        self.question.save()
-        self.correct = Choice.objects.create(question=self.question, choice_text='yes', correct_answer=True)
-        self.correct.save()
-        self.wrong = Choice.objects.create(question=self.question, choice_text='no', correct_answer=False)
-        self.wrong.save()
-        
-        
     def test_one_report_commend_per_user(self):
         """Test that user can only report or commend 1 time for each question."""
         random.seed(100)
