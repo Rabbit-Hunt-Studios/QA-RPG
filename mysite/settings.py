@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.google', 
+    'allauth.socialaccount.providers.discord',
 ]
 
 MIDDLEWARE = [
@@ -67,6 +68,15 @@ SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': [
             'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    },
+    'discord': {
+        'SCOPE': [
+            'identify',
             'email',
         ],
         'AUTH_PARAMS': {
