@@ -289,18 +289,21 @@ def check(request, question_id):
 
         if check_choice.correct_answer:
             log.add_log(Dialogue.WIN_DIALOGUE.get_text)
-            chance = 0.4
+            chance = 0.225
             if applied_item.coin_modifier(100) != 0:
                 chance = 0
-            if player.luck * chance >= random.random():
+            elif applied_item.item_modifier(1):
+                chance = 1
+            if chance >= random.random():
                 item_id = random.choice(item_list.get_cursed_items())
                 random_item = item_list.get_item(item_id)
-                log.add_log(f"You loot the item '{str(random_item)}' from the monster's corpse !")
                 dungeon_inventory = inventory.get_inventory("dungeon")
+                amount = 1 + applied_item.item_modifier(1)
                 try:
-                    dungeon_inventory[item_id] += 1
+                    dungeon_inventory[item_id] += amount
                 except KeyError:
-                    dungeon_inventory[item_id] = 1
+                    dungeon_inventory[item_id] = amount
+                log.add_log(f"You loot the {amount} '{str(random_item)}(s)' from the monster's corpse !")
                 inventory.update_inventory(dungeon_inventory, "dungeon")
             else:
                 earn_coins = get_coins(question.damage)
