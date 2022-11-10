@@ -483,8 +483,7 @@ class ReportandCommendTest(TestCase):
         self.player = Player.objects.create(user=self.user)
         self.player.set_activity("battle1")
         self.player.save()
-        self.question = Question.objects.create(
-            question_text="test", owner=self.user, pk=1)
+        self.question = Question.objects.create(question_text="test", owner=self.user, pk=1)
         self.question.save()
         self.correct = Choice.objects.create(
             question=self.question, choice_text='yes', correct_answer=True)
