@@ -456,18 +456,17 @@ class ReportandCommendTest(TestCase):
         self.user.set_password("12345")
         self.user.save()
         self.client.login(username="demo", password="12345")
-        self.system = User.objects.create_user(username="test")
         self.player = Player.objects.create(user=self.user)
         self.player.set_activity("battle1")
         self.player.save()
-        self.question = Question.objects.create(question_text="test", owner=self.system)
+        self.question = Question.objects.create(question_text="test", owner=self.user, pk=1)
         self.question.save()
         self.correct = Choice.objects.create(question=self.question, choice_text='yes', correct_answer=True)
         self.correct.save()
         self.wrong = Choice.objects.create(question=self.question, choice_text='no', correct_answer=False)
         self.wrong.save()
-        
-        
+
+
     def test_one_report_commend_per_user(self):
         """Test that user can only report or commend 1 time for each question."""
         random.seed(100)
