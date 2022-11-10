@@ -21,6 +21,10 @@ class Item(ABC):
         """Abstract method for getting health modifier."""
         return 0
 
+    def item_modifier(self, item):
+        """Abstract method for getting extra items."""
+        return 0
+
 
 class DungeonCandyItem(Item):
     """Heal 5-10 health points instantly."""
@@ -235,6 +239,16 @@ class MermaidTearItem(Item):
         return "Mermaid Tears"
 
 
+class GloveMidasItem(Item):
+    """Ensures you get a cursed item and times it by 2."""
+
+    def item_modifier(self, item):
+        return 1
+
+    def __str__(self):
+        return "Glove of Midas"
+
+
 @dataclass(init=False)
 class ItemCatalog:
 
@@ -242,7 +256,7 @@ class ItemCatalog:
              6: PotionItem(), 7: CrossBowItem(), 8: ShieldItem(), 9: CoinBagItem(),
 
              10: MegaPotionItem(), 11: SmokeBombItem(), 12: GreatShieldItem(), 13: AmbrosiaItem(),
-             14: BookAlchemyItem(),
+             14: BookAlchemyItem(), 15: GloveMidasItem(),
 
              50: GreedyBagItem(), 51: BloodPactItem(), 52: PoisonousSmokeBombItem(), 53: AdrenalineItem(),
              54: BrokenShieldItem(), 55: VialIchorItem(), 56: RuneBulwarkItem(), 57: MermaidTearItem(),
