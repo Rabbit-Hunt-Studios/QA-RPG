@@ -96,13 +96,12 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player, log, inventory = get_player(request.user)
-        print(log.split_log("question"))
         check_url = check_player_activity(player, ["index", "dungeon"])
         if check_url is not None:
             return redirect(check_url)
 
         if EXIT_CHECK in log.split_log("question"):
-            log.add_log("You can exit") # HELP change log
+            log.add_log("The coast is clear, you may now exit the dungeon.")  # HELP change log
 
         player.set_activity("dungeon")
         return render(request, self.template_name, {"logs": log.split_log("text"), "player": player})
@@ -140,16 +139,17 @@ def action(request):
             return redirect("qa_rpg:index")
 
 
-def found_monster(request): #HELP about log please
+def found_monster(request):
     player, log, inventory = get_player(request.user)
     if request.POST['action'] == "walk":
         log.add_log(Dialogue.MONSTER.get_text + Dialogue.BATTLE_DIALOGUE.get_text)
     else:
-        log.add_log(Dialogue.MONSTER.get_text + " block Dungeon Exit")
+        log.add_log("A " + Dialogue.MONSTER.get_text + " is blocking the dungeon exit.")
         log.add_question(EXIT_CHECK)
 
     player.set_activity("found monster")
     return "qa_rpg:battle"
+
 
 class TreasureView(LoginRequiredMixin, generic.DetailView):
     template_name = "qa_rpg/treasure.html"
