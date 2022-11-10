@@ -20,6 +20,7 @@ TREASURE_THRESHOLD = 0.5
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
 ITEM_CHANCE = 0.34
+item_list = ItemCatalog()
 
 
 def get_player(user: User):
@@ -153,8 +154,8 @@ def treasure_action(request):
     if request.POST['action'] == "pick up":
         if player.luck >= event:
             if (player.luck * ITEM_CHANCE) >= event:
-                item_id = random.choice(ItemCatalog.ITEMS.get_chest_items())
-                random_item = ItemCatalog.ITEMS.get_item(item_id)
+                item_id = random.choice(item_list.get_chest_items())
+                random_item = item_list.get_item(item_id)
                 log.add_log(f"You got the item '{str(random_item)}' from the chest !")
                 dungeon_inventory = inventory.get_inventory("dungeon")
                 try:
@@ -227,11 +228,11 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
         player.set_activity(f"battle{question_id}")
         items = {}
         for key, value in inventory.get_inventory("dungeon").items():
-            items[str(ItemCatalog.ITEMS.get_item(key))] = [key, value]
+            items[str(item_list.get_item(key))] = [key, value]
         if player.status == "":
             status = ""
         else:
-            status = str(ItemCatalog.ITEMS.get_item(int(player.status)))
+            status = str(item_list.get_item(int(player.status)))
         return render(request, "qa_rpg/battle.html", {"question": question, "player": player,
                                                       "items": items,
                                                       "status": status})
@@ -242,21 +243,27 @@ def item(request):
     player, log, inventory = get_player(request.user)
     try:
         index = int(request.POST['item'])
-        used_item = ItemCatalog.ITEMS.get_item(index)
+        used_item = item_list.get_item(index)
         dungeon_inventory = inventory.get_inventory("dungeon")
         dungeon_inventory[index] -= 1
         inventory.update_inventory(dungeon_inventory, "dungeon")
         log.add_log("You used an item: " + str(used_item) + " !")
-        if used_item.instant:
-            healing = used_item.health_modifier(player.max_hp)
-            player.update_player_stats(health=healing)
-            if healing > 0:
-                log.add_log(f"You healed {healing} health points.")
-            elif healing < 0:
-                log.add_log(f"You sacrificed {-healing} health points.")
-        if used_item.lingering:
-            player.status = str(index)
-            player.save()
+
+        healing = used_item.health_modifier(player.max_hp)
+        player.update_player_stats(health=healing)
+        if healing > 0:
+            log.add_log(f"You healed {healing} health points.")
+        elif healing < 0:
+            log.add_log(f"You sacrificed {-healing} health points.")
+            if player.check_death():
+                inventory.clear_dungeon_inventory()
+                player.status = ""
+                player.save()
+                messages.error(request, "You lost consciousness in the dungeons.")
+                return render(request, "qa_rpg/index.html", {'player': player})
+
+        player.status = str(index)
+        player.save()
     except KeyError:
         messages.error(request, "No item selected.")
 
@@ -274,17 +281,20 @@ def check(request, question_id):
         check_choice = Choice.objects.get(pk=request.POST['choice'])
 
         if player.status == "":
-            applied_item = ItemCatalog.ITEMS.get_item(999)
+            applied_item = item_list.get_item(999)
         else:
-            applied_item = ItemCatalog.ITEMS.get_item(int(player.status))
+            applied_item = item_list.get_item(int(player.status))
         player.status = ""
         player.save()
 
         if check_choice.correct_answer:
             log.add_log(Dialogue.WIN_DIALOGUE.get_text)
-            if player.luck * ITEM_CHANCE >= random.random():
-                item_id = random.choice(ItemCatalog.ITEMS.get_cursed_items())
-                random_item = ItemCatalog.ITEMS.get_item(item_id)
+            chance = 0.4
+            if applied_item.coin_modifier(100) != 0:
+                chance = 0
+            if player.luck * chance >= random.random():
+                item_id = random.choice(item_list.get_cursed_items())
+                random_item = item_list.get_item(item_id)
                 log.add_log(f"You loot the item '{str(random_item)}' from the monster's corpse !")
                 dungeon_inventory = inventory.get_inventory("dungeon")
                 try:
@@ -337,9 +347,9 @@ def run_away(request, question_id):
     set_question_activation(question_id)
 
     if player.status == "":
-        applied_item = ItemCatalog.ITEMS.get_item(999)
+        applied_item = item_list.get_item(999)
     else:
-        applied_item = ItemCatalog.ITEMS.get_item(int(player.status))
+        applied_item = item_list.get_item(int(player.status))
     player.status = ""
     player.save()
 
@@ -362,11 +372,11 @@ def run_away(request, question_id):
         messages.error(request, run_fail)
         items = {}
         for key, value in inventory.get_inventory("dungeon").items():
-            items[str(ItemCatalog.ITEMS.get_item(key))] = [key, value]
+            items[str(item_list.get_item(key))] = [key, value]
         if player.status == "":
             status = ""
         else:
-            status = str(ItemCatalog.ITEMS.get_item(int(player.status)))
+            status = str(item_list.get_item(int(player.status)))
         return render(request,
                       'qa_rpg/battle.html',
                       {'question': question,
@@ -533,7 +543,7 @@ class ProfileView(LoginRequiredMixin, generic.TemplateView):
 
         player_inventory = []
         for key, val in inventory.get_inventory("player").items():
-            player_inventory.append([str(ItemCatalog.ITEMS.get_item(key)), val])
+            player_inventory.append([str(item_list.get_item(key)), val])
 
         check_items = True
         player.set_activity("profile")

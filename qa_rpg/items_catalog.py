@@ -1,11 +1,9 @@
+import random
 from abc import ABC
-from enum import Enum
+from dataclasses import dataclass
 
 
 class Item(ABC):
-
-    instant = False
-    lingering = False
 
     def coin_modifier(self, coin):
         """Abstract method for getting money modifier."""
@@ -24,10 +22,18 @@ class Item(ABC):
         return 0
 
 
+class DungeonCandyItem(Item):
+    """Heal 5-10 health points instantly."""
+
+    def health_modifier(self, max_health):
+        return random.randrange(5, 11, 1)
+
+    def __str__(self):
+        return "Dungeon Candy"
+
+
 class PotionItem(Item):
     """Heal 20 health points instantly."""
-
-    instant = True
 
     def health_modifier(self, max_health):
         return 20
@@ -39,43 +45,45 @@ class PotionItem(Item):
 class MegaPotionItem(Item):
     """Heal 50 percent of max health."""
 
-    instant = True
-
     def health_modifier(self, max_health):
         return int(max_health * 0.5)
 
     def __str__(self):
-        return "Mega Potion"
+        return "Mythical Potion"
 
 
 class CrossBowItem(Item):
     """Add 20 percent to escape chance."""
 
-    lingering = True
-
     def escape_modifier(self, chance):
-        return 0.2
+        return 0.1
 
     def __str__(self):
         return "Crossbow"
 
 
 class SmokeBombItem(Item):
-    """Ensures 100 percent escape chance."""
-
-    lingering = True
+    """Ensures 95 percent escape chance."""
 
     def escape_modifier(self, chance):
         return chance - 0.05
 
     def __str__(self):
-        return "Smoke Bomb"
+        return "Ninja Smoke Bomb"
+
+
+class WoodenShieldItem(Item):
+    """Incoming damage is subtracted by 6 damage."""
+
+    def damage_modifier(self, incoming_damage):
+        return 6
+
+    def __str__(self):
+        return "Wooden Shield"
 
 
 class ShieldItem(Item):
-    """Incoming damage is is subtracted by 20 percent."""
-
-    lingering = True
+    """Incoming damage is subtracted by 20 percent."""
 
     def damage_modifier(self, incoming_damage):
         return int(incoming_damage * 0.2)
@@ -87,19 +95,15 @@ class ShieldItem(Item):
 class GreatShieldItem(Item):
     """Incoming damage is halved."""
 
-    lingering = True
-
     def damage_modifier(self, incoming_damage):
         return int(incoming_damage * 0.5)
 
     def __str__(self):
-        return "Great Shield"
+        return "Aegis Shield"
 
 
 class CoinBagItem(Item):
     """Coin gain is multiplied by 1.5."""
-
-    lingering = True
 
     def coin_modifier(self, coin):
         return int(coin * 0.5)
@@ -108,10 +112,31 @@ class CoinBagItem(Item):
         return "Coin Bag"
 
 
+class BookAlchemyItem(Item):
+    """Coin gain is multiplied by 2.5."""
+
+    def coin_modifier(self, coin):
+        return int(coin * 1.5)
+
+    def __str__(self):
+        return "Book of Alchemy"
+
+
+class AmbrosiaItem(Item):
+    """Heal 25 percent instantly and 25 percent incoming damage is blocked."""
+
+    def health_modifier(self, max_health):
+        return int(max_health * 0.25)
+
+    def damage_modifier(self, incoming_damage):
+        return int(incoming_damage * 0.25)
+
+    def __str__(self):
+        return "Ambrosia"
+
+
 class GreedyBagItem(Item):
     """Coin gain is multiplied by 3, but incoming damage is multiplied by 2."""
-
-    lingering = True
 
     def coin_modifier(self, coin):
         return coin * 2
@@ -120,61 +145,50 @@ class GreedyBagItem(Item):
         return -incoming_damage
 
     def __str__(self):
-        return "Greedy bag"
+        return "Greedy Bag"
 
 
 class BloodPactItem(Item):
-    """Instantly lose 15 health but gain 2 times multiplier to coin."""
-
-    instant = True
-    lingering = True
+    """Instantly lose 15 percent of max health, but gain 2 times multiplier to coin."""
 
     def coin_modifier(self, coin):
         return coin
 
     def health_modifier(self, max_health):
-        return -15
+        return -int(max_health * 0.15)
 
     def __str__(self):
         return "Blood Pact"
 
 
 class PoisonousSmokeBombItem(Item):
-    """Ensure escape chance but lose 10 health instantly."""
-
-    instant = True
-    lingering = True
+    """Add 40 percent to escape chance but lose 10 percent max health instantly."""
 
     def escape_modifier(self, chance):
-        return chance * 2
+        return 0.3
 
     def health_modifier(self, max_health):
-        return -10
+        return -int(max_health * 0.08)
 
     def __str__(self):
-        return "Poisonous Smoke Screen"
+        return "Poisonous Cloud"
 
 
 class AdrenalineItem(Item):
-    """Heal 25 percent of max health but don't gain coins from current battle."""
-
-    instant = True
-    lingering = True
+    """Heal 12 percent of max health but don't gain coins from current battle."""
 
     def health_modifier(self, max_health):
-        return int(max_health * 0.25)
+        return int(max_health * 0.12)
 
     def coin_modifier(self, coin):
         return -coin
 
     def __str__(self):
-        return "Adrenaline"
+        return "Adrenaline Shot"
 
 
 class BrokenShieldItem(Item):
-    """Blocks 100 percent of incoming damage up to 30 damage if it fails 1.5 damage is applied."""
-
-    lingering = True
+    """Blocks 100 percent of incoming damage up to 27 damage if it fails 1.5 damage is applied."""
 
     def damage_modifier(self, incoming_damage):
         if incoming_damage <= 27:
@@ -185,25 +199,70 @@ class BrokenShieldItem(Item):
         return "Broken Shield"
 
 
-class ItemCatalog(Enum):
+class RuneBulwarkItem(Item):
+    """Sacrifice 5 percent of max health to block 27.5 percent of incoming damage."""
 
-    ITEMS = {0: PotionItem(), 1: CrossBowItem(), 2: ShieldItem(), 3: CoinBagItem(),
-             10: MegaPotionItem(), 11: SmokeBombItem(), 12: GreatShieldItem(),
+    def health_modifier(self, max_health):
+        return -int(max_health * 0.05)
+
+    def damage_modifier(self, incoming_damage):
+        return int(incoming_damage * 0.275)
+
+    def __str__(self):
+        return "Rune of Bulwark"
+
+
+class VialIchorItem(Item):
+    """50 percent chance of healing or damaging you up to 10 percent."""
+
+    def health_modifier(self, max_health):
+        return int((random.randrange(-10, 10, 1)) * 0.01 * max_health)
+
+    def __str__(self):
+        return "Vial of Ichor"
+
+
+class MermaidTearItem(Item):
+    """Heal 17.5 percent of max health instantly, but incoming damage is multiplied by 1.75."""
+
+    def health_modifier(self, max_health):
+        return int(max_health * 0.175)
+
+    def damage_modifier(self, incoming_damage):
+        return -int(incoming_damage * 0.75)
+
+    def __str__(self):
+        return "Mermaid Tears"
+
+
+@dataclass(init=False)
+class ItemCatalog:
+
+    ITEMS = {0: DungeonCandyItem(), 1: WoodenShieldItem(),
+             6: PotionItem(), 7: CrossBowItem(), 8: ShieldItem(), 9: CoinBagItem(),
+
+             10: MegaPotionItem(), 11: SmokeBombItem(), 12: GreatShieldItem(), 13: AmbrosiaItem(),
+             14: BookAlchemyItem(),
+
              50: GreedyBagItem(), 51: BloodPactItem(), 52: PoisonousSmokeBombItem(), 53: AdrenalineItem(),
-             54: BrokenShieldItem(), 999: Item()}
+             54: BrokenShieldItem(), 55: VialIchorItem(), 56: RuneBulwarkItem(), 57: MermaidTearItem(),
+
+             999: Item()}
 
     def get_item(self, index: int):
-        return self.value[index]
+        return self.ITEMS[index]
 
     def get_store_items(self):
         in_store = {}
-        for key, item in self.value.items():
-            if key <= 9:
+        for key, item in self.ITEMS.items():
+            if key <= 5:
+                in_store[str(item)] = [key, 30]
+            elif key <= 9:
                 in_store[str(item)] = [key, 75]
         return in_store
 
     def get_chest_items(self):
-        return [key for key in self.value.keys() if (10 <= key < 20)]
+        return [key for key in self.ITEMS.keys() if (10 <= key < 20)]
 
     def get_cursed_items(self):
-        return [key for key in self.value.keys() if (50 <= key < 60)]
+        return [key for key in self.ITEMS.keys() if (50 <= key < 60)]
