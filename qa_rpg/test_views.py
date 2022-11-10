@@ -455,6 +455,8 @@ class ReportandCommendTest(TestCase):
         self.user = User.objects.create_user(username="demo")
         self.user.set_password("12345")
         self.user.save()
+        self.user2 = User.objects.create_user(username="admin")
+        self.user2.save()
         self.client.login(username="demo", password="12345")
         self.player = Player.objects.create(user=self.user)
         self.player.set_activity("battle1")
