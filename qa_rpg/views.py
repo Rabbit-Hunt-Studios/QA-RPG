@@ -20,6 +20,7 @@ TREASURE_THRESHOLD = 0.5
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
 ITEM_CHANCE = 0.34
+EXIT_CHECK = '9999'
 
 
 def get_player(user: User):
@@ -94,10 +95,14 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player, log, inventory = get_player(request.user)
-
+        print(log.split_log("question"))
         check_url = check_player_activity(player, ["index", "dungeon"])
         if check_url is not None:
             return redirect(check_url)
+
+        if len(log.split_log("question")) >= 2   and \
+                EXIT_CHECK == log.split_log("question")[-2] :
+            log.add_log("You can exit") # HELP change log
 
         player.set_activity("dungeon")
         return render(request, self.template_name, {"logs": log.split_log("text"), "player": player})
@@ -109,26 +114,43 @@ def action(request):
     event = random.random()
 
     if request.POST['action'] == "walk":
+        if len(log.split_log("question")) >= 2 and \
+                EXIT_CHECK == log.split_log("question")[-2]:
+            log.add_question(log.split_log("question")[-1])
+
         url = "qa_rpg:dungeon"
         if player.luck >= TREASURE_THRESHOLD and event <= (player.luck - TREASURE_THRESHOLD):
             log.add_log(f"You found a treasure chest")
             player.update_player_stats(luck=-(player.luck - TREASURE_THRESHOLD))
             url = "qa_rpg:treasure"
         elif event <= player.luck:
-            log.add_log(Dialogue.MONSTER.get_text + Dialogue.BATTLE_DIALOGUE.get_text)
-            player.set_activity("found monster")
-            url = "qa_rpg:battle"
+            url = found_monster(request)
         else:
             log.add_log(Dialogue.WALK_DIALOGUE.get_text)
             player.update_player_stats(luck=0.02)
         return redirect(url)
     else:
-        player.set_activity("index")
-        player.status = ""
-        player.add_dungeon_currency()
-        inventory.reset_inventory()
-        return redirect("qa_rpg:index")
+        if event <= 0.5 and \
+                (len(log.split_log("question")) < 2 or EXIT_CHECK != log.split_log("question")[-2]):
+            return redirect(found_monster(request))
+        else:
+            player.set_activity("index")
+            player.status = ""
+            player.add_dungeon_currency()
+            inventory.reset_inventory()
+            return redirect("qa_rpg:index")
 
+
+def found_monster(request): #HELP about log please
+    player, log, inventory = get_player(request.user)
+    if request.POST['action'] == "walk":
+        log.add_log(Dialogue.MONSTER.get_text + Dialogue.BATTLE_DIALOGUE.get_text)
+    else:
+        log.add_log(Dialogue.MONSTER.get_text + " block Dungeon Exit")
+        log.add_question(EXIT_CHECK)
+
+    player.set_activity("found monster")
+    return "qa_rpg:battle"
 
 class TreasureView(LoginRequiredMixin, generic.DetailView):
     template_name = "qa_rpg/treasure.html"
