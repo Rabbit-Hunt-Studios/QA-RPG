@@ -57,7 +57,7 @@ class MegaPotionItem(Item):
 
 
 class CrossBowItem(Item):
-    """Add 20 percent to escape chance."""
+    """Add 10 percent to escape chance."""
 
     def escape_modifier(self, chance):
         return 0.1
@@ -67,10 +67,10 @@ class CrossBowItem(Item):
 
 
 class SmokeBombItem(Item):
-    """Ensures 95 percent escape chance."""
+    """Ensures 100 percent escape chance."""
 
     def escape_modifier(self, chance):
-        return chance - 0.05
+        return chance
 
     def __str__(self):
         return "Ninja Smoke Bomb"
@@ -169,7 +169,7 @@ class PoisonousSmokeBombItem(Item):
     """Add 40 percent to escape chance but lose 10 percent max health instantly."""
 
     def escape_modifier(self, chance):
-        return 0.3
+        return 0.4
 
     def health_modifier(self, max_health):
         return -int(max_health * 0.08)
@@ -220,7 +220,7 @@ class VialIchorItem(Item):
     """50 percent chance of healing or damaging you up to 10 percent."""
 
     def health_modifier(self, max_health):
-        return int((random.randrange(-10, 10, 1)) * 0.01 * max_health)
+        return int((random.randrange(-10, 11, 1)) * 0.01 * max_health)
 
     def __str__(self):
         return "Vial of Ichor"
