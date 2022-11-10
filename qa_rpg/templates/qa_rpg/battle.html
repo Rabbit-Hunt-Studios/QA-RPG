@@ -33,15 +33,19 @@
 
         <label for="item" class="p-2">Select an item to use:</label>
             <div class="text-black text-3xl pl-2 pt-1">
-            <select name="item" id="item" aria-readonly="true">
-                <option value="None">--Choose an item--</option>
+            <select name="item" id="item" aria-readonly="true" required>
+                <option value="">--Choose an item--</option>
                 {% for key, value in items.items %}
                     <option value="{{ value.0 }}">{{ key }}: {{ value.1 }}</option>
                 {% endfor %}
             </select>
             </div>
         <div class="py-2 px-2">
-            <button type="submit" class="bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-green-700 duration-300 pl-2 pt-1 pb-1 pr-2">Use item</button>
+            {% if status %}
+                <button type="submit" class="bg-red bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2" disabled>Use item</button>
+            {% else %}
+                <button type="submit" class="bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-green-700 duration-300 pl-2 pt-1 pb-1 pr-2">Use item</button>
+            {% endif %}
         </div>
     </form>
   </div>
