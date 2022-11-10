@@ -142,6 +142,14 @@ class Log(models.Model):
             self.clear_question()
         self.save()
 
+    def remove_question(self, question_id: str):
+        question = self.split_log("question")
+        question.remove(question_id)
+        self.log_questions = f"{';'.join(question)}" + ";"
+        print(self.log_questions)
+        self.save()
+
+
     def add_report_question(self, question_id: int):
         if str(question_id) not in self.split_log("report"):
             self.log_report_question += f"{question_id};"
