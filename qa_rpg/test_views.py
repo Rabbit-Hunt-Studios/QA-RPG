@@ -455,12 +455,6 @@ class ReportandCommendTest(TestCase):
         self.user = User.objects.create_user(username="demo")
         self.user.set_password("12345")
         self.user.save()
-        self.user2 = User.objects.create_user(username="test1")
-        self.user2.set_password("54321")
-        self.user2.save()
-        self.user3 = User.objects.create_user(username="test2")
-        self.user3.set_password("23456")
-        self.user3.save()
         self.client.login(username="demo", password="12345")
         self.system = User.objects.create_user(username="test")
         self.player = Player.objects.create(user=self.user)
@@ -486,39 +480,22 @@ class ReportandCommendTest(TestCase):
         """Test that after the report exceed the limit, the question will be disabled."""
         random.seed(100)
         response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {"choice": self.correct.id, "option": "report"})
-        self.question = Question.objects.get(pk=1)
         self.assertEqual(response.status_code, 302)
         self.client.logout()
-        self.client.login(username="test1", password="54321")
-        self.player2 = Player.objects.create(user=self.user2)
-        self.player2.set_activity("battle1")
-        self.player2.save()
-        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {"choice": self.correct.id, "option": "report"})
-        self.client.logout()
-        self.client.login(username="test2", password="23456")
-        self.player3 = Player.objects.create(user=self.user3)
-        self.player3.set_activity("battle1")
-        self.player3.save()
-        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {"choice": self.correct.id, "option": "report"})
-        self.report_commend = ReportAndCommend.objects.filter(question=self.question).count()
-        self.assertEqual(self.report_commend, 3)
+        for i in range(1, 8):
+            self.user = User.objects.create_user(username=f"test{i}")
+            self.user.set_password(f"Testing{i}")
+            self.user.save()
+            self.client.login(username=f"Test{i}", password=f"Testing{i}")
+            self.player = Player.objects.create(user=self.user)
+            self.player.set_activity("battle1")
+            self.player.save()
+            response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {"choice": self.correct.id, "option": "report"})
+            self.client.logout()
+        self.question = Question.objects.get(pk=self.question.id,)
+        self.report_commends = ReportAndCommend.objects.filter(question=self.question).count()
+        self.assertEqual(self.report_commends, 8)
         self.assertEqual(self.question.enable, False)
 
-class ShopViewPageTest(TestCase):
 
-    def setUp(self) -> None:
-        """Setup user for testing the shop page."""
-        self.user = User.objects.create_user(username="demo")
-        self.user.set_password("12345")
-        self.user.save()
-        self.client.login(username="demo", password="12345")
-        self.player = Player.objects.create(user=self.user)
-        self.player.set_activity("shop")
-        self.player.save()
-
-    def test_rendering_shop_page(self):
-        """Test that player is actually in the shop page."""
-        self.player.set_activity("index")
-        response = self.client.get(reverse("qa_rpg:shop"))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(Player.objects.get(user=self.user).activity, "shop")
+        
