@@ -632,29 +632,30 @@ def buy(request):
     player_items = inventory.get_inventory(player)
     amount = int(request.POST["amount"])
     if request.POST["index"]:
-        shop = request.POST["index"][1:-1].split(",")
-        if int(shop[0]) * amount >= player.currency:
-            messages.error(request, "You don't have enough coins to purchase.")
-            return redirect("qa_rpg:shop")
-        if shop[0] != 0:
+        shop_choice = request.POST["index"][1:-1].split(",")
+        if int(shop_choice[1]) in TemplateCatalog.TEMPLATES.keys():
+            if int(shop_choice[1]) * amount >= player.currency:
+                messages.error(request, "You don't have enough coins to purchase.")
+                return redirect("qa_rpg:shop")
             try:
-                player_template[int(shop[1])] += amount
+                player_template[int(shop_choice[0])] += amount
             except:
-                player_template[int(shop[1])] = amount
+                player_template[int(shop_choice[0])] = amount
             inventory.update_templates(player_template)
-            player.currency -= int(shop[0]) * amount
+            player.currency -= int(shop_choice[1]) * amount
             player.save()
-            messages.success(request, "Purchase Successful")
-        
-        elif shop[1] != 0:
+        elif int(shop_choice[0]) == 0:
+            if int(shop_choice[1]) * amount >= player.currency:
+                messages.error(request, "You don't have enough coins to purchase.")
+                return redirect("qa_rpg:shop")
             try:
-                player_template[int(shop[0])] += amount
+                player_items[int(shop_choice[0])] += amount
             except:
-                player_template[int(shop[0])] = amount
-            # inventory.update_templates(player_template)
-            player.currency -= int(shop[1]) * amount
+                player_items[int(shop_choice[0])] = amount
+            inventory.update_inventory(player_items, player)
+            player.currency -= int(shop_choice[1]) * amount
             player.save()
-            messages.success(request, "Purchase Successful")
+        messages.success(request, "Purchase Successful")
     return redirect('qa_rpg:shop')
 
 
