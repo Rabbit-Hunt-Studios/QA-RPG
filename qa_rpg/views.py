@@ -629,34 +629,40 @@ class ShopView(LoginRequiredMixin, generic.DetailView):
 def buy(request):
     player, log, inventory = get_player(request.user)
     player_template = inventory.get_templates()
-    player_items = inventory.get_inventory(player)
+    player_item = inventory.get_inventory(player)
     amount = int(request.POST["amount"])
-    if request.POST["index"]:
-        shop_choice = request.POST["index"][1:-1].split(",")
-        if int(shop_choice[1]) in TemplateCatalog.TEMPLATES.keys():
-            if int(shop_choice[1]) * amount >= player.currency:
-                messages.error(request, "You don't have enough coins to purchase.")
-                return redirect("qa_rpg:shop")
-            try:
-                player_template[int(shop_choice[0])] += amount
-            except:
-                player_template[int(shop_choice[0])] = amount
-            inventory.update_templates(player_template)
-            player.currency -= int(shop_choice[1]) * amount
-            player.save()
-        elif int(shop_choice[0]) == 0:
-            if int(shop_choice[1]) * amount >= player.currency:
-                messages.error(request, "You don't have enough coins to purchase.")
-                return redirect("qa_rpg:shop")
-            try:
-                player_items[int(shop_choice[0])] += amount
-            except:
-                player_items[int(shop_choice[0])] = amount
-            inventory.update_inventory(player_items, player)
-            player.currency -= int(shop_choice[1]) * amount
-            player.save()
+    try:
+        TemplateCatalog.TEMPLATES.get_price(int(request.POST["index"][1:-1].split(",")[1]))
+        template = request.POST["index"][1:-1].split(",")
+        if int(template[0]) * amount >= player.currency:
+            messages.error(request, "You don't have enough coins to purchase.")
+            return redirect("qa_rpg:shop")
+
+        try:
+            player_template[int(template[1])] += amount
+        except:
+            player_template[int(template[1])] = amount
+        inventory.update_templates(player_template)
+        player.currency -= int(template[0]) * amount
+        player.save()
         messages.success(request, "Purchase Successful")
-    return redirect('qa_rpg:shop')
+        return redirect('qa_rpg:shop')
+    except:
+        items = request.POST["index"][1:-1].split(",")
+        if int(items[1]) * amount >= player.currency:
+            messages.error(request, "You don't have enough coins to purchase.")
+            return redirect("qa_rpg:shop")
+
+        try:
+            player_item[int(items[0])] += amount
+        except:
+            player_item[int(items[0])] = amount
+        inventory.update_inventory(player_item, "Player")
+        player.currency -= int(items[1]) * amount
+        player.save()
+        messages.success(request, "Purchase Successful")
+        return redirect('qa_rpg:shop')
+
 
 
 class UpgradeView(LoginRequiredMixin, generic.DetailView):
