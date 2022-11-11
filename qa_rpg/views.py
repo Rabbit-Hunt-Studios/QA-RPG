@@ -613,6 +613,8 @@ class ShopView(LoginRequiredMixin, generic.DetailView):
         check_url = check_player_activity(player, ["index", "shop"])
         if check_url is not None:
             return redirect(check_url)
+        
+        items = item_list.get_store_items()
 
         template = {}
         for index in TemplateCatalog.TEMPLATES.value.keys():
@@ -620,27 +622,42 @@ class ShopView(LoginRequiredMixin, generic.DetailView):
                 TemplateCatalog.TEMPLATES.get_price(index), index]
 
         player.set_activity("shop")
-        return render(request, self.template_name, {"player": player, "template": template})
+        return render(request, self.template_name, {"player": player, "template": template, "items": items})
 
 
 @never_cache
 def buy(request):
     player, log, inventory = get_player(request.user)
     player_template = inventory.get_templates()
+    player_items = inventory.get_inventory(player)
     amount = int(request.POST["amount"])
-    template = request.POST["index"][1:-1].split(",")
-    if int(template[0]) * amount >= player.currency:
-        messages.error(request, "You don't have enough coins to purchase.")
-        return redirect("qa_rpg:shop")
+    if request.POST.get("index"):
+        template = request.POST["index"][1:-1].split(",")
+        if int(template[0]) * amount >= player.currency:
+            messages.error(request, "You don't have enough coins to purchase.")
+            return redirect("qa_rpg:shop")
 
-    try:
-        player_template[int(template[1])] += amount
-    except:
-        player_template[int(template[1])] = amount
-    inventory.update_templates(player_template)
-    player.currency -= int(template[0]) * amount
-    player.save()
-    messages.success(request, "Purchase Successful")
+        try:
+            player_template[int(template[1])] += amount
+        except:
+            player_template[int(template[1])] = amount
+        inventory.update_templates(player_template)
+        player.currency -= int(template[0]) * amount
+        player.save()
+        messages.success(request, "Purchase Successful")
+    elif request.POST.get("items"):
+        item = request.POST['items'][1:-1].split(",")
+        if int(item[1]) * amount >= player.currency:
+            messages.error(request, "You don't have enough coins to purchase.")
+            return redirect("qa_rpg:shop")
+        try:
+            player_items[int(item[0])] += amount
+        except:
+            player_items[int(item[0])] = amount
+        inventory.update_inventory(player_items)
+        player.currency -= int(item[1]) * amount
+        player.save()
+        messages.success(request, "Purchase Successful")
     return redirect('qa_rpg:shop')
 
 
