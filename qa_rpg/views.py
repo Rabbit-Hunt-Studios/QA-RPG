@@ -632,29 +632,29 @@ def buy(request):
     player_items = inventory.get_inventory(player)
     amount = int(request.POST["amount"])
     if request.POST["index"]:
-        list = request.POST["index"][1:-1].split(",")
-        if int(list[0]) * amount >= player.currency:
+        shop = request.POST["index"][1:-1].split(",")
+        if int(shop[0]) * amount >= player.currency:
             messages.error(request, "You don't have enough coins to purchase.")
             return redirect("qa_rpg:shop")
-        if list[1] == 0:
+        if shop[0] != 0:
             try:
-                player_template[int(list[1])] += amount
+                player_template[int(shop[1])] += amount
             except:
-                player_template[int(list[1])] = amount
+                player_template[int(shop[1])] = amount
             inventory.update_templates(player_template)
-            player.currency -= int(list[0]) * amount
+            player.currency -= int(shop[0]) * amount
             player.save()
             messages.success(request, "Purchase Successful")
-        else:
-            try:
-                player_template[int(list[0])] += amount
-            except:
-                player_template[int(list[0])] = amount
-            player.currency -= int(list[1]) * amount
-            player.save()
-            messages.success(request, "Purchase Successful")
-
         
+        elif shop[1] != 0:
+            try:
+                player_template[int(shop[0])] += amount
+            except:
+                player_template[int(shop[0])] = amount
+            # inventory.update_templates(player_template)
+            player.currency -= int(shop[1]) * amount
+            player.save()
+            messages.success(request, "Purchase Successful")
     return redirect('qa_rpg:shop')
 
 
