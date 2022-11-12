@@ -96,8 +96,10 @@
                     <ul class="list-disc">
                     {% for item in inventory %}
                             <div class="w-auto flex flex-col bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 mt-3 sticky">
+                            <span title="{{item.2}}">
                              <li>{{ item.0 }} <br>
-                                In inventory: {{item.1}}
+                             </span>
+                                In inventory: {{item.1}} 
                                 <br></li>
                             </div>
                     {% endfor %}
