@@ -629,27 +629,28 @@ class ShopView(LoginRequiredMixin, generic.DetailView):
 def buy(request):
     player, log, inventory = get_player(request.user)
     player_template = inventory.get_templates()
-    player_item = inventory.get_inventory(player)
+    player_item = inventory.get_inventory("player")
     amount = int(request.POST["amount"])
     try:
-        TemplateCatalog.TEMPLATES.get_price(int(request.POST["index"][1:-1].split(",")[1]))
-        template = request.POST["index"][1:-1].split(",")
-        if int(template[0]) * amount >= player.currency:
+        template = int(request.POST["index"])
+        print(template)
+        price = TemplateCatalog.TEMPLATES.get_price(template)
+        if price * amount >= player.currency:
             messages.error(request, "You don't have enough coins to purchase.")
             return redirect("qa_rpg:shop")
 
         try:
-            player_template[int(template[1])] += amount
+            player_template[template] += amount
         except:
-            player_template[int(template[1])] = amount
+            player_template[template] = amount
         inventory.update_templates(player_template)
-        player.currency -= int(template[0]) * amount
+        player.currency -= price * amount
         player.save()
         messages.success(request, "Purchase Successful")
         return redirect('qa_rpg:shop')
     except:
         items = request.POST["index"][1:-1].split(",")
-        if int(items[1]) * amount >= player.currency:
+        if int(items[1]) * amount > player.currency:
             messages.error(request, "You don't have enough coins to purchase.")
             return redirect("qa_rpg:shop")
 
@@ -657,7 +658,7 @@ def buy(request):
             player_item[int(items[0])] += amount
         except:
             player_item[int(items[0])] = amount
-        inventory.update_inventory(player_item, "Player")
+        inventory.update_inventory(player_item, "player")
         player.currency -= int(items[1]) * amount
         player.save()
         messages.success(request, "Purchase Successful")
