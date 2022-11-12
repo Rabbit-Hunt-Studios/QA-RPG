@@ -16,10 +16,10 @@ from .template_question import TemplateCatalog
 from .items_catalog import ItemCatalog
 
 TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
-TREASURE_THRESHOLD = 0.5
+TREASURE_THRESHOLD = 0.55
 CATEGORY = ['General Knowledge', 'Entertainment', 'Science', 'Math',
             'History', 'Technology', 'Sport']
-ITEM_CHANCE = 0.34
+ITEM_CHANCE = 0.37
 EXIT_CHECK = '9999'
 item_list = ItemCatalog()
 
@@ -221,8 +221,6 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
             seen_question = log.split_log("question")
             report_question = log.split_log("report")
             filter_question = seen_question + report_question
-            player_question_amount = Question.objects.filter(~Q(owner=request.user), category='player',
-                                                             enable=True).count()
             amount = len(log.split_log("question"))
 
             if amount > 30:
@@ -231,13 +229,13 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
                 if ((amount % 10) != 0) or amount == 0:
                     question_id = random.choice(
                         Question.objects.exclude(id__in=filter_question).filter(~Q(owner=request.user), enable=True)
-                            .values_list('id', flat=True))
+                        .values_list('id', flat=True))
                     log.add_question(question_id)
                 else:
                     question_id = random.choice(
                         Question.objects.exclude(id__in=filter_question).filter(~Q(owner=request.user),
                                                                                 category='player', enable=True)
-                            .values_list("id", flat=True))
+                        .values_list("id", flat=True))
                     log.add_question(question_id)
             except IndexError:
                 question_id = random.choice(
@@ -248,11 +246,11 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
         player.set_activity(f"battle{question_id}")
         items = {}
         for key, value in inventory.get_inventory("dungeon").items():
-            items[str(item_list.get_item(key))] = [key, value]
-        if player.status == "":
-            status = ""
-        else:
-            status = str(item_list.get_item(int(player.status)))
+            player_item = item_list.get_item(key)
+            items[str(player_item)] = [key, value, player_item.description, player_item.effect]
+        status = ""
+        if player.status != "":
+            status += str(item_list.get_item(int(player.status)))
         return render(request, "qa_rpg/battle.html", {"question": question, "player": player,
                                                       "items": items,
                                                       "status": status})
@@ -309,7 +307,7 @@ def check(request, question_id):
 
         if check_choice.correct_answer:
             log.add_log(Dialogue.WIN_DIALOGUE.get_text)
-            chance = 0.225
+            chance = 0.23
             if applied_item.coin_modifier(100) != 0:
                 chance = 0
             elif applied_item.item_modifier(1):
@@ -333,7 +331,7 @@ def check(request, question_id):
                     log.add_log(f"You earn {earn_coins} coins ({bonus} bonus coins).")
                 else:
                     log.add_log(f"You earn {earn_coins} coins.")
-                player.update_player_stats(dungeon_currency=earn_coins, luck=0.04)
+                player.update_player_stats(dungeon_currency=earn_coins, luck=0.03)
             player.set_activity("dungeon")
         else:
             log.add_log(Dialogue.LOSE_DIALOGUE.get_text)
@@ -451,7 +449,7 @@ def get_coins(damage: int):
         start += i * 5
         end += (i + 1) * 5
         if start <= damage < end:
-            return random.randrange(start=(i * 9) + 1, stop=(i + 1) * 9, step=1)
+            return random.randrange(start=(i * 10) + 6, stop=(i + 1) * 10, step=1)
     return 50
 
 
@@ -566,7 +564,8 @@ class ProfileView(LoginRequiredMixin, generic.TemplateView):
 
         player_inventory = []
         for key, val in inventory.get_inventory("player").items():
-            player_inventory.append([str(item_list.get_item(key)), val, str(item_list.get_description(key))])
+            player_item = item_list.get_item(key)
+            player_inventory.append([str(player_item), val, player_item.description, player_item.effect])
 
         check_items = True
         player.set_activity("profile")
@@ -649,7 +648,7 @@ def buy(request):
         return redirect('qa_rpg:shop')
     except:
         items = request.POST["index"][1:-1].split(",")
-        if int(items[2]) * amount > player.currency:
+        if int(items[1]) * amount > player.currency:
             messages.error(request, "You don't have enough coins to purchase.")
             return redirect("qa_rpg:shop")
 
@@ -658,11 +657,10 @@ def buy(request):
         except:
             player_item[int(items[0])] = amount
         inventory.update_inventory(player_item, "player")
-        player.currency -= int(items[2]) * amount
+        player.currency -= int(items[1]) * amount
         player.save()
         messages.success(request, "Purchase Successful")
         return redirect('qa_rpg:shop')
-
 
 
 class UpgradeView(LoginRequiredMixin, generic.DetailView):
@@ -696,7 +694,7 @@ class UpgradeView(LoginRequiredMixin, generic.DetailView):
         player.set_activity("upgrade")
         return render(request, self.template_name, {"player": player, "price": price,
                                                     "upgrade_list": upgrade_list, "upgrade_check": upgrade_check,
-                                                    "awaken_rate":awaken_rate})
+                                                    "awaken_rate": awaken_rate})
 
 
 @never_cache

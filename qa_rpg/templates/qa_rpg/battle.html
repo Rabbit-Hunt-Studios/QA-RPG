@@ -36,7 +36,7 @@
             <select name="item" id="item" aria-readonly="true" required>
                 <option value="">--Choose an item--</option>
                 {% for key, value in items.items %}
-                    <option value="{{ value.0 }}">{{ key }}: {{ value.1 }}</option>
+                    <option value="{{ value.0 }}" title="{{ value.2 }}&#13;{{ value.3 }}">{{ key }}: {{ value.1 }}</option>
                 {% endfor %}
             </select>
             </div>
