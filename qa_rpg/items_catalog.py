@@ -281,6 +281,9 @@ class ItemCatalog:
     def get_item(self, index: int):
         return self.ITEMS[index]
 
+    def get_desciption(self, index: int):
+        return self.DESCRIPTION[index]
+        
     def get_store_items(self):
         in_store = {}
         for key, item in self.ITEMS.items():

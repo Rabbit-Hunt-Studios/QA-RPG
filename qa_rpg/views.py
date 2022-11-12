@@ -566,7 +566,7 @@ class ProfileView(LoginRequiredMixin, generic.TemplateView):
 
         player_inventory = []
         for key, val in inventory.get_inventory("player").items():
-            player_inventory.append([str(item_list.get_item(key)), val, item_list.DESCRIPTION(key)])
+            player_inventory.append([str(item_list.get_item(key)), val, str(item_list.get_desciption(key))])
 
         check_items = True
         player.set_activity("profile")
