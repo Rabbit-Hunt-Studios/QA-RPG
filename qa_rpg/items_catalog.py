@@ -268,7 +268,15 @@ class ItemCatalog:
     
     DESCRIPTION = {0: "Heals between 5 to 10 health points instantly upon use.", 1: "Blocks 6 damage of incoming damage.",
                     6: "Heals 20 health points instantly upon use.", 7: "Increase your chance of escape by 10 percents.", 
-                    8: "Blocks 20 percent of damage taken.", 9: "Adds 50 percent of bonus of coin gained.",}
+                    8: "Blocks 20 percent of damage taken.", 9: "Adds 50 percent of bonus of coin gained.",
+                    10: "Heal 50 percent of max health instantly.", 11: "Gain 100 percent escape chance.", 12: "Blocks 50 percent of incoming damage.", 
+                    13: "Heal 25 percent of max health instantly and blocks 25 percent of incoming damage.", 14: "Coin gain is multiplied by 2.5.", 
+                    15: "Ensures that 2 items of the same kind drop from monster.",
+
+                    50: "Multiplies coin gain by 3 times, but also multiplies damage taken by 2 times", 51: "Lose 15 percent of max health instantly, but multiplies coin gain by 2 times.", 
+                    52: "Lose 10 percent of max health instantly, but adds 30 percent escape chance.", 53: "Heals 12 percent of max health, but coin gains becomes zero.",
+                    54: " Blocks 100 percent of damage taken up to 27 damage otherwise take 50 percent extra damage.", 55: "Randomizes a percentage from negative 10 percent to positive 10 percent which will be added to your health.", 
+                    56: "Lose 5 percent of your max health instantly, and block 27.5 percent of incoming damage.", 57: " Heal 17.5 percent of max health instantly, but gain 1.75 multiplier to incoming damage.",}
 
     def get_item(self, index: int):
         return self.ITEMS[index]
@@ -282,7 +290,7 @@ class ItemCatalog:
                         in_store[str(item)] = [key, desc, 30]
                 elif key <= 9:
                     if key == keys:
-                        in_store[str(item)] = [key, desc,  75]
+                        in_store[str(item)] = [key, desc, 75]
         return in_store
 
     def get_chest_items(self):
