@@ -150,6 +150,7 @@ def found_monster(request):
     player.set_activity("found monster")
     return "qa_rpg:battle"
 
+
 class TreasureView(LoginRequiredMixin, generic.DetailView):
     template_name = "qa_rpg/treasure.html"
 
