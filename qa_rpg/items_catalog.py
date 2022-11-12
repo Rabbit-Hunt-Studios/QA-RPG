@@ -35,6 +35,8 @@ class DungeonCandyItem(Item):
     def __str__(self):
         return "Dungeon Candy"
 
+    
+
 
 class PotionItem(Item):
     """Heal 20 health points instantly."""
@@ -214,7 +216,8 @@ class RuneBulwarkItem(Item):
 
     def __str__(self):
         return "Rune of Bulwark"
-
+    
+    
 
 class VialIchorItem(Item):
     """50 percent chance of healing or damaging you up to 10 percent."""
@@ -262,6 +265,10 @@ class ItemCatalog:
              54: BrokenShieldItem(), 55: VialIchorItem(), 56: RuneBulwarkItem(), 57: MermaidTearItem(),
 
              999: Item()}
+    
+    DESCRIPTION = {0: "Heals between 5 to 10 health points instantly upon use.", 1: "Blocks 6 damage of incoming damage.",
+                    6: "Heals 20 health points instantly upon use.", 7: "Increase your chance of escape by 10 percents.", 
+                    8: "Blocks 20 percent of damage taken.", 9: "Adds 50 percent of bonus of coin gained.",}
 
     def get_item(self, index: int):
         return self.ITEMS[index]
@@ -269,10 +276,13 @@ class ItemCatalog:
     def get_store_items(self):
         in_store = {}
         for key, item in self.ITEMS.items():
-            if key <= 5:
-                in_store[str(item)] = [key, 30]
-            elif key <= 9:
-                in_store[str(item)] = [key, 75]
+            for keys, desc in self.DESCRIPTION.items():
+                if key <= 5:
+                    if key == keys:
+                        in_store[str(item)] = [key, desc, 30]
+                elif key <= 9:
+                    if key == keys:
+                        in_store[str(item)] = [key, desc,  75]
         return in_store
 
     def get_chest_items(self):
@@ -280,3 +290,4 @@ class ItemCatalog:
 
     def get_cursed_items(self):
         return [key for key in self.ITEMS.keys() if (50 <= key < 60)]
+

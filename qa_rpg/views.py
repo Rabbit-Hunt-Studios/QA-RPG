@@ -650,7 +650,7 @@ def buy(request):
         return redirect('qa_rpg:shop')
     except:
         items = request.POST["index"][1:-1].split(",")
-        if int(items[1]) * amount > player.currency:
+        if int(items[2]) * amount > player.currency:
             messages.error(request, "You don't have enough coins to purchase.")
             return redirect("qa_rpg:shop")
 
@@ -659,7 +659,7 @@ def buy(request):
         except:
             player_item[int(items[0])] = amount
         inventory.update_inventory(player_item, "player")
-        player.currency -= int(items[1]) * amount
+        player.currency -= int(items[2]) * amount
         player.save()
         messages.success(request, "Purchase Successful")
         return redirect('qa_rpg:shop')
