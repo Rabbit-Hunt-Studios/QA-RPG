@@ -25,5 +25,6 @@ urlpatterns = [
     path('profile/upgrade/', views.UpgradeView.as_view(), name='upgrade'),
     path('profile/upgrade/upgrade_action', views.upgrade, name='upgrade_action'),
     path('profile/upgrade/awake', views.awake, name='awake'),
+    path('index/select_items', views.select_items, name='awake'),
     path('', views.HomeView.as_view(), name='home')
 ]

@@ -242,7 +242,7 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
             except IndexError:
                 question_id = random.choice(
                     Question.objects.exclude(id__in=seen_question).filter(~Q(owner=request.user), enable=True)
-                    .values_list('id', flat=True))
+                        .values_list('id', flat=True))
                 log.add_question(question_id)
         question = Question.objects.get(pk=question_id)
         player.set_activity(f"battle{question_id}")
@@ -603,7 +603,6 @@ def select(request):
 
 
 class ShopView(LoginRequiredMixin, generic.DetailView):
-
     template_name = "qa_rpg/shop.html"
 
     @method_decorator(never_cache, name='self.get')
@@ -645,7 +644,6 @@ def buy(request):
 
 
 class UpgradeView(LoginRequiredMixin, generic.DetailView):
-
     template_name = "qa_rpg/upgrade.html"
 
     @method_decorator(never_cache, name='self.get')
@@ -670,12 +668,12 @@ class UpgradeView(LoginRequiredMixin, generic.DetailView):
                          (player.question_rate_currency < upgrade_list[2]),
                          (player.awake < 3)]
 
-        awaken_rate = (0.5 - (0.1*player.awake)) * 100
+        awaken_rate = (0.5 - (0.1 * player.awake)) * 100
 
         player.set_activity("upgrade")
         return render(request, self.template_name, {"player": player, "price": price,
                                                     "upgrade_list": upgrade_list, "upgrade_check": upgrade_check,
-                                                    "awaken_rate":awaken_rate})
+                                                    "awaken_rate": awaken_rate})
 
 
 @never_cache
@@ -686,15 +684,15 @@ def upgrade(request):
     if player.currency >= price:
         player.currency -= price
         if request.POST["upgrade"] == "max_hp":
-            if player.max_hp + 20 <= 100 + (100 * (player.awake+1)):
+            if player.max_hp + 20 <= 100 + (100 * (player.awake + 1)):
                 player.max_hp += 20
 
         elif request.POST["upgrade"] == "max_earn":
-            if player.question_max_currency + 2 <= 20 + (10 * (player.awake+1)):
+            if player.question_max_currency + 2 <= 20 + (10 * (player.awake + 1)):
                 player.question_max_currency += 2
 
         elif request.POST["upgrade"] == "rate_earn":
-            if player.question_rate_currency + 1 <= 5 + (5 * (player.awake+1)):
+            if player.question_rate_currency + 1 <= 5 + (5 * (player.awake + 1)):
                 player.question_rate_currency += 1
 
         for question in player_question:
@@ -716,7 +714,7 @@ def awake(request):
     price = int(request.POST["price"])
     if player.currency >= price:
         player.currency -= price
-        if event < 0.5 - (0.1*player.awake):
+        if event < 0.5 - (0.1 * player.awake):
             player.awake += 1
             inventory.max_inventory += 3
             messages.success(request, "Awaken Successful")
@@ -730,5 +728,41 @@ def awake(request):
     return redirect('qa_rpg:upgrade')
 
 
+class SelectItemsView(LoginRequiredMixin, generic.DetailView):
+    template_name = 'select_items.html'
+
+    @method_decorator(never_cache, name='self.get')
+    def get(self, request):
+        player, log, inventory = get_player(request.user)
+
+        check_url = check_player_activity(player, ["index", "select_items"])
+        if check_url is not None:
+            return redirect(check_url)
+
+        player_inventory = []
+        for key, val in inventory.get_inventory("player").items():
+            player_inventory.append([str(item_list.get_item(key)), val])
+        player.set_activity("select_items")
+        check_items = False
+        return render(request, self.template_name, {"player": player,
+                                                    "inventory": player_inventory, "check": check_items})
 
 
+def select_items(request):
+    player, log, inventory = get_player(request.user)
+    item_id = ItemCatalog.ITEMS
+    dungeon_inventory = inventory.dungeon_inventory()
+    player_inventory = inventory.get_inventory()
+    amount = int(request.POST["amount"])
+    if request.POST["select"] == "item":
+        if inventory.get_inventory("dungeon") >= inventory.max_inventory:
+            messages.error(request, "Your bag is full.")
+        else:
+            template_name = 'qa_rpg/select_items.html'
+            try:
+                dungeon_inventory[item_id] += 1
+            except:
+                dungeon_inventory[item_id] = 1
+            inventory.update_inventory("dungeon")
+
+        return render(request, {"player": player, "item": item_list})
