@@ -424,8 +424,8 @@ class GloveMidasItem(Item):
 @dataclass(init=False)
 class ItemCatalog:
 
-    ITEMS = {0: DungeonCandyItem(), 1: WoodenShieldItem(), 2: CoinBagItem(),
-             6: PotionItem(), 7: CrossBowItem(), 8: ShieldItem(),
+    ITEMS = {0: DungeonCandyItem(), 1: WoodenShieldItem(),
+             6: PotionItem(), 7: CrossBowItem(), 8: ShieldItem(), 9: CoinBagItem(),
 
              10: MegaPotionItem(), 11: SmokeBombItem(), 12: GreatShieldItem(), 13: AmbrosiaItem(),
              14: BookAlchemyItem(), 15: GloveMidasItem(),
@@ -435,16 +435,20 @@ class ItemCatalog:
 
              999: Item()}
 
+    STORE_30 = [0, 1, 9]
+    STORE_80 = [6, 7, 8]
+
     def get_item(self, index: int):
         return self.ITEMS[index]
         
     def get_store_items(self):
         in_store = {}
-        for key, item in self.ITEMS.items():
-            if key <= 5:
-                in_store[str(item)] = [key, 35, item.description, item.effect]
-            else:
-                in_store[str(item)] = [key, 80, item.description, item.effect]
+        for index in self.STORE_30:
+            item = self.get_item(index)
+            in_store[str(item)] = [index, 30, item.description, item.effect]
+        for index in self.STORE_80:
+            item = self.get_item(index)
+            in_store[str(item)] = [index, 80, item.description, item.effect]
         return in_store
 
     def get_chest_items(self):

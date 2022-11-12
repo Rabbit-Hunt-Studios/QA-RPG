@@ -121,7 +121,7 @@ class DungeonActionTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("dungeon", response.url)
         self.player = Player.objects.get(pk=1)
-        self.assertEqual(self.player.luck, 0.5)
+        self.assertEqual(self.player.luck, 0.55)
 
 
 class BattleViewTest(TestCase):
@@ -196,9 +196,9 @@ class BattleActionTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.question = Question.objects.get(pk=1)
         self.assertEqual(self.player.current_hp, self.player.max_hp)
-        self.assertEqual(self.player.dungeon_currency, 1)
+        self.assertEqual(self.player.dungeon_currency, 6)
         self.assertEqual(self.question.currency, 0)
-        self.assertEqual(self.player.luck, BASE_LUCK + 0.04)
+        self.assertEqual(self.player.luck, BASE_LUCK + 0.03)
         self.assertEqual(self.player.activity, "dungeon")
 
     def test_player_answers_incorrectly(self):
