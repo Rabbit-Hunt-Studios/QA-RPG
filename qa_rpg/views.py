@@ -96,7 +96,6 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player, log, inventory = get_player(request.user)
-        print(log.split_log("question"))
         check_url = check_player_activity(player, ["index", "dungeon"])
         if check_url is not None:
             return redirect(check_url)
@@ -633,7 +632,6 @@ def buy(request):
     amount = int(request.POST["amount"])
     try:
         template = int(request.POST["index"])
-        print(template)
         price = TemplateCatalog.TEMPLATES.get_price(template)
         if price * amount >= player.currency:
             messages.error(request, "You don't have enough coins to purchase.")
