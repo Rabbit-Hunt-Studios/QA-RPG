@@ -96,7 +96,7 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player, log, inventory = get_player(request.user)
-
+        print(log.split_log("question"))
         check_url = check_player_activity(player, ["index", "dungeon"])
         if check_url is not None:
             return redirect(check_url)
