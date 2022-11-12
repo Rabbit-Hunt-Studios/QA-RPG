@@ -90,7 +90,7 @@ SITE_ID = 2
 LOGIN_REDIRECT_URL = '/qa_rpg/index/'
 LOGOUT_REDIRECT_URL = '/qa_rpg/'
 SOCIALACCOUNT_LOGIN_ON_GET = True
-SOCIALACCOUNT_ADAPTER = "qa_rpg.adapter.CancelAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "mysite.adapter.CancelAccountAdapter"
 
 ROOT_URLCONF = 'mysite.urls'
 
