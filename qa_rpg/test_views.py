@@ -99,8 +99,22 @@ class DungeonActionTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("battle", response.url)
 
-    def test_exit_dungeon(self):
-        """When player chooses to exit, then redirect to index view."""
+    def test_exit_dungeon_and_found_monster(self):
+        """When player chooses to exit, player face a monster before can exit."""
+        self.player.dungeon_currency = 20
+        self.player.save()
+        response = self.client.post(
+            reverse("qa_rpg:action"), {"action": "exit"})
+        self.assertEqual(response.status_code, 302)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.activity, "found monster")
+        self.assertEqual(self.player.currency, 0)
+        self.assertEqual(self.player.dungeon_currency, 20)
+
+    def test_exit_dungeon_instantly(self):
+        """When player chooses to exit, player exit the dungeon."""
+        random.seed(120)
+        self.player.luck = 0.8
         self.player.dungeon_currency = 20
         self.player.save()
         response = self.client.post(
@@ -109,7 +123,7 @@ class DungeonActionTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.activity, "index")
         self.assertEqual(self.player.currency, 20)
-        self.assertEqual(self.player.dungeon_currency, 0)
+        self.assertEqual(self.player.dungeon_currency, 0) 
 
     def test_found_treasure(self):
         """When player has high enough luck, they can find treasure."""
@@ -315,6 +329,7 @@ class CreateQuestionTest(TestCase):
                                      "fee": "150", "index": "0", "template_id": "0"})
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 50)
+        
 
     def test_player_not_fill_every_field(self):
         """Test player not fill all field in create question."""
@@ -483,7 +498,8 @@ class ReportandCommendTest(TestCase):
         self.player = Player.objects.create(user=self.user)
         self.player.set_activity("battle1")
         self.player.save()
-        self.question = Question.objects.create(question_text="test", owner=self.user, pk=1)
+        self.question = Question.objects.create(
+            question_text="test", owner=self.user, pk=1)
         self.question.save()
         self.correct = Choice.objects.create(
             question=self.question, choice_text='yes', correct_answer=True)
@@ -492,19 +508,22 @@ class ReportandCommendTest(TestCase):
             question=self.question, choice_text='no', correct_answer=False)
         self.wrong.save()
 
-
     def test_one_report_commend_per_user(self):
         """Test that user can only report or commend 1 time for each question."""
         random.seed(100)
-        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),  {"choice": self.correct.id, "option": "report"})
-        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),  {"choice": self.correct.id, "option": "commend"})
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),  {
+                                    "choice": self.correct.id, "option": "report"})
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),  {
+                                    "choice": self.correct.id, "option": "commend"})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(ReportAndCommend.objects.filter(question=self.question).count(), 1)
+        self.assertEqual(ReportAndCommend.objects.filter(
+            question=self.question).count(), 1)
 
     def test_deactivate_question(self):
         """Test that after the report exceed the limit, the question will be disabled."""
         random.seed(100)
-        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {"choice": self.correct.id, "option": "report"})
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {
+                                    "choice": self.correct.id, "option": "report"})
         self.assertEqual(response.status_code, 302)
         self.client.logout()
         for i in range(1, 8):
@@ -515,12 +534,81 @@ class ReportandCommendTest(TestCase):
             self.player = Player.objects.create(user=self.user)
             self.player.set_activity("battle1")
             self.player.save()
-            response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {"choice": self.correct.id, "option": "report"})
+            response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)), {
+                                        "choice": self.correct.id, "option": "report"})
             self.client.logout()
         self.question = Question.objects.get(pk=self.question.id,)
-        self.report_commends = ReportAndCommend.objects.filter(question=self.question).count()
+        self.report_commends = ReportAndCommend.objects.filter(
+            question=self.question).count()
         self.assertEqual(self.report_commends, 8)
         self.assertEqual(self.question.enable, False)
 
 
+class ShopViewTest(TestCase):
+    
+    def setUp(self):
+        """Setup for testing in shop page."""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("shop")
+        self.player.save()
+
+    def test_rendering_shop_page(self):
+        """Test that player in treasure page."""
+        self.player.set_activity("shop")
+        response = self.client.get(reverse("qa_rpg:shop"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Player.objects.get(
+            user=self.user).activity, "shop")
+    
+class BuyingTest(TestCase):
+    """Testing action in Shop page."""
+
+    def setUp(self):
+        """Setup for testing action in shop page"""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.system = User.objects.create_user(username="test")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("shop")
+        self.inventory = Inventory.objects.create(player=self.player)
+        self.inventory.update_templates({0: 2})
+        self.inventory.update_inventory({0: 2}, "player")
         
+
+    def test_remain_currency_after_buy_templates(self):
+        """Test remain currency after buying question templates."""
+        random.seed(100)
+        self.player.set_activity("buy")
+        self.player.currency = 200
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:buy"), {"index" : 0, "amount" : 1})
+        self.assertEqual(response.status_code, 302)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.currency, 100)
+
+    def test_remain_currency_after_buying_items(self):
+        random.seed(100)
+        self.player.set_activity("buy")
+        self.player.currency = 150
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:buy"), {"index" : [6, 30] , "amount" : 1})
+        self.assertEqual(response.status_code, 302)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.currency, 120)
+    
+    def test_not_have_enough_coins(self):
+        """Test that player don't have enough coin to buy either items or templates."""
+        self.player = Player.objects.get(pk=1)
+        self.player.currency = 20
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:buy"), {"index" : 0, "amount" : 1})
+        self.assertEqual(response.status_code, 302)
+        response2 = self.client.post(reverse("qa_rpg:buy"), {"index" : 2, "amount" : 1})
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(self.player.currency, 20)
