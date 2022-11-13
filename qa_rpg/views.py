@@ -78,7 +78,7 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
     def get(self, request):
         player, log, inventory = get_player(request.user)
 
-        check_url = check_player_activity(player, ["summon", "index", "profile", "shop"])
+        check_url = check_player_activity(player, ["summon", "index", "profile", "shop", "select"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -96,7 +96,7 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player, log, inventory = get_player(request.user)
-        check_url = check_player_activity(player, ["index", "dungeon"])
+        check_url = check_player_activity(player, ["select", "dungeon"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -729,40 +729,62 @@ def awake(request):
 
 
 class SelectItemsView(LoginRequiredMixin, generic.DetailView):
-    template_name = 'select_items.html'
+    template_name = 'qa_rpg/select_items.html'
 
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player, log, inventory = get_player(request.user)
 
-        check_url = check_player_activity(player, ["index", "select_items"])
+        check_url = check_player_activity(player, ["index", "select"])
         if check_url is not None:
             return redirect(check_url)
 
-        player_inventory = []
+        player_inventory = {}
         for key, val in inventory.get_inventory("player").items():
-            player_inventory.append([str(item_list.get_item(key)), val])
+            player_inventory[key] = [str(item_list.get_item(key)), val]
+
+        dungeon_inventory = {}
+        for key, val in inventory.get_inventory("dungeon").items():
+            dungeon_inventory[key] = [str(item_list.get_item(key)), val]
         player.set_activity("select_items")
         check_items = False
         return render(request, self.template_name, {"player": player,
-                                                    "inventory": player_inventory, "check": check_items})
+                                                    "inventory": player_inventory, "check": check_items,
+                                                    "dungeon_inventory": dungeon_inventory})
 
 
 def select_items(request):
     player, log, inventory = get_player(request.user)
-    item_id = ItemCatalog.ITEMS
-    dungeon_inventory = inventory.dungeon_inventory()
-    player_inventory = inventory.get_inventory()
     amount = int(request.POST["amount"])
-    if request.POST["select"] == "item":
-        if inventory.get_inventory("dungeon") >= inventory.max_inventory:
-            messages.error(request, "Your bag is full.")
+    dungeon_inventory = inventory.get_inventory("dungeon")
+    player_current_inventory = inventory.get_inventory("player")
+    if len(dungeon_inventory) < inventory.max_inventory:
+        if request.POST["select"][-1] == "1":
+            item_id = int(request.POST["select"][:-1])
+            if player_current_inventory[item_id] - amount >= 0:
+                try:
+                    dungeon_inventory[item_id] += amount
+                    player_current_inventory[item_id] -= amount
+                except:
+                    dungeon_inventory[item_id] = amount
+                    player_current_inventory[item_id] -= amount
+            else:
+                messages.error(request, "You don't have that much items.")
         else:
-            template_name = 'qa_rpg/select_items.html'
-            try:
-                dungeon_inventory[item_id] += 1
-            except:
-                dungeon_inventory[item_id] = 1
-            inventory.update_inventory("dungeon")
+            item_id = int(request.POST["select"][:-1])
+            if dungeon_inventory[item_id] - amount >= 0:
+                try:
+                    player_current_inventory[item_id] += amount
+                    dungeon_inventory[item_id] -= amount
+                except:
+                    player_current_inventory[item_id] = amount
+                    dungeon_inventory[item_id] -= amount
+            else:
+                messages.error(request, "You don't have that much items.")
 
-        return render(request, {"player": player, "item": item_list})
+        inventory.update_inventory(dungeon_inventory, "dungeon")
+        inventory.update_inventory(player_current_inventory, "player")
+    else:
+        messages.error(request, "Your bag is full.")
+
+    return redirect('qa_rpg:select')
