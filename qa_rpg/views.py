@@ -785,6 +785,24 @@ def select_items(request):
         inventory.update_inventory(dungeon_inventory, "dungeon")
         inventory.update_inventory(player_current_inventory, "player")
     else:
-        messages.error(request, "Your bag is full.")
+        if request.POST["select"][-1] == "2":
+            item_id = int(request.POST["select"][:-1])
+            if dungeon_inventory[item_id] - amount >= 0:
+                try:
+                    player_current_inventory[item_id] += amount
+                    dungeon_inventory[item_id] -= amount
+                except:
+                    player_current_inventory[item_id] = amount
+                    dungeon_inventory[item_id] -= amount
+                inventory.update_inventory(dungeon_inventory, "dungeon")
+                inventory.update_inventory(player_current_inventory, "player")`
+            else:
+                messages.error(request, "You don't have that much items.")
+        else:
+            print(len(dungeon_inventory))
+            print(dungeon_inventory)
+            inventory.update_inventory(dungeon_inventory, "dungeon")
+            inventory.update_inventory(player_current_inventory, "player")
+            messages.error(request, "Your bag is full.")
 
     return redirect('qa_rpg:select')
