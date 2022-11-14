@@ -29,23 +29,25 @@
 
 <div class="flex px-4 mx-8 flex-row justify-center items-center mt-8">
 
-    <div class="h-96 w-[48rem] box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl sticky overflow-y-auto">
+    <div class="h-96 w-[48rem] box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl">
         <label class="bg-white bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl ">Your inventory</label>
-        {% for key, value in inventory.items %}
+        <div class="h-80 mt-2 overflow-auto">
+        {% for item in inventory %}
             <div class="py-2 px-2 flex items-center sticky">
-                <input type="radio" id="{{ key }}1" name="select" value="{{ key }}1" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700"  required>
-                <label class=" text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700 " for="{{ key }}1"> {{ value.0 }} <br> Amount: {{value.1}}</label><br>
+                <input type="radio" id="{{ item.0 }}1" name="select" value="{{ item.0 }}1" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700"  required>
+                <label class=" text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700 " title="{{ item.3 }}&#13;{{ item.4 }}" for="{{ item.0 }}1"> {{ item.1 }} <br> Amount: {{item.2}}</label><br>
             </div>
         {% endfor %}
+        </div>
     </div>
-        <div class=" h-96 w-[48rem] box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl sticky overflow-y-auto">
+        <div class=" h-96 w-[48rem] box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl">
             <label class="bg-white bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl ">Dungeon inventory</label>
-            <label class="bg-white bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl ">{{dungeon_inventory_num}}/{{max_inventory}}</label>
+            <label class="bg-white bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl ">{{dungeon_inventory_num.0}}/{{dungeon_inventory_num.1}}</label>
             <div class="h-80 mt-2 overflow-auto">
-            {% for key, value in dungeon_inventory.items %}
+            {% for item in dungeon_inventory %}
                 <div class="py-2 px-2 flex items-center sticky">
-                    <input type="radio" id="{{ key }}2" name="select" value="{{ key }}2" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700" required>
-                    <label class=" text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700" for="{{ key }}2">{{ value.0 }} <br> Amount: {{value.1}}</label><br>
+                    <input type="radio" id="{{ item.0 }}2" name="select" value="{{ item.0 }}2" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700" required>
+                    <label class=" text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700" title="{{ item.3 }}&#13;{{ item.4 }}" for="{{ item.0 }}2">{{ item.1 }} <br> Amount: {{item.2}}</label><br>
                 </div>
             {% endfor %}
             </div>

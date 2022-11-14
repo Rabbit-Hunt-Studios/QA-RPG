@@ -35,8 +35,8 @@
         <div class="h-80 mt-2 overflow-auto">
         {% for key, value in items.items %}
             <div class="py-2 px-2 flex items-center sticky">
-                <input type="radio" name="index" id="{{ key }}" value="{{ value }}" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700 ml-5 mr-5" required>
-                <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700" title = "{{ value.2 }}&#13;{{ value.3 }}" for="{{ key }}">{{ key }} <br> Price: {{ value.1 }}</label><br>
+                <input type="radio" name="index" id="{{ key }}1" value="{{ value }}" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700 ml-5 mr-5" required>
+                <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700" title = "{{ value.2 }}&#13;{{ value.3 }}" for="{{ key }}1">{{ key }} <br> Price: {{ value.1 }}</label><br>
             </div>
         {% endfor %}
         </div>
@@ -46,8 +46,8 @@
         <div class="h-80 mt-2 overflow-auto">
         {% for key, value in template.items %}
             <div class="py-2 px-2 flex items-center sticky">
-                <input type="radio" name="index" id="{{ key }}" value="{{ value.1 }}" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700 ml-5 mr-5" required>
-                <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700" for="{{ key }}">{{ key }} <br> Price: {{value.0}}</label><br>
+                <input type="radio" name="index" id="{{ key }}2" value="{{ value.1 }}" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700 ml-5 mr-5" required>
+                <label class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700" for="{{ key }}2">{{ key }} <br> Price: {{value.0}}</label><br>
             </div>
         {% endfor %}
         </div>

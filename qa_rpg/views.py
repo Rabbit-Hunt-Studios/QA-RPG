@@ -758,20 +758,21 @@ class SelectItemsView(LoginRequiredMixin, generic.DetailView):
         if check_url is not None:
             return redirect(check_url)
 
-        player_inventory = {}
+        player_inventory = []
         for key, val in inventory.get_inventory("player").items():
-            player_inventory[key] = [str(item_list.get_item(key)), val]
+            player_item = item_list.get_item(key)
+            player_inventory.append([key, str(player_item), val, player_item.description, player_item.effect])
 
-        dungeon_inventory = {}
+        dungeon_inventory = []
         for key, val in inventory.get_inventory("dungeon").items():
-            dungeon_inventory[key] = [str(item_list.get_item(key)), val]
-        dungeon_inventory_num = len(inventory.get_inventory("dungeon"))
+            dungeon_item = item_list.get_item(key)
+            dungeon_inventory.append([key, str(dungeon_item), val, dungeon_item.description, dungeon_item.effect])
+        dungeon_inventory_num = [len(inventory.get_inventory("dungeon")), inventory.max_inventory]
         player.set_activity("select_items")
         check_items = False
         return render(request, self.template_name, {"player": player,
                                                     "inventory": player_inventory, "check": check_items,
                                                     "dungeon_inventory": dungeon_inventory,
-                                                    "max_inventory": inventory.max_inventory,
                                                     "dungeon_inventory_num": dungeon_inventory_num})
 
 
