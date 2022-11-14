@@ -4,6 +4,7 @@
 <head xmlns="http://www.w3.org/1999/html">
     {% tailwind_css %}
 </head>
+<title> QA-RPG </title>
 
 <body class="text-white font-serif bg-no-repeat bg-top bg-cover"
   style="background-image: url('https://d.wattpad.com/story_parts/632993320/images/1555c78f7608fede446379137457.jpg');">
@@ -11,58 +12,66 @@
 
 {% if messages %}
     {% for message in messages %}
-        <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
+    <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
         <div class="mb-2 px-2">
             <div>
                 <p class="text-red-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
             </div>
+        </div>
     </div>
-  </div>
     {% endfor %}
 {% endif %}
 
-<div >
-    <div class="grid grid-rows-2">
+
     <form action="{% url 'qa_rpg:select_items' %}" method="post">
         {% csrf_token %}
-    <div class="bg-black bg-opacity-50 border-gray-600 ">
+
+
+<div class="flex px-4 mx-8 flex-row justify-center items-center mt-8">
+
+    <div class="h-96 w-[48rem] box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl sticky overflow-y-auto">
+        <label class="bg-white bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl ">Your inventory</label>
         {% for key, value in inventory.items %}
             <div class="py-2 px-2 flex items-center sticky">
-                <input type="radio" name="select" value="{{ key }}1" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700"  required>
-                <label class=" text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700"> {{ value.0 }} <br> Amount: {{value.1}}</label><br>
+                <input type="radio" id="{{ key }}1" name="select" value="{{ key }}1" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700"  required>
+                <label class=" text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700 " for="{{ key }}1"> {{ value.0 }} <br> Amount: {{value.1}}</label><br>
             </div>
         {% endfor %}
     </div>
-    <div class="bg-black bg-opacity-50 border-gray-600 border-2 ">
-        {% for key, value in dungeon_inventory.items %}
-            <div class="py-2 px-2 flex items-center sticky">
-                <input type="radio" name="select"  value="{{ key }}2" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700" required>
-                <label class=" text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700">{{ value.0 }} <br> Amount: {{value.1}}</label><br>
+        <div class=" h-96 w-[48rem] box-border bg-black bg-opacity-50 border-gray-600  border-2 text-2xl sticky overflow-y-auto">
+            <label class="bg-white bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl ">Dungeon inventory</label>
+            <label class="bg-white bg-opacity-50 border-gray-600 border-2 pl-2 pb-1 pr-2 text-3xl ">{{dungeon_inventory_num}}/{{max_inventory}}</label>
+            <div class="h-80 mt-2 overflow-auto">
+            {% for key, value in dungeon_inventory.items %}
+                <div class="py-2 px-2 flex items-center sticky">
+                    <input type="radio" id="{{ key }}2" name="select" value="{{ key }}2" class="peer checked:bg-sky-700 checked:focus:ring-sky-700 checked:focus:bg-sky-700" required>
+                    <label class=" text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-sky-700" for="{{ key }}2">{{ value.0 }} <br> Amount: {{value.1}}</label><br>
+                </div>
+            {% endfor %}
             </div>
-        {% endfor %}
-    </div>
-
-
-
-    <div>
-        <div class="justify-items-center text-3xl bg-black bg-opacity-50 border-gray-600 border-2 duration-300 pl-2 pt-1 pb-1 pr-2">
-            Amount: <input type="number" name="amount" min="1"  required class="text-black text-2xl">
-            <button type="submit" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-yellow-600 duration-300 px-5 py-2">Select</button>
         </div>
     </div>
 
+    <div>
+        <div class="flex justify-center items-center text-3xl pl-2 pt-1 pb-1 pr-2 my-8">
+            <div class="bg-black bg-opacity-50 border-gray-600 border-2 duration-300 pl-2 pt-1 pb-2 pr-2">
+            Amount: <input type="number" name="amount" min="1"  required class="text-black text-2xl">
+            <button type="submit" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-yellow-600 duration-300 px-5 py-2">Select</button>
+            </div>
+        </div>
+    </div>
 
-
-    </form>
-
-</div>
-
-    <div class="grid justify-items-center mb-8">
+</form>
+    <div class="flex justify-center items-center">
         <div class="py-4">
         <a href="{% url 'qa_rpg:dungeon' %}"><button type="button" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-green-700 duration-300 px-5 py-2">Dungeon</button></a>
         <a href="{% url 'qa_rpg:index' %}"><button type="button" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-red-500 duration-300 px-5 py-2">Back</button></a>
         </div>
     </div>
 
+<div>
+    <div class="flex justify-center items-center ">
+        <a href="{% url 'qa_rpg:upgrade' %}"><button type="button" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-blue-700 duration-300 px-5 my-20">Tip: You can upgrade your max dungeon inventory by awaken </button></a><br>
+    </div>
 
 </body>

@@ -53,7 +53,7 @@ class DungeonViewTest(TestCase):
 
     def test_rendering_dungeon_page(self):
         """Dungeon view should return the player and player's log to html."""
-        self.player.set_activity("index")
+        self.player.set_activity("select")
         response = self.client.get(reverse("qa_rpg:dungeon"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["logs"], empty_log)

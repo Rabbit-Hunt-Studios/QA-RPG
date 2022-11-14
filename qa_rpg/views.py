@@ -650,7 +650,7 @@ class UpgradeView(LoginRequiredMixin, generic.DetailView):
     def get(self, request):
         player, log, inventory = get_player(request.user)
 
-        check_url = check_player_activity(player, ["profile", "upgrade"])
+        check_url = check_player_activity(player, ["profile", "upgrade", "select_dg"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -746,11 +746,14 @@ class SelectItemsView(LoginRequiredMixin, generic.DetailView):
         dungeon_inventory = {}
         for key, val in inventory.get_inventory("dungeon").items():
             dungeon_inventory[key] = [str(item_list.get_item(key)), val]
+        dungeon_inventory_num = len(inventory.get_inventory("dungeon"))
         player.set_activity("select_items")
         check_items = False
         return render(request, self.template_name, {"player": player,
                                                     "inventory": player_inventory, "check": check_items,
-                                                    "dungeon_inventory": dungeon_inventory})
+                                                    "dungeon_inventory": dungeon_inventory,
+                                                    "max_inventory": inventory.max_inventory,
+                                                    "dungeon_inventory_num": dungeon_inventory_num})
 
 
 def select_items(request):
@@ -799,10 +802,8 @@ def select_items(request):
             else:
                 messages.error(request, "You don't have that much items.")
         else:
-            print(len(dungeon_inventory))
-            print(dungeon_inventory)
             inventory.update_inventory(dungeon_inventory, "dungeon")
             inventory.update_inventory(player_current_inventory, "player")
             messages.error(request, "Your bag is full.")
 
-    return redirect('qa_rpg:select')
+    return redirect('qa_rpg:select_dg')
