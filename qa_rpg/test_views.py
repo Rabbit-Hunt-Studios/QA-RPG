@@ -592,14 +592,29 @@ class BuyingTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 100)
 
+    def test_remain_currency_after_buy_items(self):
+        """Test remain currency after buying items."""
+        random.seed(100)
+        self.player.set_activity("buy")
+        self.player.currency = 200
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:buy"), {"index" : "[1, 30, 1, 1]" , "amount" : 1})
+        self.assertEqual(response.status_code, 302)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.currency, 170)
+        response2 = self.client.post(reverse("qa_rpg:buy"), {"index" : "[7, 80, 7, 7]" , "amount" : 1})
+        self.assertEqual(response2.status_code, 302)
+        self.player = Player.objects.get(pk=1)
+        self.assertEqual(self.player.currency, 90)
     
     def test_not_have_enough_coins(self):
         """Test that player don't have enough coin to buy either items or templates."""
+        random.seed(100)
         self.player = Player.objects.get(pk=1)
         self.player.currency = 20
         self.player.save()
         response = self.client.post(reverse("qa_rpg:buy"), {"index" : 0, "amount" : 1})
         self.assertEqual(response.status_code, 302)
-        response2 = self.client.post(reverse("qa_rpg:buy"), {"index" : 2, "amount" : 1})
+        response2 = self.client.post(reverse("qa_rpg:buy"), {"index" : "[9, 30, 9, 9]", "amount" : 1})
         self.assertEqual(response2.status_code, 302)
         self.assertEqual(self.player.currency, 20)
