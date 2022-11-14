@@ -450,7 +450,7 @@ def get_coins(damage: int):
         end += (i + 1) * 5
         if start <= damage < end:
             return random.randrange(start=(i * 10) + 6, stop=(i + 1) * 10, step=1)
-    return 50
+    return 50 # pragma: no cover
 
 
 class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
