@@ -777,6 +777,7 @@ class SelectItemsView(LoginRequiredMixin, generic.DetailView):
                                                     "dungeon_inventory_num": dungeon_inventory_num})
 
 
+@never_cache
 def select_items(request):
     player, log, inventory = get_player(request.user)
     amount = int(request.POST["amount"])
