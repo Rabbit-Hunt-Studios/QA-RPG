@@ -162,7 +162,7 @@ class Inventory(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     player_inventory = models.CharField(max_length=1000, default="")
     dungeon_inventory = models.CharField(max_length=1000, default="")
-    max_inventory = models.IntegerField(default=2)
+    max_inventory = models.IntegerField(default=3)
     question_template = models.CharField(max_length=1000, default="")
 
     def get_inventory(self, inventory_type):
