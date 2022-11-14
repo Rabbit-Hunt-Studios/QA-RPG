@@ -62,6 +62,8 @@ class PlayerModelTest(TestCase):
         self.assertEqual(self.player.dungeon_currency, 5)
         self.assertEqual(self.player.currency, 0)
         self.assertEqual(self.player.luck, BASE_LUCK + 0.02)
+        self.player.update_player_stats(health=300)
+        self.assertEqual(self.player.current_hp, self.player.max_hp)
 
     def test_set_player_activity(self):
         """Player's activity is correctly set."""
@@ -124,3 +126,71 @@ class LogModelTest(TestCase):
         self.assertEqual(self.log.split_log("text"), ['', '', '', '', '', '', '', '', '', 'test'])
         self.log.clear_log()
         self.assertEqual(self.log.split_log("text"), empty_log)
+
+    def test_add_question(self):
+        """If logs question exceed 100, it will clear all log question."""
+        for _ in range(101):
+            self.log.add_question("0")
+        self.assertEqual(len(self.log.split_log("question")), 0)
+
+    def test_remove_question(self):
+        self.log.add_question("0")
+        self.log.add_question("1")
+        self.log.remove_question("0")
+        self.assertEqual(len(self.log.split_log("question")), 1)
+        self.assertEqual(self.log.split_log("question")[0], "1")
+
+
+class InventoryModelTest(TestCase):
+
+    def setUp(self):
+        """Setup for testing Question model."""
+        self.system = User.objects.create_user(username="Demo")
+        self.system.set_password('12345')
+        self.system.save()
+        self.question = Question.objects.create(owner=self.system, question_text='test')
+        self.player = Player.objects.create(user=self.system)
+        self.inventory = Inventory.objects.create(player=self.player)
+
+    def test_get_inventory(self):
+        self.inventory.player_inventory = "0:1;"
+        self.inventory.dungeon_inventory = "1:1;"
+        item_player = self.inventory.get_inventory("player")
+        item_dungeon = self.inventory.get_inventory("dungeon")
+        self.assertEqual(len(item_player), 1)
+        self.assertEqual(len(item_dungeon), 1)
+        self.assertEqual(item_player[0], 1)
+        self.assertEqual(item_dungeon[1], 1)
+
+    def test_update_inventory(self):
+        item_player = {0: 1}
+        item_dungeon = {1: 1}
+        self.inventory.update_inventory(item_player, "player")
+        self.inventory.update_inventory(item_dungeon, "dungeon")
+        get_item_player = self.inventory.get_inventory("player")
+        get_item_dungeon = self.inventory.get_inventory("dungeon")
+        self.assertEqual(len(get_item_player), 1)
+        self.assertEqual(len(get_item_dungeon), 1)
+        self.assertEqual(get_item_player[0], 1)
+        self.assertEqual(get_item_dungeon[1], 1)
+
+    def test_reset_inventory(self):
+        self.inventory.dungeon_inventory = "1:1;"
+        self.inventory.reset_inventory()
+        item_player = self.inventory.get_inventory("player")
+        item_dungeon = self.inventory.get_inventory("dungeon")
+        self.assertEqual(len(item_player), 1)
+        self.assertEqual(len(item_dungeon), 0)
+
+    def test_get_templates(self):
+        self.inventory.question_template = "0:1;"
+        template = self.inventory.get_templates()
+        self.assertEqual(len(template), 1)
+        self.assertEqual(template[0], 1)
+
+    def test_update_templates(self):
+        template = {0: 1}
+        self.inventory.update_templates(template)
+        player_template = self.inventory.get_templates()
+        self.assertEqual(len(template), 1)
+        self.assertEqual(template[0], 1)
