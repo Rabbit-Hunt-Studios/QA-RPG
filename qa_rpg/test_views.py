@@ -618,3 +618,105 @@ class BuyingTest(TestCase):
         response2 = self.client.post(reverse("qa_rpg:buy"), {"index" : "[9, 30, 9, 9]", "amount" : 1})
         self.assertEqual(response2.status_code, 302)
         self.assertEqual(self.player.currency, 20)
+
+
+class UpgradeViewTest(TestCase):
+
+    def setUp(self):
+        """Setup for testing upgrade page."""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("upgrade")
+
+    def test_rendering_treasure_page(self):
+        """Test that player in treasure page."""
+        response = self.client.get(reverse("qa_rpg:upgrade"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Player.objects.get(
+            user=self.user).activity, "upgrade")
+
+
+class UpgradeTest(TestCase):
+    """Testing action in upgrade page."""
+
+    def setUp(self):
+        """Setup for testing action in upgrade page"""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.system = User.objects.create_user(username="test")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("upgrade")
+        self.player.save()
+
+    def test_player_stats_upgrade(self):
+        """Test player stats upgrade after buying upgrade."""
+        self.player.currency = 300
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:upgrade_action"), {"upgrade": "max_hp", "price": 100})
+        self.player = Player.objects.get(user=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.player.max_hp, 120)
+        self.assertEqual(self.player.currency, 200)
+        response = self.client.post(reverse("qa_rpg:upgrade_action"), {"upgrade": "max_earn", "price": 100})
+        self.player = Player.objects.get(user=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.player.question_max_currency, 22)
+        self.assertEqual(self.player.currency, 100)
+        response = self.client.post(reverse("qa_rpg:upgrade_action"), {"upgrade": "rate_earn", "price": 100})
+        self.player = Player.objects.get(user=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.player.question_rate_currency, 6)
+        self.assertEqual(self.player.currency, 0)
+
+    def test_awaken_player_success(self):
+        random.seed(100)
+        self.player = Player.objects.get(user=self.user)
+        self.player.currency = 200
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:awake"), {"upgrade": "awake", "price": 200})
+        self.player = Player.objects.get(user=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.player.awake, 1)
+        self.assertEqual(self.player.currency, 0)
+
+    def test_awaken_player_fail(self):
+        random.seed(10)
+        self.player = Player.objects.get(user=self.user)
+        self.player.currency = 200
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:awake"), {"upgrade": "awake", "price": 200})
+        self.player = Player.objects.get(user=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.player.awake, 0)
+        self.assertEqual(self.player.currency, 0)
+
+    def test_not_have_enough_coins(self):
+        random.seed(100)
+        self.player = Player.objects.get(user=self.user)
+        self.player.currency = 50
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:upgrade_action"), {"upgrade": "max_hp", "price": 100})
+        self.player = Player.objects.get(user=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.player.max_hp, 100)
+        self.assertEqual(self.player.currency, 50)
+        response = self.client.post(reverse("qa_rpg:upgrade_action"), {"upgrade": "max_earn", "price": 100})
+        self.player = Player.objects.get(user=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.player.question_max_currency, 20)
+        self.assertEqual(self.player.currency, 50)
+        response = self.client.post(reverse("qa_rpg:upgrade_action"), {"upgrade": "rate_earn", "price": 100})
+        self.player = Player.objects.get(user=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.player.question_rate_currency, 5)
+        self.assertEqual(self.player.currency, 50)
+        response = self.client.post(reverse("qa_rpg:upgrade_action"), {"upgrade": "awake", "price": 200})
+        self.player = Player.objects.get(user=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.player.awake, 0)
+        self.assertEqual(self.player.currency, 50)
