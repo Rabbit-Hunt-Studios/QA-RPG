@@ -780,49 +780,34 @@ def select_items(request):
     amount = int(request.POST["amount"])
     dungeon_inventory = inventory.get_inventory("dungeon")
     player_current_inventory = inventory.get_inventory("player")
-    if len(dungeon_inventory) < inventory.max_inventory:
-        if request.POST["select"][-1] == "1":
-            item_id = int(request.POST["select"][:-1])
-            if player_current_inventory[item_id] - amount >= 0:
-                try:
-                    dungeon_inventory[item_id] += amount
-                    player_current_inventory[item_id] -= amount
-                except:
-                    dungeon_inventory[item_id] = amount
-                    player_current_inventory[item_id] -= amount
-            else:
-                messages.error(request, "You don't have that much items.")
+    if len(dungeon_inventory) < inventory.max_inventory and request.POST["select"][-1] == "1":
+        item_id = int(request.POST["select"][:-1])
+        if player_current_inventory[item_id] - amount >= 0:
+            try:
+                dungeon_inventory[item_id] += amount
+                player_current_inventory[item_id] -= amount
+            except:
+                dungeon_inventory[item_id] = amount
+                player_current_inventory[item_id] -= amount
         else:
-            item_id = int(request.POST["select"][:-1])
-            if dungeon_inventory[item_id] - amount >= 0:
-                try:
-                    player_current_inventory[item_id] += amount
-                    dungeon_inventory[item_id] -= amount
-                except:
-                    player_current_inventory[item_id] = amount
-                    dungeon_inventory[item_id] -= amount
-            else:
-                messages.error(request, "You don't have that much items.")
-
-        inventory.update_inventory(dungeon_inventory, "dungeon")
-        inventory.update_inventory(player_current_inventory, "player")
-    else:
-        if request.POST["select"][-1] == "2":
-            item_id = int(request.POST["select"][:-1])
-            if dungeon_inventory[item_id] - amount >= 0:
-                try:
-                    player_current_inventory[item_id] += amount
-                    dungeon_inventory[item_id] -= amount
-                except:
-                    player_current_inventory[item_id] = amount
-                    dungeon_inventory[item_id] -= amount
-                inventory.update_inventory(dungeon_inventory, "dungeon")
-                inventory.update_inventory(player_current_inventory, "player")
-            else:
-                messages.error(request, "You don't have that much items.")
-        else:
+            messages.error(request, "You don't have that much items.")
+    elif request.POST["select"][-1] == "2":
+        item_id = int(request.POST["select"][:-1])
+        if dungeon_inventory[item_id] - amount >= 0:
+            try:
+                player_current_inventory[item_id] += amount
+                dungeon_inventory[item_id] -= amount
+            except:
+                player_current_inventory[item_id] = amount
+                dungeon_inventory[item_id] -= amount
             inventory.update_inventory(dungeon_inventory, "dungeon")
             inventory.update_inventory(player_current_inventory, "player")
-            messages.error(request, "Your bag is full.")
+        else:
+            messages.error(request, "You don't have that much items.")
+    else:
+        messages.error(request, "Your bag is full.")
+
+    inventory.update_inventory(dungeon_inventory, "dungeon")
+    inventory.update_inventory(player_current_inventory, "player")
 
     return redirect('qa_rpg:select_dg')
