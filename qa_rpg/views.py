@@ -139,6 +139,7 @@ def action(request):
             return redirect("qa_rpg:index")
 
 
+@never_cache
 def found_monster(request):
     player, log, inventory = get_player(request.user)
     if request.POST['action'] == "walk":
@@ -404,6 +405,7 @@ def run_away(request, question_id):
                        'player': player, "status": status, "items": items})
 
 
+@never_cache
 def add_reports_or_commends(request, question, log, question_id):
     if request.POST['option'] == 'report':
         report = ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
@@ -414,6 +416,7 @@ def add_reports_or_commends(request, question, log, question_id):
         commend.save()
 
 
+@never_cache
 def one_user_per_report(request, question, log, question_id):
     user = request.user
     try:
@@ -429,6 +432,7 @@ def one_user_per_report(request, question, log, question_id):
         add_reports_or_commends(request, question, log, question_id)
 
 
+@never_cache
 def set_question_activation(question_id):
     question = Question.objects.get(pk=question_id)
     report_num = question.report
@@ -442,6 +446,7 @@ def set_question_activation(question_id):
             question.save()
 
 
+@never_cache
 def get_coins(damage: int):
     start = 20
     end = 20
