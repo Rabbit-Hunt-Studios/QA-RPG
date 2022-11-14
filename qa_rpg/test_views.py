@@ -18,6 +18,19 @@ class IndexViewTest(TestCase):
         self.player = Player.objects.create(user=self.user)
         self.log = Log.objects.create(player=self.player)
 
+    def test_get_player(self):
+        user2 = User.objects.create_user(username="demo2")
+        user2.set_password("12345")
+        user2.save()
+        self.client.login(username=user2, password="12345")
+        response = self.client.get(reverse("qa_rpg:index"))
+        player2 = Player.objects.get(user=user2)
+        log2 = Log.objects.get(player=player2)
+        inventory2 = Inventory.objects.get(player=player2)
+        self.assertEqual(player2.user, user2)
+        self.assertEqual(log2.player, player2)
+        self.assertEqual(inventory2.player, player2)
+
     def test_get_player_log(self):
         """When a player's log isn't in the database, it automatically creates one."""
         response = self.client.get(reverse("qa_rpg:index"))
@@ -101,6 +114,7 @@ class DungeonActionTest(TestCase):
 
     def test_exit_dungeon_and_found_monster(self):
         """When player chooses to exit, player face a monster before can exit."""
+        random.seed(100)
         self.player.dungeon_currency = 20
         self.player.save()
         response = self.client.post(
@@ -137,6 +151,15 @@ class DungeonActionTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.luck, 0.55)
 
+    def test_walk_after_found_exit_monster(self):
+        random.seed(10)
+        self.log.add_question("9999")
+        self.log.add_question("0")
+        response = self.client.post(
+            reverse("qa_rpg:action"), {"action": "walk"})
+        self.log = Log.objects.get(player=self.player)
+        self.assertEqual(len(self.log.split_log("question")), 1)
+
 
 class BattleViewTest(TestCase):
 
@@ -152,9 +175,6 @@ class BattleViewTest(TestCase):
         self.question = Question.objects.create(
             question_text="test", owner=self.system)
         self.question.save()
-        self.inventory = Inventory.objects.create(player=self.player)
-        self.inventory.update_inventory({6: 5, 51: 5}, "dungeon")
-        self.inventory.save()
 
     def test_rendering_battle_page(self):
         """If player got randomized a monster from dungeon page, randomize a question and render the battle page."""
@@ -183,34 +203,6 @@ class BattleViewTest(TestCase):
         response = self.client.get(reverse("qa_rpg:battle"))
         self.assertEqual(response.status_code, 302)
 
-    def test_use_items_heal(self):
-        """If player use heal item."""
-        self.player.current_hp = 50
-        self.player.save()
-        response = self.client.post(reverse("qa_rpg:item"), {"item": "6"})
-        self.player = Player.objects.get(user=self.user)
-        self.inventory = Inventory.objects.get(player=self.player)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(self.inventory.get_inventory("dungeon")[6], 4)
-        self.assertEqual(self.player.current_hp, 70)
-
-    def test_use_items_damage(self):
-        """If player use item that damage player heal."""
-        self.player.current_hp = 15
-        self.player.save()
-        response = self.client.post(reverse("qa_rpg:item"), {"item": "51"})
-        self.player = Player.objects.get(user=self.user)
-        self.inventory = Inventory.objects.get(player=self.player)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(self.inventory.get_inventory("dungeon")), 0)
-        self.assertEqual(len(self.inventory.get_inventory("player")), 0)
-        self.assertEqual(self.player.current_hp, self.player.max_hp)
-
-    def test_no_item_select(self):
-        """If player didn't select any item."""
-        response = self.client.post(reverse("qa_rpg:item"))
-        self.assertEqual(response.status_code, 302)
-
 
 class BattleActionTest(TestCase):
 
@@ -232,6 +224,9 @@ class BattleActionTest(TestCase):
         self.wrong = Choice.objects.create(
             question=self.question, choice_text='no', correct_answer=False)
         self.wrong.save()
+        self.inventory = Inventory.objects.create(player=self.player)
+        self.inventory.update_inventory({6: 5, 50: 5, 51: 5, 15: 5}, "dungeon")
+        self.inventory.save()
 
     def test_player_did_not_answers(self):
         """When player chooses the correct answer, player is given currency and health is not deducted."""
@@ -248,7 +243,7 @@ class BattleActionTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.question = Question.objects.get(pk=1)
         self.assertEqual(self.player.current_hp, self.player.max_hp)
-        self.assertEqual(self.player.dungeon_currency, 6)
+        self.assertEqual(self.player.dungeon_currency, 7)
         self.assertEqual(self.question.currency, 0)
         self.assertEqual(self.player.luck, BASE_LUCK + 0.03)
         self.assertEqual(self.player.activity, "dungeon")
@@ -306,6 +301,54 @@ class BattleActionTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 0)
         self.assertEqual(self.player.activity, "index")
+
+    def test_use_items_heal(self):
+        """If player use heal item."""
+        self.player.current_hp = 50
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:item"), {"item": "6"})
+        self.player = Player.objects.get(user=self.user)
+        self.inventory = Inventory.objects.get(player=self.player)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.inventory.get_inventory("dungeon")[6], 4)
+        self.assertEqual(self.player.current_hp, 70)
+
+    def test_use_items_damage(self):
+        """If player use item that damage player heal."""
+        self.player.current_hp = 15
+        self.player.save()
+        response = self.client.post(reverse("qa_rpg:item"), {"item": "51"})
+        self.player = Player.objects.get(user=self.user)
+        self.inventory = Inventory.objects.get(player=self.player)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(self.inventory.get_inventory("dungeon")), 0)
+        self.assertEqual(len(self.inventory.get_inventory("player")), 0)
+        self.assertEqual(self.player.current_hp, self.player.max_hp)
+
+    def test_use_items_modify_coin(self):
+        random.seed(100)
+        response = self.client.post(reverse("qa_rpg:item"), {"item": "50"})
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
+                                    {"choice": self.correct.id, "option": "not select"})
+        self.player = Player.objects.get(pk=1)
+        self.question = Question.objects.get(pk=1)
+        self.assertEqual(self.player.dungeon_currency, 21)
+
+    def test_use_items_modify_item(self):
+        random.seed(100)
+        response = self.client.post(reverse("qa_rpg:item"), {"item": "15"})
+        response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
+                                    {"choice": self.correct.id, "option": "not select"})
+        self.player = Player.objects.get(pk=1)
+        self.question = Question.objects.get(pk=1)
+        self.inventory = Inventory.objects.get(player=self.player)
+        self.assertEqual(self.player.dungeon_currency, 0)
+        self.assertEqual(len(self.inventory.get_inventory("dungeon")), 5)
+
+    def test_no_item_select(self):
+        """If player didn't select any item."""
+        response = self.client.post(reverse("qa_rpg:item"))
+        self.assertEqual(response.status_code, 302)
 
 
 class SummonViewTest(TestCase):
