@@ -10,6 +10,7 @@ class Question(models.Model):
     damage = models.IntegerField(default=20)
     currency = models.IntegerField(default=0)
     max_currency = models.IntegerField(default=20)
+    rate = models.IntegerField(default=5)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.CharField(max_length=100, null=False, default="test")
     enable = models.BooleanField(default=True)
@@ -27,8 +28,8 @@ class Question(models.Model):
         return Choice.objects.get(question=self, correct_answer=True)
 
     def add_coin(self):
-        if self.currency + 5 <= self.max_currency:
-            self.currency += 5
+        if self.currency + self.rate <= self.max_currency:
+            self.currency += self.rate
             self.save()
 
     def __str__(self):
@@ -60,6 +61,11 @@ class Player(models.Model):
     dungeon_currency = models.IntegerField(default=0)
     activity = models.CharField(max_length=100, default="index")
     luck = models.FloatField(default=BASE_LUCK)
+    awake = models.IntegerField(default=0)
+    question_max_currency = models.IntegerField(default=20)
+    question_rate_currency = models.IntegerField(default=5)
+    status = models.CharField(max_length=50, default="")
+
 
     @property
     def player_name(self):
@@ -67,6 +73,8 @@ class Player(models.Model):
 
     def update_player_stats(self, health: int = 0, dungeon_currency: int = 0, luck: float = 0):
         self.current_hp += health
+        if self.current_hp > self.max_hp:
+            self.current_hp = self.max_hp
         self.dungeon_currency += dungeon_currency
         self.luck += luck
         self.save()
@@ -134,6 +142,12 @@ class Log(models.Model):
             self.clear_question()
         self.save()
 
+    def remove_question(self, question_id: str):
+        question = self.split_log("question")
+        question.remove(question_id)
+        self.log_questions = f"{';'.join(question)}" + ";"
+        self.save()
+
     def add_report_question(self, question_id: int):
         if str(question_id) not in self.split_log("report"):
             self.log_report_question += f"{question_id};"
@@ -153,25 +167,40 @@ class Inventory(models.Model):
 
     def get_inventory(self, inventory_type):
         dict_item = {}
-        inventory = []
         if inventory_type == "player":
             inventory = self.player_inventory.split(';')[:-1]
         else:
             inventory = self.dungeon_inventory.split(';')[:-1]
         for item in inventory:
             item_list = item.split(":")
-            dict_item[item_list[0]] = item_list[1]
+            dict_item[int(item_list[0])] = int(item_list[1])
         return dict_item
 
     def update_inventory(self, item: dict, inventory_type):
         inventory = ""
         for key, val in item.items():
-            inventory += f"{key}:{val};"
+            if val > 0:
+                inventory += f"{key}:{val};"
         if inventory_type == "player":
             self.player_inventory = inventory
         else:
             self.dungeon_inventory = inventory
         self.save()
+
+    def clear_dungeon_inventory(self):
+        self.dungeon_inventory = ""
+        self.save()
+
+    def reset_inventory(self):
+        p_inventory = self.get_inventory("player")
+        d_inventory = self.get_inventory("dungeon")
+        for item, amount in d_inventory.items():
+            if item in p_inventory:
+                p_inventory[item] += amount
+            else:
+                p_inventory[item] = amount
+        self.update_inventory(p_inventory, "player")
+        self.clear_dungeon_inventory()
 
     def get_templates(self):
         owned = {}

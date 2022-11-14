@@ -5,21 +5,20 @@ BLANK = "___"
 
 class TemplateCatalog(Enum):
 
-    TEMPLATES = [["Which of ", "the following ", "is ", "correct"],
-                 ["Which of ", "the following ", "is ", "incorrect"],
-                 ["How many ", BLANK, " in ", BLANK], ["When ", "did ", BLANK, " happen"],
-                 ["Which ", BLANK, " has ", BLANK], ["What is the ", BLANK, " for ", BLANK],
-                 ["Who ", BLANK, " in ", BLANK], ["Which feature ", "does ", BLANK, "have"],
-                 ["*", "How ", BLANK], ["*", "Who ", BLANK], ["*", "What ", BLANK], ["*", "Where ", BLANK],
-                 ["*", "When ", BLANK], ["*", "Why ", BLANK], ["*", "Which ", BLANK]]
+    TEMPLATES = {0: ["Which of ", "the following ", "is ", "correct"],
+                 1: ["Which of ", "the following ", "is ", "incorrect"],
+                 2: ["How many ", BLANK, " in ", BLANK], 3: ["When ", "did ", BLANK, " happen"],
+                 4: ["Which ", BLANK, " has ", BLANK], 5: ["What is the ", BLANK, " for ", BLANK],
+                 6: ["Who ", BLANK, " in ", BLANK], 7: ["Which feature ", "does ", BLANK, "have"],
+                 100: ["How ", BLANK], 101: ["Who ", BLANK], 102: ["What ", BLANK],
+                 103: ["Where ", BLANK], 104: ["When ", BLANK], 105: ["Why ", BLANK],
+                 106: ["Which ", BLANK]}
 
     def get_template(self, index: int):
-        if self.value[index][0] == "*":
-            return self.value[index][1:]
         return self.value[index]
 
     def get_price(self, index: int):
-        if self.value[index].count("*") > 0:
+        if index >= 100:
             return 999
         return 100 + (self.value[index].count(BLANK) * 50)
 

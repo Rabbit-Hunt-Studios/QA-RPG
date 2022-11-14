@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.google', 
+    'allauth.socialaccount.providers.discord',
 ]
 
 MIDDLEWARE = [
@@ -72,6 +73,15 @@ SOCIALACCOUNT_PROVIDERS = {
         'AUTH_PARAMS': {
             'access_type': 'online',
         }
+    },
+    'discord': {
+        'SCOPE': [
+            'identify',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
     }
 }
 
@@ -80,6 +90,7 @@ SITE_ID = 2
 LOGIN_REDIRECT_URL = '/qa_rpg/index/'
 LOGOUT_REDIRECT_URL = '/qa_rpg/'
 SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_ADAPTER = "mysite.adapter.CancelAccountAdapter"
 
 ROOT_URLCONF = 'mysite.urls'
 

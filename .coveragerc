@@ -11,6 +11,8 @@ omit =
     Dungeon/*
     qa_rpg/urls.py
     qa_rpg/dialogue.py
+    qa_rpg/template_question.py
+    qa_rpg/items_catalog.py
     qa_rpg/apps.py
     manage.py
     qa_rpg/migrations/*
