@@ -96,7 +96,7 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
     @method_decorator(never_cache, name='self.get')
     def get(self, request):
         player, log, inventory = get_player(request.user)
-        check_url = check_player_activity(player, ["select", "dungeon"])
+        check_url = check_player_activity(player, ["select_items", "dungeon"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -669,7 +669,7 @@ class UpgradeView(LoginRequiredMixin, generic.DetailView):
     def get(self, request):
         player, log, inventory = get_player(request.user)
 
-        check_url = check_player_activity(player, ["profile", "upgrade", "select_dg"])
+        check_url = check_player_activity(player, ["profile", "upgrade", "select_items"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -754,7 +754,7 @@ class SelectItemsView(LoginRequiredMixin, generic.DetailView):
     def get(self, request):
         player, log, inventory = get_player(request.user)
 
-        check_url = check_player_activity(player, ["index", "select"])
+        check_url = check_player_activity(player, ["index", "select_items"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -768,6 +768,7 @@ class SelectItemsView(LoginRequiredMixin, generic.DetailView):
             dungeon_item = item_list.get_item(key)
             dungeon_inventory.append([key, str(dungeon_item), val, dungeon_item.description, dungeon_item.effect])
         dungeon_inventory_num = [len(inventory.get_inventory("dungeon")), inventory.max_inventory]
+
         player.set_activity("select_items")
         check_items = False
         return render(request, self.template_name, {"player": player,

@@ -850,6 +850,7 @@ class TemplateChooseViewTest(TestCase):
         self.client.login(username="demo", password="12345")
         self.player = Player.objects.create(user=self.user)
         self.player.set_activity("index")
+        self.player.save()
 
     def test_rendering_treasure_page(self):
         """Test that player in template choose page."""
@@ -883,3 +884,76 @@ class TemplateChooseTest(TestCase):
         self.assertEqual(Player.objects.get(
             user=self.user).activity, "choose0")
 
+
+class SelectItemViewTest(TestCase):
+
+    def setUp(self):
+        """Setup for testing select item page."""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("select_items")
+        self.player.save()
+        self.inventory = Inventory.objects.create(player=self.player)
+        self.inventory.update_inventory({0: 1, 1: 1, 6: 1}, "player")
+        self.inventory.save()
+
+    def test_rendering_select_item_page(self):
+        """Test that player in select item page."""
+        response = self.client.get(reverse("qa_rpg:select_dg"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Player.objects.get(
+            user=self.user).activity, "select_items")
+        response = self.client.get(reverse("qa_rpg:treasure"))
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get(reverse("qa_rpg:dungeon"))
+        self.assertEqual(response.status_code, 200)
+
+
+class SelectItemTest(TestCase):
+
+    def setUp(self):
+        """Setup for testing select item page."""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.client.login(username="demo", password="12345")
+        self.player = Player.objects.create(user=self.user)
+        self.player.set_activity("select_items")
+        self.player.save()
+        self.inventory = Inventory.objects.create(player=self.player)
+        self.inventory.update_inventory({0: 1, 1: 1, 6: 1}, "player")
+        self.inventory.save()
+
+    def test_select_item(self):
+        """Test player select item from player inventory to dungeon inventory."""
+        response = self.client.post(reverse("qa_rpg:select_items"), {"select": "01", "amount": 1})
+        self.inventory = Inventory.objects.get(player=self.player)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(self.inventory.get_inventory("player")), 2)
+        self.assertEqual(len(self.inventory.get_inventory("dungeon")), 1)
+
+    def test_select_item_max(self):
+        """Test dungeon max inventory."""
+        response = self.client.post(reverse("qa_rpg:select_items"), {"select": "01", "amount": 1})
+        response = self.client.post(reverse("qa_rpg:select_items"), {"select": "11", "amount": 1})
+        response = self.client.post(reverse("qa_rpg:select_items"), {"select": "61", "amount": 1})
+        self.inventory = Inventory.objects.get(player=self.player)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(self.inventory.get_inventory("player")), 1)
+        self.assertEqual(len(self.inventory.get_inventory("dungeon")), 2)
+
+    def test_select_item_back(self):
+        """Test player select item from dungeon inventory back to player inventory."""
+        response = self.client.post(reverse("qa_rpg:select_items"), {"select": "01", "amount": 1})
+        self.inventory = Inventory.objects.get(player=self.player)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(self.inventory.get_inventory("player")), 2)
+        self.assertEqual(len(self.inventory.get_inventory("dungeon")), 1)
+        response = self.client.post(reverse("qa_rpg:select_items"), {"select": "02", "amount": 1})
+        self.inventory = Inventory.objects.get(player=self.player)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(self.inventory.get_inventory("player")), 3)
+        self.assertEqual(len(self.inventory.get_inventory("dungeon")), 0)
