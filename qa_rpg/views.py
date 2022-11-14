@@ -795,7 +795,7 @@ def select_items(request):
                     player_current_inventory[item_id] = amount
                     dungeon_inventory[item_id] -= amount
                 inventory.update_inventory(dungeon_inventory, "dungeon")
-                inventory.update_inventory(player_current_inventory, "player")`
+                inventory.update_inventory(player_current_inventory, "player")
             else:
                 messages.error(request, "You don't have that much items.")
         else:
