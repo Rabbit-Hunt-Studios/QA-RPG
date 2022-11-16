@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+from decouple import config
 from pathlib import Path
 import os
 
@@ -20,10 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#^!j0l(^p@+s2+1-sn!x-@y!363%&6)i*e+-m4i@q755jd62y5'
+SECRET_KEY = config('SECRET_KEY', cast=str, default="missing-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', cast=bool, default=False)
 
 ALLOWED_HOSTS = []
 
@@ -85,7 +86,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-SITE_ID = 2
+SITE_ID = config('SITE_ID', cast=int, default=0)
 
 LOGIN_REDIRECT_URL = '/qa_rpg/index/'
 LOGOUT_REDIRECT_URL = '/qa_rpg/'
