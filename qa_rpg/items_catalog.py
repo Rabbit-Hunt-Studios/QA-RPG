@@ -1,6 +1,6 @@
+"""Module that contains all item classes and item catalog class."""
 import random
 from abc import ABC
-from dataclasses import dataclass
 
 
 class Item(ABC):
@@ -421,39 +421,39 @@ class GloveMidasItem(Item):
         return "Ensures that 2 items of the same kind drop from monster."
 
 
-@dataclass(init=False)
 class ItemCatalog:
+    """Dataclass containing all items and their corresponding index."""
 
-    ITEMS = {0: DungeonCandyItem(), 1: WoodenShieldItem(),
-             6: PotionItem(), 7: CrossBowItem(), 8: ShieldItem(), 9: CoinBagItem(),
+    __ITEMS = {0: DungeonCandyItem(), 1: WoodenShieldItem(),
+               6: PotionItem(), 7: CrossBowItem(), 8: ShieldItem(), 9: CoinBagItem(),
 
-             10: MegaPotionItem(), 11: SmokeBombItem(), 12: GreatShieldItem(), 13: AmbrosiaItem(),
-             14: BookAlchemyItem(), 15: GloveMidasItem(),
+               10: MegaPotionItem(), 11: SmokeBombItem(), 12: GreatShieldItem(), 13: AmbrosiaItem(),
+               14: BookAlchemyItem(), 15: GloveMidasItem(),
 
-             50: GreedyBagItem(), 51: BloodPactItem(), 52: PoisonousSmokeBombItem(), 53: AdrenalineItem(),
-             54: BrokenShieldItem(), 55: VialIchorItem(), 56: RuneBulwarkItem(), 57: MermaidTearItem(),
+               50: GreedyBagItem(), 51: BloodPactItem(), 52: PoisonousSmokeBombItem(), 53: AdrenalineItem(),
+               54: BrokenShieldItem(), 55: VialIchorItem(), 56: RuneBulwarkItem(), 57: MermaidTearItem(),
 
-             999: Item()}
+               999: Item()}
 
-    STORE_30 = [0, 1, 9]
-    STORE_80 = [6, 7, 8]
+    __STORE_30 = [0, 1, 9]
+    __STORE_80 = [6, 7, 8]
 
     def get_item(self, index: int):
-        return self.ITEMS[index]
+        return self.__ITEMS[index]
         
     def get_store_items(self):
         in_store = {}
-        for index in self.STORE_30:
+        for index in self.__STORE_30:
             item = self.get_item(index)
             in_store[str(item)] = [index, 30, item.description, item.effect]
-        for index in self.STORE_80:
+        for index in self.__STORE_80:
             item = self.get_item(index)
             in_store[str(item)] = [index, 80, item.description, item.effect]
         return in_store
 
     def get_chest_items(self):
-        return [key for key in self.ITEMS.keys() if (10 <= key < 20)]
+        return [key for key in self.__ITEMS.keys() if (10 <= key < 20)]
 
     def get_cursed_items(self):
-        return [key for key in self.ITEMS.keys() if (50 <= key < 60)]
+        return [key for key in self.__ITEMS.keys() if (50 <= key < 60)]
 
