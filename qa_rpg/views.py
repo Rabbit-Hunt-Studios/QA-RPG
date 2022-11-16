@@ -19,7 +19,27 @@ from .items_catalog import ItemCatalog
 TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
 TREASURE_THRESHOLD = 0.55
 ITEM_CHANCE = 0.37
+MAX_QUESTIONS_SEEN = 30
 EXIT_CHECK = '-9999'
+UPGRADE = {
+    "max_hp": 20,
+    "max_earn": 2,
+    "rate_earn": 1,
+    "awake": 1,
+    "inventory": 3
+}
+UPGRADE_BASE = {
+    "max_hp": 100,
+    "max_earn": 20,
+    "rate_earn": 5
+}
+UPGRADE_RATE = {
+    "max_hp": 100,
+    "max_earn": 10,
+    "rate_earn": 5
+}
+MAX_AWAKEN = 3
+
 item_list = ItemCatalog()
 question_templates = TemplateCatalog()
 
@@ -279,7 +299,7 @@ class BattleView(LoginRequiredMixin, generic.DetailView):
                                                                enable=True).values_list("id", flat=True)
 
             amount_seen = len(seen_question)
-            if amount_seen > 30:
+            if amount_seen > MAX_QUESTIONS_SEEN:
                 log.clear_question()
 
             if ((amount_seen % 10) != 0) or amount_seen == 0 or len(unseen_player_questions) == 0:
@@ -799,14 +819,14 @@ class UpgradeView(LoginRequiredMixin, generic.DetailView):
                  100 + (int((player.question_rate_currency - 5)) * 50),
                  200 + (player.awake * 200)]
 
-        upgrade_list = [100 + (100 * (player.awake + 1)),
-                        20 + (10 * (player.awake + 1)),
-                        5 + (5 * (player.awake + 1))]
+        upgrade_list = [UPGRADE_BASE["max_hp"] + (UPGRADE_RATE["max_hp"] * (player.awake + 1)),
+                        UPGRADE_BASE["max_earn"] + (UPGRADE_RATE["max_earn"] * (player.awake + 1)),
+                        UPGRADE_BASE["rate_earn"] + (UPGRADE_RATE["rate_earn"] * (player.awake + 1))]
 
         upgrade_check = [(player.max_hp < upgrade_list[0]),
                          (player.question_max_currency < upgrade_list[1]),
                          (player.question_rate_currency < upgrade_list[2]),
-                         (player.awake < 3)]
+                         (player.awake < MAX_AWAKEN)]
 
         awaken_rate = (0.5 - (0.1 * player.awake)) * 100
 
@@ -830,16 +850,16 @@ def upgrade(request):
     if player.currency >= price:
         player.currency -= price
         if request.POST["upgrade"] == "max_hp":
-            if player.max_hp + 20 <= 100 + (100 * (player.awake + 1)):
-                player.max_hp += 20
+            if player.max_hp + UPGRADE["max_hp"] <= UPGRADE_BASE["max_hp"] + (UPGRADE_RATE["max_hp"] * (player.awake + 1)):
+                player.max_hp += UPGRADE["max_hp"]
 
         elif request.POST["upgrade"] == "max_earn":
-            if player.question_max_currency + 2 <= 20 + (10 * (player.awake + 1)):
-                player.question_max_currency += 2
+            if player.question_max_currency + UPGRADE["max_earn"] <= UPGRADE_BASE["max_earn"] + (UPGRADE_RATE["max_earn"] * (player.awake + 1)):
+                player.question_max_currency += UPGRADE["max_earn"]
 
         elif request.POST["upgrade"] == "rate_earn":
-            if player.question_rate_currency + 1 <= 5 + (5 * (player.awake + 1)):
-                player.question_rate_currency += 1
+            if player.question_rate_currency + UPGRADE["rate_earn"] <= UPGRADE_BASE["rate_earn"] + (UPGRADE_RATE["rate_earn"] * (player.awake + 1)):
+                player.question_rate_currency += UPGRADE["rate_earn"]
 
         for question in player_question:
             question.max_currency = player.question_max_currency
@@ -868,8 +888,8 @@ def awake(request):
     if player.currency >= price:
         player.currency -= price
         if event < 0.5 - (0.1 * player.awake):
-            player.awake += 1
-            inventory.max_inventory += 3
+            player.awake += UPGRADE["awake"]
+            inventory.max_inventory += UPGRADE["inventory"]
             messages.success(request, "Awaken Successful")
         else:
             messages.error(request, "Awaken Fail")
