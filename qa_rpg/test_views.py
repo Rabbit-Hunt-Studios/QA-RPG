@@ -297,7 +297,7 @@ class BattleActionTest(TestCase):
         random.seed(100)
         response = self.client.post(reverse("qa_rpg:run_away", args=(
             self.question.id,)), {"option": "not select"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 0)
         self.assertEqual(self.player.activity, "index")
