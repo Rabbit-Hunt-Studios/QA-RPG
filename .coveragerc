@@ -16,3 +16,4 @@ omit =
     qa_rpg/apps.py
     manage.py
     qa_rpg/migrations/*
+    qa_rpg/pull_questions.py
