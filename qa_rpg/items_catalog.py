@@ -439,6 +439,7 @@ class ItemCatalog:
     __STORE_80 = [6, 7, 8]
 
     def get_item(self, index: int):
+        """Return item to the corresponding index."""
         return self.__ITEMS[index]
         
     def get_store_items(self):
