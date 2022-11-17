@@ -82,6 +82,8 @@ def get_inventory(player: Player):
         inventory = Inventory.objects.get(player=player)
     except Inventory.DoesNotExist:
         inventory = Inventory.objects.create(player=player)
+        inventory.update_inventory({0: 5}, "player")
+        inventory.update_templates({0: 1, 1: 1})
         inventory.save()
     return inventory
 
@@ -260,13 +262,14 @@ def treasure_action(request):
         player.update_player_stats(dungeon_currency=coin_amount)
 
     else:
-        log.add_log("Oh No!! Mimic chest bite your leg.")
         damages = random.randint(1, 10)
         player.update_player_stats(health=-damages)
 
         if player.check_death():
             messages.error(request, "You lost consciousness in the dungeons.")
             return render(request, "qa_rpg/index.html", {'player': player})
+
+        log.add_log(f"The chest turned out to be a mimic!! You lose {damages} health points.")
 
     player.set_activity("dungeon")
     return redirect("qa_rpg:dungeon")
