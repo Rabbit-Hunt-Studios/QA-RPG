@@ -19,7 +19,7 @@ from .items_catalog import ItemCatalog
 TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
 TREASURE_THRESHOLD = 0.55
 ITEM_CHANCE = 0.37
-MAX_QUESTIONS_SEEN = 30
+MAX_QUESTIONS_SEEN = 50
 EXIT_CHECK = '-9999'
 UPGRADE = {
     "max_hp": 20,
@@ -256,7 +256,7 @@ def treasure_action(request):
 
     elif player.luck >= event:
         coin_amount = random.choice(TREASURE_AMOUNT)
-        log.add_log(f"You found {coin_amount} coin_amount in treasure chest.")
+        log.add_log(f"You found {coin_amount} coins in treasure chest.")
         player.update_player_stats(dungeon_currency=coin_amount)
 
     else:
