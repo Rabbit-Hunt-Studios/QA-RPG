@@ -19,6 +19,7 @@ class IndexViewTest(TestCase):
         self.log = Log.objects.create(player=self.player)
 
     def test_get_player(self):
+        """When a player isn't in the database, it automatically creates one."""
         user2 = User.objects.create_user(username="demo2")
         user2.set_password("12345")
         user2.save()
@@ -152,6 +153,7 @@ class DungeonActionTest(TestCase):
         self.assertEqual(self.player.luck, 0.55)
 
     def test_walk_after_found_exit_monster(self):
+        """When player walk after found exit monster it will reset exit event."""
         random.seed(10)
         self.log.add_question("-9999")
         self.log.add_question("0")
