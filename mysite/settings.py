@@ -172,4 +172,4 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-NPM_BIN_PATH = config('TIME_ZONE', cast=str, default='Your path')
+NPM_BIN_PATH = config('NPM_BIN_PATH', cast=str, default='Your path')
