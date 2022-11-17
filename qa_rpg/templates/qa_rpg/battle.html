@@ -55,31 +55,31 @@
 {% csrf_token %}
 
     <div class="flex justify-center items-center py-4">
-        <div class="bg-black bg-opacity-50 border-gray-600 border-2 w-3/4 h-48 justify-center items-center">
+        <div class="bg-black bg-opacity-50 border-gray-600 border-2 w-3/4 h-28 justify-center items-center">
             <h1 class="p-2 text-3xl ">{{ question.question_text }}</h1>
         </div>
     </div>
     {% if messages %}
         {% for message in messages %}
-        <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+        <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
     <div class="flex item-center grid justify-center">
         <p class="text-red-700 text-3xl bg-black bg-opacity-80 border-gray-600 border-2 p-4"><strong>{{ message }}</strong></p>
     </div>
         {% endfor %}
     {% endif %}
 
-
-    <div class="flex item-center grid justify-center py-8 w-1/2 h-80 ">
+<div class="flex">
+    <div class="flex item-center grid justify-left py-4 w-1/2 h-64">
     {% for choice in question.choice_set.all %}
         <div>
-            <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" class="peer checked:bg-opacity-80">
+            <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" class="peer checked:bg-opacity-80 ml-48">
             <label class="text-2xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-opacity-80" for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
         </div>
     {% endfor %}
     </div>
 
 
-    <div class="flex justify-center item-center gap-4">
+    <div class="flex justify-center item-center gap-4 ml-20 mt-20">
         <p>
             <button type="submit" class="text-5xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-green-700 duration-300 pl-2 pt-1 pb-1 pr-2">Fight</button>
         </p>
@@ -90,7 +90,7 @@
             </p>
         </div>
     </div>
-
+</div>
     <div class="absolute top-0 right-0 my-10 mx-10 py-2 text-2xl" >
         <input type="hidden" name="option" id="not select" value="not select">
         <div class="py-2">

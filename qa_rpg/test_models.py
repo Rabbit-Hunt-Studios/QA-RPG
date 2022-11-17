@@ -74,6 +74,8 @@ class PlayerModelTest(TestCase):
     def test_dead_player(self):
         """When a player dies, their dungeon currency becomes 0 and returns to index page."""
         self.player.dungeon_currency += 10
+        inventory = Inventory.objects.create(player=self.player)
+        inventory.save()
         self.assertEqual(self.player.dungeon_currency, 10)
         self.assertEqual(self.player.currency, 0)
         self.player.current_hp -= 200

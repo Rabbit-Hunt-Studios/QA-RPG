@@ -1,7 +1,7 @@
 import sys
 import os
 
-sys.path.insert(0, 'path') # Django setting file path
+sys.path.insert(0, '') # Django project path
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 
 import django
@@ -14,7 +14,7 @@ import random
 import urllib.request, json
 import html
 
-CATEGORY = ''
+CATEGORY = '' # Question category
 DAMAGE = 20
 OPENTDB_API = "" # Trivia API URL
 
@@ -25,22 +25,24 @@ admin = User.objects.get(pk=2) # Admin User
 
 for question in all_question['results']:
     question_text = html.unescape(question['question'])
-    question_model = Question.objects.create(question_text=question_text,
-                                             damage=DAMAGE,
-                                             category=CATEGORY,
-                                             owner=admin)
-    question_model.save()
+    question_in_db = Question.objects.filter(owner=admin).values_list('question_text', flat=True)
+    if question_text not in question_in_db:
+        question_model = Question.objects.create(question_text=question_text,
+                                                 damage=DAMAGE,
+                                                 category=CATEGORY,
+                                                 owner=admin)
+        question_model.save()
 
-    choices = question['incorrect_answers']
-    choices.append(question['correct_answer'])
-    for _ in range(4):
-        choice = random.choice(choices)
-        choices.remove(choice)
-        correct = (choice == question['correct_answer'])
-        choice_model = Choice.objects.create(choice_text=html.unescape(choice),
-                                             correct_answer=correct,
-                                             question=question_model)
-        choice_model.save()
+        choices = question['incorrect_answers']
+        choices.append(question['correct_answer'])
+        for _ in range(4):
+            choice = random.choice(choices)
+            choices.remove(choice)
+            correct = (choice == question['correct_answer'])
+            choice_model = Choice.objects.create(choice_text=html.unescape(choice),
+                                                 correct_answer=correct,
+                                                 question=question_model)
+            choice_model.save()
 
 
 

@@ -19,6 +19,7 @@ class IndexViewTest(TestCase):
         self.log = Log.objects.create(player=self.player)
 
     def test_get_player(self):
+        """When a player isn't in the database, it automatically creates one."""
         user2 = User.objects.create_user(username="demo2")
         user2.set_password("12345")
         user2.save()
@@ -152,8 +153,9 @@ class DungeonActionTest(TestCase):
         self.assertEqual(self.player.luck, 0.55)
 
     def test_walk_after_found_exit_monster(self):
+        """When player walk after found exit monster it will reset exit event."""
         random.seed(10)
-        self.log.add_question("9999")
+        self.log.add_question("-9999")
         self.log.add_question("0")
         response = self.client.post(
             reverse("qa_rpg:action"), {"action": "walk"})
@@ -267,7 +269,7 @@ class BattleActionTest(TestCase):
         self.player.save()
         response = self.client.post(reverse("qa_rpg:check", args=(self.question.id,)),
                                     {"choice": self.wrong.id, "option": "not select"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 0)
         self.assertEqual(self.player.activity, "index")
@@ -297,7 +299,7 @@ class BattleActionTest(TestCase):
         random.seed(100)
         response = self.client.post(reverse("qa_rpg:run_away", args=(
             self.question.id,)), {"option": "not select"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 0)
         self.assertEqual(self.player.activity, "index")
@@ -320,7 +322,7 @@ class BattleActionTest(TestCase):
         response = self.client.post(reverse("qa_rpg:item"), {"item": "51"})
         self.player = Player.objects.get(user=self.user)
         self.inventory = Inventory.objects.get(player=self.player)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(len(self.inventory.get_inventory("dungeon")), 0)
         self.assertEqual(len(self.inventory.get_inventory("player")), 0)
         self.assertEqual(self.player.current_hp, self.player.max_hp)
@@ -528,7 +530,7 @@ class TreasureActionTest(TestCase):
         self.inventory = Inventory.objects.create(player=self.player)
 
     def test_claim_coin_after_pick_up_treasure(self):
-        """Test that after pick up a treasure,the player gains bonus coins."""
+        """Test that after pick up a treasure,the player gains coins."""
         random.seed(10)
         self.player.dungeon_currency = 10
         self.player.luck = 0.75
