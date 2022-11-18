@@ -96,6 +96,8 @@ def check_player_activity(player: Player, allowed_activity: list):
     :return: url that player should be in
     """
     if not difflib.get_close_matches(player.activity, allowed_activity):
+        if player.activity == "found monster":
+            return "qa_rpg:battle"
         if difflib.get_close_matches(player.activity, ["battle", "summon"]):
             return f"qa_rpg:{player.activity[:6]}"
         return f"qa_rpg:{player.activity}"
