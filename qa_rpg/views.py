@@ -626,6 +626,10 @@ def create(request):
     if summon_fee >= player.currency:
         messages.error(request, "You don't have enough coins to summon a monster.")
         return redirect("qa_rpg:summon")
+    for num in range(int(player.activity.split(" ")[0][6:])):
+        if len(request.POST[f'choice{num}']) > 75:
+            messages.error(request, "Your choices can not be over 75 characters.")
+            return redirect("qa_rpg:summon")
 
     try:
         question_text = ''
