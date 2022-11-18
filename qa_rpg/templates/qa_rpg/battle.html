@@ -69,9 +69,9 @@
     {% endif %}
 
 <div class="flex">
-    <div class="flex item-center grid justify-left py-4 w-1/4 h-64 ml-48">
+    <div class="flex item-center grid justify-left py-4 w-[45rem] h-64 ml-48">
     {% for choice in question.choice_set.all %}
-        <div>
+        <div class="my-2">
             <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" class="peer checked:bg-opacity-80">
             <label class="text-2xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-opacity-80 pl-2 pt-1 pb-1 pr-2 peer-checked:bg-opacity-80" for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
         </div>
