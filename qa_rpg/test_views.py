@@ -70,7 +70,7 @@ class DungeonViewTest(TestCase):
         self.player.set_activity("select")
         response = self.client.get(reverse("qa_rpg:dungeon"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["logs"], empty_log)
+        self.assertEqual(response.context["logs"], [[''], [''], [''], [''], [''], [''], [''], [''], [''], ['']])
         self.assertEqual(response.context["player"], self.player)
 
     def test_not_matching_activity(self):
