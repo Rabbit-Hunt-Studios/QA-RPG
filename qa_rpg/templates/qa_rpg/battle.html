@@ -56,8 +56,17 @@
 {% csrf_token %}
 
     <div class="flex justify-center items-center py-4">
-        <div class="bg-black bg-opacity-50 border-gray-600 border-2 w-3/4 h-28 justify-center items-center">
-            <h1 class="p-2 text-3xl ">{{ question.question_text }}</h1>
+        <div class="bg-black bg-opacity-70 border-gray-600 border-2 w-3/4 h-28 justify-center items-center">
+            <h1 class="p-2 text-3xl">
+                {% if question.damage > 30 %}
+                    <a class="text-red-700">(Hard)</a>
+                {% elif question.damage > 25%}
+                    <a class="text-orange-700">(Medium)</a>
+                {% else %}
+                    <a class="text-yellow-500">(Easy)</a>
+                {% endif %}
+                {{ question.question_text }}
+            </h1>
         </div>
     </div>
     {% if messages %}
