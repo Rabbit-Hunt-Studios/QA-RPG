@@ -98,6 +98,8 @@ def check_player_activity(player: Player, allowed_activity: list):
     if not difflib.get_close_matches(player.activity, allowed_activity):
         if player.activity == "found monster":
             return "qa_rpg:battle"
+        if difflib.get_close_matches(player.activity, ["choose"]):
+            return "qa_rpg:summon"
         if difflib.get_close_matches(player.activity, ["battle", "summon"]):
             return f"qa_rpg:{player.activity[:6]}"
         return f"qa_rpg:{player.activity}"
@@ -667,26 +669,27 @@ def create(request):
                 question_text += request.POST[f'question{i}']
         if question_text[-1] != "?":
             question_text += "?"
-        choices = {}
+        choices = []
         correct_index = int(request.POST['index'])
         for num in range(int(player.activity.split(" ")[0][6:])):
             if num == correct_index:
-                choices[request.POST[f'choice{num}']] = True
+                choices.append([request.POST[f'choice{num}'], True])
             else:
-                choices[request.POST[f'choice{num}']] = False
+                choices.append([request.POST[f'choice{num}'], False])
     except KeyError:
         messages.error(request, "Please fill in every field and select a correct answer.")
         return redirect("qa_rpg:summon")
 
-    question = Question.objects.create(question_text=question_text,
-                                       owner=request.user, category="player",
-                                       max_currency=player.question_max_currency,
-                                       rate=player.question_rate_currency)
+    question = Question(question_text=question_text,
+                        owner=request.user,
+                        category="player",
+                        max_currency=player.question_max_currency,
+                        rate=player.question_rate_currency)
     question.save()
-    for choice_text in choices.keys():
-        choice = Choice.objects.create(choice_text=choice_text,
-                                       correct_answer=choices[choice_text],
-                                       question=question)
+    for choice in choices:
+        choice = Choice(choice_text=choice[0],
+                        correct_answer=choice[1],
+                        question=question)
         choice.save()
     player.set_activity("index")
     messages.success(request, "Successfully summoned a new monster.")
