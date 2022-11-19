@@ -4,6 +4,7 @@
 <head>
     {% tailwind_css %}
 </head>
+<title> Summon </title>
 
 <body class="text-white font-serif bg-no-repeat bg-cover  "
   style="background-image: url('https://images6.alphacoders.com/601/601698.jpg');">
@@ -14,17 +15,18 @@
       </div>
     </div>
   </div>
+
     {% if messages %}
-            {% for message in messages %}
+        {% for message in messages %}
             <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
-        <div class="mb-8">
-            <div>
-        <p class="text-red-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
+                <div class="mb-8">
+                    <div>
+                        <p class="text-red-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
+                    </div>
+                </div>
             </div>
-        </div>
-      </div>
-            {% endfor %}
-        {% endif %}
+        {% endfor %}
+    {% endif %}
 
         <form action="{% url 'qa_rpg:create' %}" method="post">
             {% csrf_token %}

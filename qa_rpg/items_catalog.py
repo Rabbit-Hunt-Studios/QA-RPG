@@ -179,9 +179,9 @@ class GreatShieldItem(Item):
 
 
 class CoinBagItem(Item):
-    """Coin gain is multiplied by 1.8."""
+    """Coin gain is multiplied by 2.1."""
 
-    multiplier = 0.8
+    multiplier = 1.1
 
     def coin_modifier(self, coin):
         return int(coin * self.multiplier)
@@ -199,9 +199,9 @@ class CoinBagItem(Item):
 
 
 class BookAlchemyItem(Item):
-    f"""Coin gain is multiplied by 3.5."""
+    f"""Coin gain is multiplied by 4."""
 
-    multiplier = 2.5
+    multiplier = 3
 
     def coin_modifier(self, coin):
         return int(coin * self.multiplier)
@@ -240,10 +240,10 @@ class AmbrosiaItem(Item):
 
 
 class GreedyBagItem(Item):
-    """Coin gain is multiplied by 3, but incoming damage is multiplied by 25."""
+    """Coin gain is multiplied by 3.25, but incoming damage is multiplied by 2."""
 
     def coin_modifier(self, coin):
-        return coin * 2
+        return int(coin * 2.25)
 
     def damage_modifier(self, incoming_damage):
         return -int(incoming_damage * 1.5)
@@ -257,14 +257,14 @@ class GreedyBagItem(Item):
 
     @property
     def effect(self):
-        return "Multiplies coin gain by 3 times, but also multiplies damage taken by 2 times."
+        return "Multiplies coin gain by 3.25 times, but also multiplies damage taken by 2 times."
 
 
 class BloodPactItem(Item):
     """Instantly lose 15 percent of max health, but gain 2.25 times multiplier to coin."""
 
     def coin_modifier(self, coin):
-        return int(coin * 1.25)
+        return int(coin * 1.5)
 
     def health_modifier(self, max_health):
         return -int(max_health * 0.15)
@@ -278,17 +278,17 @@ class BloodPactItem(Item):
 
     @property
     def effect(self):
-        return "Lose 15 percent of max health instantly, but multiplies coin gain by 2 times."
+        return "Lose 15 percent of max health instantly, but multiplies coin gain by 2.5 times."
 
 
 class PoisonousSmokeBombItem(Item):
-    """Add 40 percent to escape chance but lose 10 percent max health instantly."""
+    """Add 40 percent to escape chance but lose 15 health instantly."""
 
     def escape_modifier(self, chance):
         return 0.4
 
     def health_modifier(self, max_health):
-        return -int(max_health * 0.1)
+        return -15
 
     def __str__(self):
         return "Poisonous Cloud"
@@ -299,7 +299,7 @@ class PoisonousSmokeBombItem(Item):
 
     @property
     def effect(self):
-        return "Lose 10 percent of max health instantly, but adds 40 percent escape chance."
+        return "Lose 15 health instantly, but adds 40 percent escape chance."
 
 
 class AdrenalineItem(Item):
@@ -362,7 +362,7 @@ class RuneBulwarkItem(Item):
     @property
     def effect(self):
         return "Lose 5 percent of your max health instantly, and block 27.5 percent of incoming damage."
-    
+
 
 class VialIchorItem(Item):
     """50 percent chance of healing or damaging you up to 15 percent."""

@@ -70,14 +70,40 @@ class DungeonViewTest(TestCase):
         self.player.set_activity("select")
         response = self.client.get(reverse("qa_rpg:dungeon"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["logs"], empty_log)
+        self.assertEqual(response.context["logs"], [[''], [''], [''], [''], [''], [''], [''], [''], [''], ['']])
         self.assertEqual(response.context["player"], self.player)
+        self.assertEqual(response.context['report_previous'], '')
 
     def test_not_matching_activity(self):
         """If the player activity is not dungeon, redirect player to the correct page."""
         self.player.set_activity("battle1")
         response = self.client.get(reverse("qa_rpg:dungeon"))
         self.assertEqual(response.status_code, 302)
+
+
+class DungeonReportQuestion(TestCase):
+
+    def setUp(self) -> None:
+        """Setup for testing report previous questions."""
+        self.user = User.objects.create_user(username="demo")
+        self.user.set_password("12345")
+        self.user.save()
+        self.admin = User.objects.create_user(username="admin")
+        self.admin.save()
+        self.client.login(username=self.user, password="12345")
+        self.player = Player.objects.create(user=self.user)
+        self.log = Log.objects.create(player=self.player)
+
+    def test_report_previous_question(self):
+        """After seeing the question, the player is allowed to report it."""
+        question = Question.objects.create(owner=self.user, question_text="test")
+        response = self.client.post(reverse("qa_rpg:report_previous"), {"option": "report",
+                                                                        "question_id": question.id})
+        report = ReportAndCommend.objects.get(user=self.user)
+        self.assertEqual(report.vote, 0)
+        self.assertEqual(report.question, question)
+        self.log = Log.objects.get(player=self.player)
+        self.assertIn("1", self.log.split_log("report"))
 
 
 class DungeonActionTest(TestCase):
@@ -334,7 +360,7 @@ class BattleActionTest(TestCase):
                                     {"choice": self.correct.id, "option": "not select"})
         self.player = Player.objects.get(pk=1)
         self.question = Question.objects.get(pk=1)
-        self.assertEqual(self.player.dungeon_currency, 21)
+        self.assertEqual(self.player.dungeon_currency, 22)
 
     def test_use_items_modify_item(self):
         random.seed(100)
@@ -412,7 +438,6 @@ class CreateQuestionTest(TestCase):
                                      "fee": "150", "index": "0", "template_id": "0"})
         self.player = Player.objects.get(pk=1)
         self.assertEqual(self.player.currency, 50)
-        
 
     def test_player_not_fill_every_field(self):
         """Test player not fill all field in create question."""
@@ -679,7 +704,8 @@ class ShopViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Player.objects.get(
             user=self.user).activity, "shop")
-    
+
+
 class BuyingTest(TestCase):
     """Testing action in Shop page."""
 

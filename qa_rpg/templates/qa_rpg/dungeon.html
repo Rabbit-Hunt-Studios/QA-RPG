@@ -6,23 +6,68 @@
 
 <body class="font-serif bg-cover bg-center"
   style="background-image: url('https://generativedungeon.com/images/Website_main_bg.jpg'); color: white;">
-  <div class="m-8 p-4">
-    <div class="h-20 w-[17rem] box-border bg-black bg-opacity-50 border-gray-600  border-2">
+  <div class="flex justify-between m-8 p-4">
+    <div class="h-20 w-[17rem] box-border bg-black bg-opacity-50 border-gray-600 border-2">
       <div class="text-pink-50 text-3xl pl-2 pt-1">
-        HP: {{ player.current_hp }} / {{ player.max_hp }}
+        <a> HP: {{ player.current_hp }} / {{ player.max_hp }} </a>
         <br> <a> Current coins: {{ player.dungeon_currency }} </a> </br>
       </div>
     </div>
+    {% if messages %}
+        {% for message in messages %}
+            <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                <div class="mb-8">
+                    <div>
+                        <p class="text-red-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% if report_previous %}
+      <div class="items-center bg-black bg-opacity-50 hover:bg-red-900 transition-colors duration-600 border-yellow-200 border-2">
+        <form method="post" action="{% url 'qa_rpg:report_previous' %}">
+          {% csrf_token %}
+          <div class="text-pink-50 text-2xl py-2 px-2 mt-3">
+            <input type="hidden" value="report" name="option" id="option">
+            <input type="hidden" value="{{ report_previous }}" name="question_id" id="question_id">
+            <button type="submit">Report previous question?</button>
+          </div>
+        </form>
+      </div>
+    {% endif %}
   </div>
 
   <div>
     <div class="flex justify-center items-center w-screen h-3/5">
-      <div class="bg-black bg-opacity-50 border-gray-600 border-2 w-2/3 h-fit justify-center items-center">
+      <div class="bg-black bg-opacity-70 border-gray-600 border-2 w-2/3 h-fit justify-center items-center">
         <!--display messages log-->
         {% for log in logs %}
-        <div class="text-xl text-justify px-5">
-          <a>{{ log }}<br></a>
-        </div>
+          {% if log.0 == '' %}
+            <div class="text-xl text-justify px-5">
+              <a>{{ log.0 }}<br></a>
+            </div>
+          {% elif log.0 == '0' %}
+            <div class="text-xl text-justify px-5">
+              <a>{{ log.1 }}<br></a>
+            </div>
+          {% elif log.0 == '1' %}
+            <div class="text-red-600 text-xl text-justify px-5">
+              <a>{{ log.1 }}<br></a>
+            </div>
+          {% elif log.0 == '2' %}
+            <div class="text-yellow-600 text-xl text-justify px-5">
+              <a>{{ log.1 }}<br></a>
+            </div>
+          {% elif log.0 == '3' %}
+            <div class="text-green-600 text-xl text-justify px-5">
+              <a>{{ log.1 }}<br></a>
+            </div>
+          {% elif log.0 == '4' %}
+            <div class="text-blue-600 text-xl text-justify px-5">
+              <a>{{ log.1 }}<br></a>
+            </div>
+          {% endif %}
         </br>
         {% endfor %}
       </div>

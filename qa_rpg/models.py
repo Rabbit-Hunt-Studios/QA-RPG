@@ -165,10 +165,11 @@ class Log(models.Model):
         self.save()
 
     def remove_question(self, question_id: str):
-        """Remove question id from log."""
-        question = self.split_log("question")
-        question.remove(question_id)
-        self.log_questions = f"{';'.join(question)}" + ";"
+        """Remove seen_question id from log."""
+        seen_question = self.split_log("question")
+        if question_id in seen_question:
+            seen_question.remove(question_id)
+        self.log_questions = f"{';'.join(seen_question)}" + ";"
         self.save()
 
     def add_report_question(self, question_id: int):
