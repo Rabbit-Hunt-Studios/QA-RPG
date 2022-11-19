@@ -334,7 +334,7 @@ class BattleActionTest(TestCase):
                                     {"choice": self.correct.id, "option": "not select"})
         self.player = Player.objects.get(pk=1)
         self.question = Question.objects.get(pk=1)
-        self.assertEqual(self.player.dungeon_currency, 21)
+        self.assertEqual(self.player.dungeon_currency, 22)
 
     def test_use_items_modify_item(self):
         random.seed(100)
