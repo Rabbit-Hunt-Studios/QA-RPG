@@ -454,7 +454,7 @@ def item(request):
 
     player.status = str(index)
     player.save()
-
+    messages.success(request, f"You used the item '{str(used_item)}'.")
     return redirect("qa_rpg:battle")
 
 
