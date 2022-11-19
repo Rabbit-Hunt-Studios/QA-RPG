@@ -39,11 +39,11 @@ UPGRADE_RATE = {
     "rate_earn": 5
 }
 TEXT_COLOR_CODE = {
-    "normal": 0,
-    "damage": 1,
-    "coin": 2,
-    "heal": 3,
-    "item": 4
+    "normal": 'text-white-600',
+    "damage": 'text-red-600',
+    "coin": 'text-yellow-600',
+    "heal": 'text-green-600',
+    "item": 'text-blue-600'
 }
 MAX_AWAKEN = 3
 
@@ -254,7 +254,8 @@ def report_previous(request):
     if log.split_log("question"):
         previous_question = log.split_log("question")[-1]
     messages.success(request, "Successfully reported the question.")
-    return render(request, "qa_rpg/dungeon.html", {"logs": log.split_log("text"),
+    log_text_and_color = [log_text.split(":") for log_text in log.split_log("text")]
+    return render(request, "qa_rpg/dungeon.html", {"logs": log_text_and_color,
                                                    "player": player,
                                                    "report_previous": previous_question})
 
