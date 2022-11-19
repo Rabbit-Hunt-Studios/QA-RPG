@@ -38,6 +38,13 @@ UPGRADE_RATE = {
     "max_earn": 10,
     "rate_earn": 5
 }
+TEXT_COLOR_CODE = {
+    "normal": 0,
+    "damage": 1,
+    "coin": 2,
+    "heal": 3,
+    "item": 4
+}
 MAX_AWAKEN = 3
 
 item_list = ItemCatalog()
@@ -222,13 +229,14 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
             return redirect(check_url)
 
         if EXIT_CHECK in log.split_log("question"):
-            log.add_log("The coast is clear, you may now exit the dungeon.")
+            log.add_log(f"{TEXT_COLOR_CODE['normal']}:The coast is clear, you may now exit the dungeon.")
 
+        log_text_and_color = [log_text.split(":") for log_text in log.split_log("text")]
         previous_question = ""
         if log.split_log("question"):
             previous_question = log.split_log("question")[-1]
         player.set_activity("dungeon")
-        return render(request, self.template_name, {"logs": log.split_log("text"),
+        return render(request, self.template_name, {"logs": log_text_and_color,
                                                     "player": player,
                                                     "report_previous": previous_question})
 
@@ -269,22 +277,23 @@ def action(request):
             log.remove_question(EXIT_CHECK)
 
         if player.luck >= TREASURE_THRESHOLD and event <= (player.luck - TREASURE_THRESHOLD):
-            log.add_log(f"You found a treasure chest.")
+            log.add_log(f"{TEXT_COLOR_CODE['coin']}:You found a treasure chest.")
             player.update_player_stats(luck=-(player.luck - TREASURE_THRESHOLD))
             return redirect("qa_rpg:treasure")
 
         if event <= player.luck:
-            log.add_log(Dialogue.MONSTER.get_text + Dialogue.BATTLE_DIALOGUE.get_text)
+            log.add_log(f"{TEXT_COLOR_CODE['normal']}:" + Dialogue.MONSTER.get_text+Dialogue.BATTLE_DIALOGUE.get_text)
             player.set_activity("found monster")
             return redirect("qa_rpg:battle")
 
-        log.add_log(Dialogue.WALK_DIALOGUE.get_text)
+        log.add_log(f"{TEXT_COLOR_CODE['normal']}:" + Dialogue.WALK_DIALOGUE.get_text)
         player.update_player_stats(luck=0.02)
         return redirect("qa_rpg:dungeon")
 
     else:
         if event <= 0.5 and EXIT_CHECK not in log.split_log("question"):
-            log.add_log("A " + Dialogue.MONSTER.get_text + " is blocking the dungeon exit.")
+            log.add_log(f"{TEXT_COLOR_CODE['normal']}:A " +
+                        Dialogue.MONSTER.get_text + " is blocking the dungeon exit.")
             log.add_question(EXIT_CHECK)
             player.set_activity("found monster")
             return redirect("qa_rpg:battle")
@@ -324,12 +333,12 @@ def treasure_action(request):
     event = random.random()
 
     if request.POST['action'] != "pick up":
-        log.add_log(f"You walk away from the treasure chest.")
+        log.add_log(f"{TEXT_COLOR_CODE['normal']}:You walk away from the treasure chest.")
 
     elif (player.luck * ITEM_CHANCE) >= event:
         item_id = random.choice(item_list.get_chest_items())
         random_item = item_list.get_item(item_id)
-        log.add_log(f"You got the item '{str(random_item)}' from the chest !")
+        log.add_log(f"{TEXT_COLOR_CODE['item']}:You got the item '{str(random_item)}' from the chest !")
         dungeon_inventory = inventory.get_inventory("dungeon")
         try:
             dungeon_inventory[item_id] += 1
@@ -339,7 +348,7 @@ def treasure_action(request):
 
     elif player.luck >= event:
         coin_amount = random.choice(TREASURE_AMOUNT)
-        log.add_log(f"You found {coin_amount} coins in treasure chest.")
+        log.add_log(f"{TEXT_COLOR_CODE['coin']}:You found {coin_amount} coins in treasure chest.")
         player.update_player_stats(dungeon_currency=coin_amount)
 
     else:
@@ -350,7 +359,8 @@ def treasure_action(request):
             messages.error(request, "You lost consciousness in the dungeons.")
             return render(request, "qa_rpg/index.html", {'player': player})
 
-        log.add_log(f"The chest turned out to be a mimic!! You lose {damages} health points.")
+        log.add_log(f"{TEXT_COLOR_CODE['damage']}:"
+                    f"The chest turned out to be a mimic!! You lose {damages} health points.")
 
     player.set_activity("dungeon")
     return redirect("qa_rpg:dungeon")
@@ -429,14 +439,14 @@ def item(request):
     dungeon_inventory = inventory.get_inventory("dungeon")
     dungeon_inventory[index] -= 1
     inventory.update_inventory(dungeon_inventory, "dungeon")
-    log.add_log("You used an item: " + str(used_item) + " !")
+    log.add_log(f"{TEXT_COLOR_CODE['normal']}:You used an item: " + str(used_item) + " !")
 
     health_add = used_item.health_modifier(player.max_hp)
     player.update_player_stats(health=health_add)
     if health_add > 0:
-        log.add_log(f"You healed {health_add} health points.")
+        log.add_log(f"{TEXT_COLOR_CODE['heal']}:You healed {health_add} health points.")
     elif health_add < 0:
-        log.add_log(f"You sacrificed {-health_add} health points.")
+        log.add_log(f"{TEXT_COLOR_CODE['damage']}:You sacrificed {-health_add} health points.")
         if player.check_death():
             messages.error(request, "You lost consciousness in the dungeons.")
             return redirect("qa_rpg:index")
@@ -475,7 +485,7 @@ def check(request, question_id):
     player.save()
 
     if check_choice.correct_answer:
-        log.add_log(Dialogue.WIN_DIALOGUE.get_text)
+        log.add_log(f"{TEXT_COLOR_CODE['normal']}:" + Dialogue.WIN_DIALOGUE.get_text)
         chance = 0.23
         if (applied_item.item_modifier(1) != 0 or chance >= random.random()) and not applied_item.coin_modifier(100):
             item_id = random.choice(item_list.get_cursed_items())
@@ -486,32 +496,33 @@ def check(request, question_id):
                 dungeon_inventory[item_id] += amount
             except KeyError:
                 dungeon_inventory[item_id] = amount
-            log.add_log(f"You loot the {amount} '{str(random_item)}(s)' from the monster's corpse !")
+            log.add_log(f"{TEXT_COLOR_CODE['item']}:You loot the {amount} "
+                        f"'{str(random_item)}(s)' from the monster's corpse !")
             inventory.update_inventory(dungeon_inventory, "dungeon")
         else:
             earn_coins = get_coins(question.damage)
             bonus = applied_item.coin_modifier(earn_coins)
             earn_coins += bonus
             if bonus > 0:
-                log.add_log(f"You earn {earn_coins} coins ({bonus} bonus coins).")
+                log.add_log(f"{TEXT_COLOR_CODE['coin']}:You earn {earn_coins} coins ({bonus} bonus coins).")
             else:
-                log.add_log(f"You earn {earn_coins} coins.")
+                log.add_log(f"{TEXT_COLOR_CODE['coin']}:You earn {earn_coins} coins.")
             player.update_player_stats(dungeon_currency=earn_coins, luck=0.03)
 
     else:
-        log.add_log(Dialogue.LOSE_DIALOGUE.get_text)
+        log.add_log(f"{TEXT_COLOR_CODE['normal']}:" + Dialogue.LOSE_DIALOGUE.get_text)
         nullified = applied_item.damage_modifier(question.damage)
         if nullified > 0:
-            log.add_log(f"{nullified} damage from monster was blocked by your item.")
+            log.add_log(f"{TEXT_COLOR_CODE['heal']}:{nullified} damage from monster was blocked by your item.")
         elif nullified < 0:
-            log.add_log(f"{-nullified} damage suffered from cursed item.")
+            log.add_log(f"{TEXT_COLOR_CODE['damage']}:{-nullified} damage suffered from cursed item.")
         player.update_player_stats(health=-(question.damage - nullified))
         question.add_coin()
         if player.check_death():
             messages.error(request, "You lost consciousness in the dungeons.")
             return redirect("qa_rpg:index")
 
-        log.add_log(f"You lose {question.damage - nullified} health points.")
+        log.add_log(f"{TEXT_COLOR_CODE['damage']}:You lose {question.damage - nullified} health points.")
 
     player.set_activity("dungeon")
     return redirect("qa_rpg:dungeon")
@@ -540,12 +551,12 @@ def run_away(request, question_id):
     player.save()
 
     if random.random() >= player.luck - applied_item.escape_modifier(player.luck):
-        log.add_log(Dialogue.RUN_DIALOGUE.get_text)
+        log.add_log(f"{TEXT_COLOR_CODE['normal']}:" + Dialogue.RUN_DIALOGUE.get_text)
         player.set_activity("dungeon")
         return redirect("qa_rpg:dungeon")
 
     run_fail = Dialogue.RUN_FAIL_DIALOGUE.get_text
-    log.add_log(run_fail)
+    log.add_log(f"{TEXT_COLOR_CODE['damage']}:" + run_fail)
     player.update_player_stats(health=-(question.damage - applied_item.damage_modifier(question.damage)))
     question.add_coin()
     if player.check_death():
