@@ -430,7 +430,7 @@ def item(request):
     try:
         index = int(request.POST['item'])
     except KeyError:
-        messages.error(request, "You select an item to use.")
+        messages.error(request, "You need to select an item to use.")
         return redirect("qa_rpg:battle")
 
     player = get_player(request.user)
@@ -845,7 +845,7 @@ def buy(request):
         player.currency -= int(items[1]) * amount
         player.save()
 
-    messages.success(request, "Purchase Successful")
+    messages.success(request, "Purchase Successful.")
     return redirect('qa_rpg:shop')
 
 
@@ -913,7 +913,7 @@ def upgrade(request):
             question.max_currency = player.question_max_currency
             question.rate = player.question_rate_currency
             question.save()
-        messages.success(request, "Upgrade Successful")
+        messages.success(request, "Upgrade Successful.")
     else:
         messages.error(request, "You don't have enough coins to upgrade.")
 
@@ -938,9 +938,9 @@ def awake(request):
         if event < 0.5 - (0.1 * player.awake):
             player.awake += UPGRADE["awake"]
             inventory.max_inventory += UPGRADE["inventory"]
-            messages.success(request, "Awaken Successful")
+            messages.success(request, "Awaken Successful.")
         else:
-            messages.error(request, "Awaken Fail")
+            messages.error(request, "Awaken Failed.")
     else:
         messages.error(request, "You don't have enough coins to Awaken.")
 
@@ -1004,7 +1004,7 @@ def select_items(request):
                 dungeon_inventory[item_id] = amount
                 player_current_inventory[item_id] -= amount
         else:
-            messages.error(request, "You don't have that much items.")
+            messages.error(request, "You don't have that many items.")
     elif request.POST["select"][-1] == "2":
         item_id = int(request.POST["select"][:-1])
         if dungeon_inventory[item_id] - amount >= 0:
@@ -1017,7 +1017,7 @@ def select_items(request):
             inventory.update_inventory(dungeon_inventory, "dungeon")
             inventory.update_inventory(player_current_inventory, "player")
         else:
-            messages.error(request, "You don't have that much items.")
+            messages.error(request, "You don't have that many items.")
     else:
         messages.error(request, "Your bag is full.")
 

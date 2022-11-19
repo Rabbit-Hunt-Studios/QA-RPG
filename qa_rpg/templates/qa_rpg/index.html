@@ -21,7 +21,11 @@
             <div class="ml-8 my-7 p-4">
                 <div>
                     <div>
+                    {% if message.level == 40 %}
                         <p class="text-red-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
+                    {% else %}
+                        <p class="text-green-600 text-center text-2xl bg-black bg-opacity-50 border-gray-600 border-2 pl-2 pt-1 pb-1 pr-2"><strong>{{ message }}</strong></p>
+                    {% endif %}
                     </div>
                 </div>
             </div>

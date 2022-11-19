@@ -63,9 +63,13 @@
     {% if messages %}
         {% for message in messages %}
         <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>
-    <div class="flex item-center grid justify-center">
-        <p class="text-red-700 text-3xl bg-black bg-opacity-80 border-gray-600 border-2 p-4"><strong>{{ message }}</strong></p>
-    </div>
+        <div class="flex item-center grid justify-center">
+            {% if message.level == 40 %}
+                <p class="text-red-700 text-3xl bg-black bg-opacity-80 border-gray-600 border-2 p-4"><strong>{{ message }}</strong></p>
+            {% else %}
+                <p class="text-green-600 text-3xl bg-black bg-opacity-80 border-gray-600 border-2 p-4"><strong>{{ message }}</strong></p>
+            {% endif %}
+        </div>
         {% endfor %}
     {% endif %}
 
