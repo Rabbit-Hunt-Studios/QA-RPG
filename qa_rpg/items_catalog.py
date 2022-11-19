@@ -243,7 +243,7 @@ class GreedyBagItem(Item):
     """Coin gain is multiplied by 3.25, but incoming damage is multiplied by 2."""
 
     def coin_modifier(self, coin):
-        return coin * 2.25
+        return int(coin * 2.25)
 
     def damage_modifier(self, incoming_damage):
         return -int(incoming_damage * 1.5)
