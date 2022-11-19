@@ -116,6 +116,60 @@ def get_available_template(inventory: Inventory):
     return available
 
 
+def add_reports_or_commends(request, question, log):
+    """
+    Add a report or commend of the question.
+    :param request: HTML request
+    :param question: question object
+    :param log: player log object
+    """
+    if request.POST['option'] == 'report':
+        report = ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
+        report.save()
+        log.add_report_question(question.id)
+    elif request.POST['option'] == 'commend':
+        commend = ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
+        commend.save()
+
+
+def one_user_per_report(request, question, log):
+    """
+    One player can only report or commend once.
+    :param request: HTML request
+    :param question: question object
+    :param log: player log object
+    """
+    user = request.user
+    try:
+        option_select = ReportAndCommend.objects.get(question=question, user=user)
+        if request.POST['option'] == 'report':
+            option_select.vote = 0
+            option_select.save()
+            log.add_report_question(question.id)
+        elif request.POST['option'] == 'commend':
+            option_select.vote = 1
+            option_select.save()
+    except ReportAndCommend.DoesNotExist:
+        add_reports_or_commends(request, question, log)
+
+
+def set_question_activation(question_id):
+    """
+    Check the question of the player whether to disable the question or not.
+    :param question_id:
+    """
+    question = Question.objects.get(pk=question_id)
+    report_num = question.report
+    commend_num = question.commend
+    report_score = report_num
+    commend_score = commend_num * 0.5
+    limit = 7
+    if question.owner != User.objects.get(pk=2):
+        if report_score - commend_score > limit:
+            question.enable = False
+            question.save()
+
+
 class HomeView(generic.TemplateView):
     """Home page of application."""
 
@@ -146,7 +200,7 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
         player.set_activity("index")
         player.reset_stats()
         log.clear_log()
-        log.clear_question()
+        log.remove_question(EXIT_CHECK)
         return render(request, self.template_name, {"player": player})
 
 
@@ -168,8 +222,31 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
         if EXIT_CHECK in log.split_log("question"):
             log.add_log("The coast is clear, you may now exit the dungeon.")
 
+        previous_question = ""
+        if log.split_log("question"):
+            previous_question = log.split_log("question")[-1]
         player.set_activity("dungeon")
-        return render(request, self.template_name, {"logs": log.split_log("text"), "player": player})
+        return render(request, self.template_name, {"logs": log.split_log("text"),
+                                                    "player": player,
+                                                    "report_previous": previous_question})
+
+
+@never_cache
+def report_previous(request):
+    player = get_player(request.user)
+    log = get_log(player)
+    question = Question.objects.get(pk=request.POST['question_id'])
+
+    one_user_per_report(request, question, log)
+    set_question_activation(request.POST['question_id'])
+
+    previous_question = ""
+    if log.split_log("question"):
+        previous_question = log.split_log("question")[-1]
+    messages.success(request, "Successfully reported the question.")
+    return render(request, "qa_rpg/dungeon.html", {"logs": log.split_log("text"),
+                                                   "player": player,
+                                                   "report_previous": previous_question})
 
 
 @never_cache
@@ -485,60 +562,6 @@ def run_away(request, question_id):
     return render(request,
                   'qa_rpg/battle.html',
                   {'question': question, 'player': player, "status": status, "items": items})
-
-
-def add_reports_or_commends(request, question, log):
-    """
-    Add a report or commend of the question.
-    :param request: HTML request
-    :param question: question object
-    :param log: player log object
-    """
-    if request.POST['option'] == 'report':
-        report = ReportAndCommend.objects.create(question=question, user=request.user, vote=0)
-        report.save()
-        log.add_report_question(question.id)
-    elif request.POST['option'] == 'commend':
-        commend = ReportAndCommend.objects.create(question=question, user=request.user, vote=1)
-        commend.save()
-
-
-def one_user_per_report(request, question, log):
-    """
-    One player can only report or commend once.
-    :param request: HTML request
-    :param question: question object
-    :param log: player log object
-    """
-    user = request.user
-    try:
-        option_select = ReportAndCommend.objects.get(question=question, user=user)
-        if request.POST['option'] == 'report':
-            option_select.vote = 0
-            option_select.save()
-            log.add_report_question(question.id)
-        elif request.POST['option'] == 'commend':
-            option_select.vote = 1
-            option_select.save()
-    except ReportAndCommend.DoesNotExist:
-        add_reports_or_commends(request, question, log)
-
-
-def set_question_activation(question_id):
-    """
-    Check the question of the player whether to disable the question or not.
-    :param question_id:
-    """
-    question = Question.objects.get(pk=question_id)
-    report_num = question.report
-    commend_num = question.commend
-    report_score = report_num
-    commend_score = commend_num * 0.5
-    limit = 7
-    if question.owner != User.objects.get(pk=2):
-        if report_score - commend_score > limit:
-            question.enable = False
-            question.save()
 
 
 def get_coins(damage: int):

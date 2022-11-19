@@ -10,6 +10,7 @@ urlpatterns = [
     path('template/summon/', views.SummonView.as_view(), name='summon'),
     path('template/summon/create', views.create, name='create'),
     path('dungeon/', views.DungeonView.as_view(), name='dungeon'),
+    path('dungeon/report_previous', views.report_previous, name='report_previous'),
     path('dungeon/action', views.action, name='action'),
     path('dungeon/battle', views.BattleView.as_view(), name='battle'),
     path('dungeon/battle/item', views.item, name='item'),
