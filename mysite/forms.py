@@ -8,7 +8,7 @@ class RegisterForm(UserCreationForm):
     username = forms.CharField(label="Username ")
     email = forms.EmailField(label="Email ")
     password1 = forms.CharField(label="Password ", widget=forms.PasswordInput, min_length=8,  
-        help_text="Contains at least 8 characters and password cannot be entirely numeric.") 
+        help_text="Must contain at least 8 characters, not similar to username, and not entirely numerical.")
     password2 = forms.CharField(label="Re-enter Password ", widget=forms.PasswordInput,  min_length=8)
 
     class Meta:
