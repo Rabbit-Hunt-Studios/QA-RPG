@@ -271,7 +271,7 @@ class BattleActionTest(TestCase):
         self.player = Player.objects.get(pk=1)
         self.question = Question.objects.get(pk=1)
         self.assertEqual(self.player.current_hp, self.player.max_hp)
-        self.assertEqual(self.player.dungeon_currency, 7)
+        self.assertEqual(self.player.dungeon_currency, 6)
         self.assertEqual(self.question.currency, 0)
         self.assertEqual(self.player.luck, BASE_LUCK + 0.03)
         self.assertEqual(self.player.activity, "dungeon")
@@ -360,7 +360,7 @@ class BattleActionTest(TestCase):
                                     {"choice": self.correct.id, "option": "not select"})
         self.player = Player.objects.get(pk=1)
         self.question = Question.objects.get(pk=1)
-        self.assertEqual(self.player.dungeon_currency, 22)
+        self.assertEqual(self.player.dungeon_currency, 19)
 
     def test_use_items_modify_item(self):
         random.seed(100)
