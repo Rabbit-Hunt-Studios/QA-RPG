@@ -280,6 +280,7 @@ def action(request):
         if player.luck >= TREASURE_THRESHOLD and event <= (player.luck - TREASURE_THRESHOLD):
             log.add_log(f"{TEXT_COLOR_CODE['coin']}:You found a treasure chest.")
             player.update_player_stats(luck=-(player.luck - TREASURE_THRESHOLD))
+            player.set_activity("treasure")
             return redirect("qa_rpg:treasure")
 
         if event <= player.luck:
@@ -333,6 +334,11 @@ def treasure_action(request):
     log, inventory = get_log(player), get_inventory(player)
     event = random.random()
 
+    check_url = check_player_activity(player, ["treasure"])
+    if check_url is not None:
+        return redirect(check_url)
+    player.set_activity("dungeon")
+
     if request.POST['action'] != "pick up":
         log.add_log(f"{TEXT_COLOR_CODE['normal']}:You walk away from the treasure chest.")
 
@@ -363,7 +369,6 @@ def treasure_action(request):
         log.add_log(f"{TEXT_COLOR_CODE['damage']}:"
                     f"The chest turned out to be a mimic!! You lose {damages} health points.")
 
-    player.set_activity("dungeon")
     return redirect("qa_rpg:dungeon")
 
 
@@ -436,6 +441,12 @@ def item(request):
     player = get_player(request.user)
     log, inventory = get_log(player), get_inventory(player)
 
+    if player.status != "":
+        return redirect("qa_rpg:battle")
+
+    player.status = str(index)
+    player.save()
+
     used_item = item_list.get_item(index)
     dungeon_inventory = inventory.get_inventory("dungeon")
     dungeon_inventory[index] -= 1
@@ -452,8 +463,6 @@ def item(request):
             messages.error(request, "You lost consciousness in the dungeons.")
             return redirect("qa_rpg:index")
 
-    player.status = str(index)
-    player.save()
     messages.success(request, f"You used the item '{str(used_item)}'.")
     return redirect("qa_rpg:battle")
 
@@ -468,7 +477,10 @@ def check(request, question_id):
     """
     question = Question.objects.get(pk=question_id)
     player = get_player(request.user)
+    if player.activity != f"battle{question_id}":
+        return redirect("qa_rpg:dungeon")
     log, inventory = get_log(player), get_inventory(player)
+
     one_user_per_report(request, question, log)
     set_question_activation(question_id)
 
@@ -477,6 +489,8 @@ def check(request, question_id):
     except KeyError:
         messages.error(request, "You didn't select a attack move.")
         return redirect("qa_rpg:battle")
+
+    player.set_activity("dungeon")
 
     if player.status == "":
         applied_item = item_list.get_item(999)
@@ -525,7 +539,6 @@ def check(request, question_id):
 
         log.add_log(f"{TEXT_COLOR_CODE['damage']}:You lose {question.damage - nullified} health points.")
 
-    player.set_activity("dungeon")
     return redirect("qa_rpg:dungeon")
 
 
@@ -540,6 +553,9 @@ def run_away(request, question_id):
     question = Question.objects.get(pk=question_id)
     player = get_player(request.user)
     log, inventory = get_log(player), get_inventory(player)
+
+    if player.activity != f"battle{question_id}":
+        return redirect("qa_rpg:dungeon")
 
     one_user_per_report(request, question, log)
     set_question_activation(question_id)
