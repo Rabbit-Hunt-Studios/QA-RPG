@@ -603,10 +603,8 @@ def get_coins(damage: int):
     start = 20
     end = 20
     for i in range(0, 3):
-        start += i * 5
-        end += (i + 1) * 5
-        if start <= damage < end:
-            return random.randrange(start=(i * 10) + 6, stop=(i + 1) * 10, step=1)
+        if start + (i * 5) <= damage < end + ((i + 1) * 5) + 1:
+            return random.randrange(start=(i * 10) + 5, stop=(i + 1) * 9, step=1)
     return 50  # pragma: no cover
 
 
