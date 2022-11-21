@@ -36,6 +36,6 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test code coverage
       run: |
-        coverage run manage.py test
+        coverage run manage.py test --exclude-tag=e2e
     - name: Upload report to codecov
       uses: codecov/codecov-action@v3
