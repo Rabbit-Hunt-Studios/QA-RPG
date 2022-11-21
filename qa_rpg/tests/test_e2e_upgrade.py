@@ -1,4 +1,5 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.test import tag
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from django.contrib.auth.models import User
@@ -29,11 +30,13 @@ class MySeleniumTests(StaticLiveServerTestCase):
         self.selenium.find_element(By.XPATH, '//button[text()="Login"]').click()
         self.selenium.find_element(By.XPATH, '//button[text()="profile"]').click()
 
+    @tag('e2e')
     def test_profile(self):
         self.selenium.find_element(By.XPATH, '//button[text()="Items Inventory"]').click()
         self.selenium.find_element(By.XPATH, '//button[text()="Templates Inventory"]').click()
         self.selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
 
+    @tag('e2e')
     def test_upgrade(self):
         self.selenium.find_element(By.XPATH, '//button[text()="Upgrade"]').click()
         self.selenium.find_element(By.XPATH, "//button[@name='max_hp']").click()
