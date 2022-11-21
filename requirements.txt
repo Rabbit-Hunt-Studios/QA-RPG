@@ -3,3 +3,4 @@ django-tailwind
 django-browser-reload
 django-allauth
 python-decouple
+selenium
