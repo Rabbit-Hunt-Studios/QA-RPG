@@ -202,7 +202,7 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
 
         check_url = check_player_activity(player=player,
                                           allowed_activity=["summon", "index",
-                                                            "profile", "shop", "select"])
+                                                            "profile", "shop", "select_dg"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -224,7 +224,7 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
         player = get_player(request.user)
         log = get_log(player)
 
-        check_url = check_player_activity(player, ["select_items", "dungeon"])
+        check_url = check_player_activity(player, ["select_dg", "dungeon"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -618,12 +618,13 @@ class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
         player = get_player(request.user)
         inventory = get_inventory(player)
 
-        check_url = check_player_activity(player, ["summon", "index"])
+        check_url = check_player_activity(player, ["summon", "index", "template"])
         if check_url is not None:
             return redirect(check_url)
 
         available = get_available_template(inventory)
 
+        player.set_activity("template")
         return render(request, self.template_name, {"selection": available})
 
 
@@ -648,7 +649,7 @@ class SummonView(LoginRequiredMixin, generic.DetailView):
         """Return Summon page."""
         player = get_player(request.user)
 
-        check_url = check_player_activity(player, ["choose", "summon"])
+        check_url = check_player_activity(player, ["choose", "summon", "template"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -676,7 +677,7 @@ def create(request):
     inventory = get_inventory(player)
 
     summon_fee = int(request.POST['fee'])
-    if summon_fee >= player.currency:
+    if summon_fee > player.currency:
         messages.error(request, "You don't have enough coins to summon a monster.")
         return redirect("qa_rpg:summon")
 
@@ -872,7 +873,7 @@ class UpgradeView(LoginRequiredMixin, generic.DetailView):
         """Return Upgrade page."""
         player = get_player(request.user)
 
-        check_url = check_player_activity(player, ["profile", "upgrade", "select_items"])
+        check_url = check_player_activity(player, ["profile", "upgrade", "select_dg"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -973,7 +974,7 @@ class SelectItemsView(LoginRequiredMixin, generic.DetailView):
         player = get_player(request.user)
         inventory = get_inventory(player)
 
-        check_url = check_player_activity(player, ["index", "select_items"])
+        check_url = check_player_activity(player, ["index", "select_dg"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -988,7 +989,7 @@ class SelectItemsView(LoginRequiredMixin, generic.DetailView):
             dungeon_inventory.append([key, str(dungeon_item), val, dungeon_item.description, dungeon_item.effect])
         dungeon_inventory_num = [len(inventory.get_inventory("dungeon")), inventory.max_inventory]
 
-        player.set_activity("select_items")
+        player.set_activity("select_dg")
         check_items = False
         return render(request, self.template_name, {"player": player,
                                                     "inventory": player_inventory, "check": check_items,
