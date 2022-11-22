@@ -4,7 +4,7 @@ from django.test import tag
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from django.contrib.auth.models import User
-
+from qa_rpg.items_catalog import ItemCatalog
 
 class SeleniumTestShop(StaticLiveServerTestCase):
 
@@ -34,6 +34,9 @@ class SeleniumTestShop(StaticLiveServerTestCase):
 
     @tag('e2e')
     def test_shop(self):
-        self.selenium.find_element(By.XPATH, '/html/body/form/div[2]/div/div[1]/label').click()
-        self.selenium.find_element(By.XPATH, '//button[text()="buy"]').click()
+        item_list = ItemCatalog()
+        items = item_list.get_store_items()
+        self.selenium.find_element(By.XPATH, '//label[@for="Dungeon Candy1"]').click()
+        self.selenium.find_element(By.XPATH, '//button[text()="Buy"]').click()
         self.selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
+        self.assertEqual()
