@@ -13,6 +13,7 @@ class TestSummon(StaticLiveServerTestCase):
         """Setup for testing creating questions feature."""
         super().setUpClass()
         cls.selenium = webdriver.Chrome()
+        cls.selenium.implicitly_wait(10)
 
     @classmethod
     def tearDownClass(cls):
@@ -48,3 +49,10 @@ class TestSummon(StaticLiveServerTestCase):
             choice_input = self.selenium.find_element(By.XPATH, f'//input[@name="choice{i}"]')
             choice_input.click()
             choice_input.send_keys(f"{i + 1}")
+        self.selenium.find_element(By.XPATH, '//button[text()="Summon: 50 coins"]').click()
+        self.assertIn("/qa_rpg/index/", self.selenium.current_url)
+        summon_success_text = self.selenium.find_element(By.CLASS_NAME, "success")
+        self.assertTrue(summon_success_text.find_element(
+            By.XPATH,
+            '//*[text()[contains(., "Successfully summoned a new monster.")]]') is not None)
+
