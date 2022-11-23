@@ -693,6 +693,10 @@ def create(request):
     player = get_player(request.user)
     inventory = get_inventory(player)
 
+    check_url = check_player_activity(player, ["summon"])
+    if check_url is not None:
+        return redirect(check_url)
+
     summon_fee = int(request.POST['fee'])
     if summon_fee > player.currency:
         messages.error(request, "You don't have enough coins to summon a monster.")
