@@ -268,6 +268,10 @@ def action(request):
     :return: redirect player to dungeon or index page
     """
     player = get_player(request.user)
+
+    if player.activity != "dungeon":
+        return redirect(f"qa_rpg:{player.activity}")
+
     log, inventory = get_log(player), get_inventory(player)
     event = random.random()
     player_action = request.POST['action']
@@ -481,6 +485,9 @@ def check(request, question_id):
         return redirect("qa_rpg:dungeon")
     log, inventory = get_log(player), get_inventory(player)
 
+    one_user_per_report(request, question, log)
+    set_question_activation(question_id)
+
     try:
         check_choice = Choice.objects.get(pk=request.POST['choice'])
     except KeyError:
@@ -554,6 +561,9 @@ def run_away(request, question_id):
     if player.activity != f"battle{question_id}":
         return redirect("qa_rpg:dungeon")
 
+    one_user_per_report(request, question, log)
+    set_question_activation(question_id)
+
     if player.status == "":
         applied_item = item_list.get_item(999)
     else:
@@ -611,6 +621,7 @@ def report_commend(request):
     one_user_per_report(request, question, log)
     set_question_activation(request.POST['question_id'])
 
+    messages.success(request, f"Successfully {request.POST['option']}ed the question.")
     return redirect("qa_rpg:battle")
 
 
