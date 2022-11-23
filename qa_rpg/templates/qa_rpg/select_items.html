@@ -62,7 +62,11 @@
         <div class="flex justify-center items-center text-3xl pl-2 pt-1 pb-1 pr-2 mt-5">
             <div class="bg-black bg-opacity-50 border-gray-600 border-2 duration-300 pl-2 pt-1 pb-2 pr-2">
             Amount: <input type="number" name="amount" min="1" value="1" onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 && event.charCode <= 57" required class="text-black text-2xl">
-            <button type="submit" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-yellow-600 duration-300 px-5 py-2">Select</button>
+                {% if inventory or dungeon_inventory%}
+                    <button type="submit" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 hover:bg-yellow-600 duration-300 px-5 py-2">Select</button>
+                {% else %}
+                    <button type="submit" class="text-3xl bg-black bg-opacity-50 border-gray-600 border-2 duration-300 px-5 py-2" disabled>Select</button>
+                {% endif %}
             </div>
         </div>
     </div>
