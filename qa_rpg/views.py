@@ -201,7 +201,7 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
         log, inventory = get_log(player), get_inventory(player)
 
         check_url = check_player_activity(player=player,
-                                          allowed_activity=["summon", "index",
+                                          allowed_activity=["summon", "index", "template",
                                                             "profile", "shop", "select_dg"])
         if check_url is not None:
             return redirect(check_url)
@@ -481,9 +481,6 @@ def check(request, question_id):
         return redirect("qa_rpg:dungeon")
     log, inventory = get_log(player), get_inventory(player)
 
-    one_user_per_report(request, question, log)
-    set_question_activation(question_id)
-
     try:
         check_choice = Choice.objects.get(pk=request.POST['choice'])
     except KeyError:
@@ -557,9 +554,6 @@ def run_away(request, question_id):
     if player.activity != f"battle{question_id}":
         return redirect("qa_rpg:dungeon")
 
-    one_user_per_report(request, question, log)
-    set_question_activation(question_id)
-
     if player.status == "":
         applied_item = item_list.get_item(999)
     else:
@@ -606,6 +600,7 @@ def get_coins(damage: int):
         if start + (i * 5) <= damage < end + ((i + 1) * 5) + 1:
             return random.randrange(start=(i * 10) + 5, stop=(i + 1) * 9, step=1)
     return 50  # pragma: no cover
+
 
 @never_cache
 def report_commend(request):
