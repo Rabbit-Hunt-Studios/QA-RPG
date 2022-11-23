@@ -607,6 +607,17 @@ def get_coins(damage: int):
             return random.randrange(start=(i * 10) + 5, stop=(i + 1) * 9, step=1)
     return 50  # pragma: no cover
 
+@never_cache
+def report_commend(request):
+    player = get_player(request.user)
+    log = get_log(player)
+    question = Question.objects.get(pk=request.POST['question_id'])
+
+    one_user_per_report(request, question, log)
+    set_question_activation(request.POST['question_id'])
+
+    return redirect("qa_rpg:battle")
+
 
 class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
     """Template page of application."""
