@@ -201,7 +201,7 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
         log, inventory = get_log(player), get_inventory(player)
 
         check_url = check_player_activity(player=player,
-                                          allowed_activity=["summon", "index",
+                                          allowed_activity=["summon", "index", "template",
                                                             "profile", "shop", "select_dg"])
         if check_url is not None:
             return redirect(check_url)
@@ -268,6 +268,10 @@ def action(request):
     :return: redirect player to dungeon or index page
     """
     player = get_player(request.user)
+
+    if player.activity != "dungeon":
+        return redirect(f"qa_rpg:{player.activity}")
+
     log, inventory = get_log(player), get_inventory(player)
     event = random.random()
     player_action = request.POST['action']
@@ -608,6 +612,19 @@ def get_coins(damage: int):
     return 50  # pragma: no cover
 
 
+@never_cache
+def report_commend(request):
+    player = get_player(request.user)
+    log = get_log(player)
+    question = Question.objects.get(pk=request.POST['question_id'])
+
+    one_user_per_report(request, question, log)
+    set_question_activation(request.POST['question_id'])
+
+    messages.success(request, f"Successfully {request.POST['option']}ed the question.")
+    return redirect("qa_rpg:battle")
+
+
 class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
     """Template page of application."""
     template_name = "qa_rpg/template_choose.html"
@@ -675,6 +692,10 @@ def create(request):
     """
     player = get_player(request.user)
     inventory = get_inventory(player)
+
+    check_url = check_player_activity(player, ["summon"])
+    if check_url is not None:
+        return redirect(check_url)
 
     summon_fee = int(request.POST['fee'])
     if summon_fee > player.currency:
