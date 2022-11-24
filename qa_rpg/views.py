@@ -269,8 +269,9 @@ def action(request):
     """
     player = get_player(request.user)
 
-    if player.activity != "dungeon":
-        return redirect(f"qa_rpg:{player.activity}")
+    check_url = check_player_activity(player, ["dungeon"])
+    if check_url is not None:
+        return redirect(check_url)
 
     log, inventory = get_log(player), get_inventory(player)
     event = random.random()
