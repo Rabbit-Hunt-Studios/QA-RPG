@@ -825,7 +825,7 @@ class ShopView(LoginRequiredMixin, generic.DetailView):
         """Return Shop page."""
         player = get_player(request.user)
 
-        check_url = check_player_activity(player, ["index", "shop"])
+        check_url = check_player_activity(player, ["index", "shop", "template"])
         if check_url is not None:
             return redirect(check_url)
 
