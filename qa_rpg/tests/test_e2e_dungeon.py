@@ -35,16 +35,21 @@ class MySeleniumTests(StaticLiveServerTestCase):
 
     @tag('e2e')
     def test_select_item(self):
+        self.assertIn("/qa_rpg/select/", self.selenium.current_url)
         self.selenium.find_element(By.XPATH, '/html/body/form/div[1]/div[1]/div/div[1]/label').click()
         self.selenium.find_element(By.XPATH, '/html/body/form/div[2]/div/div/input').click()
         self.selenium.find_element(By.XPATH, '/html/body/form/div[2]/div/div/input').send_keys("3")
         self.selenium.find_element(By.XPATH, '//button[text()="Select"]').click()
+        text = self.selenium.find_element(By.CLASS_NAME, "error")
+        self.assertTrue(text is not None)
+        self.assertIn("/qa_rpg/select/", self.selenium.current_url)
 
     @tag('e2e')
     def test_enter_dungeon(self):
-        self.selenium.find_element(By.XPATH, '//button[text()="Dungeon"]').click()   
+        self.selenium.find_element(By.XPATH, '//button[text()="Dungeon"]').click()
+        self.assertIn("/qa_rpg/dungeon/", self.selenium.current_url)   
         self.selenium.find_element(By.XPATH, '//button[text()="Walk"]').click()
-        
+        self.assertIn("/qa_rpg/dungeon/", self.selenium.current_url)  
         
         
   
