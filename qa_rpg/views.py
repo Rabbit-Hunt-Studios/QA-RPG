@@ -676,7 +676,7 @@ def create(request):
     inventory = get_inventory(player)
 
     summon_fee = int(request.POST['fee'])
-    if summon_fee >= player.currency:
+    if summon_fee > player.currency:
         messages.error(request, "You don't have enough coins to summon a monster.")
         return redirect("qa_rpg:summon")
 
