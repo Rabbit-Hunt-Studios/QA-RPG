@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from django.contrib.auth.models import User
 from qa_rpg.items_catalog import ItemCatalog
 
+
 class SeleniumTestShop(StaticLiveServerTestCase):
 
     @classmethod
@@ -39,4 +40,3 @@ class SeleniumTestShop(StaticLiveServerTestCase):
         self.selenium.find_element(By.XPATH, '//label[@for="Dungeon Candy1"]').click()
         self.selenium.find_element(By.XPATH, '//button[text()="Buy"]').click()
         self.selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
-        self.assertEqual()
