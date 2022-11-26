@@ -885,7 +885,7 @@ class TemplateChooseViewTest(TestCase):
         response = self.client.get(reverse("qa_rpg:template"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Player.objects.get(
-            user=self.user).activity, "index")
+            user=self.user).activity, "template")
 
 
 class TemplateChooseTest(TestCase):
@@ -933,7 +933,7 @@ class SelectItemViewTest(TestCase):
         response = self.client.get(reverse("qa_rpg:select_dg"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Player.objects.get(
-            user=self.user).activity, "select_items")
+            user=self.user).activity, "select_dg")
         response = self.client.get(reverse("qa_rpg:treasure"))
         self.assertEqual(response.status_code, 302)
         response = self.client.get(reverse("qa_rpg:dungeon"))

@@ -201,8 +201,8 @@ class IndexView(LoginRequiredMixin, generic.TemplateView):
         log, inventory = get_log(player), get_inventory(player)
 
         check_url = check_player_activity(player=player,
-                                          allowed_activity=["summon", "index",
-                                                            "profile", "shop", "select"])
+                                          allowed_activity=["summon", "index", "template",
+                                                            "profile", "shop", "select_dg"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -224,7 +224,7 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
         player = get_player(request.user)
         log = get_log(player)
 
-        check_url = check_player_activity(player, ["select_items", "dungeon"])
+        check_url = check_player_activity(player, ["select_dg", "dungeon"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -268,6 +268,11 @@ def action(request):
     :return: redirect player to dungeon or index page
     """
     player = get_player(request.user)
+
+    check_url = check_player_activity(player, ["dungeon"])
+    if check_url is not None:
+        return redirect(check_url)
+
     log, inventory = get_log(player), get_inventory(player)
     event = random.random()
     player_action = request.POST['action']
@@ -608,6 +613,19 @@ def get_coins(damage: int):
     return 50  # pragma: no cover
 
 
+@never_cache
+def report_commend(request):
+    player = get_player(request.user)
+    log = get_log(player)
+    question = Question.objects.get(pk=request.POST['question_id'])
+
+    one_user_per_report(request, question, log)
+    set_question_activation(request.POST['question_id'])
+
+    messages.success(request, f"Successfully {request.POST['option']}ed the question.")
+    return redirect("qa_rpg:battle")
+
+
 class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
     """Template page of application."""
     template_name = "qa_rpg/template_choose.html"
@@ -618,12 +636,13 @@ class TemplateChooseView(LoginRequiredMixin, generic.DetailView):
         player = get_player(request.user)
         inventory = get_inventory(player)
 
-        check_url = check_player_activity(player, ["summon", "index"])
+        check_url = check_player_activity(player, ["summon", "index", "template"])
         if check_url is not None:
             return redirect(check_url)
 
         available = get_available_template(inventory)
 
+        player.set_activity("template")
         return render(request, self.template_name, {"selection": available})
 
 
@@ -648,7 +667,7 @@ class SummonView(LoginRequiredMixin, generic.DetailView):
         """Return Summon page."""
         player = get_player(request.user)
 
-        check_url = check_player_activity(player, ["choose", "summon"])
+        check_url = check_player_activity(player, ["choose", "summon", "template"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -674,6 +693,10 @@ def create(request):
     """
     player = get_player(request.user)
     inventory = get_inventory(player)
+
+    check_url = check_player_activity(player, ["summon"])
+    if check_url is not None:
+        return redirect(check_url)
 
     summon_fee = int(request.POST['fee'])
     if summon_fee > player.currency:
@@ -802,7 +825,7 @@ class ShopView(LoginRequiredMixin, generic.DetailView):
         """Return Shop page."""
         player = get_player(request.user)
 
-        check_url = check_player_activity(player, ["index", "shop"])
+        check_url = check_player_activity(player, ["index", "shop", "template"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -872,7 +895,7 @@ class UpgradeView(LoginRequiredMixin, generic.DetailView):
         """Return Upgrade page."""
         player = get_player(request.user)
 
-        check_url = check_player_activity(player, ["profile", "upgrade", "select_items"])
+        check_url = check_player_activity(player, ["profile", "upgrade", "select_dg"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -973,7 +996,7 @@ class SelectItemsView(LoginRequiredMixin, generic.DetailView):
         player = get_player(request.user)
         inventory = get_inventory(player)
 
-        check_url = check_player_activity(player, ["index", "select_items"])
+        check_url = check_player_activity(player, ["index", "select_dg"])
         if check_url is not None:
             return redirect(check_url)
 
@@ -988,7 +1011,7 @@ class SelectItemsView(LoginRequiredMixin, generic.DetailView):
             dungeon_inventory.append([key, str(dungeon_item), val, dungeon_item.description, dungeon_item.effect])
         dungeon_inventory_num = [len(inventory.get_inventory("dungeon")), inventory.max_inventory]
 
-        player.set_activity("select_items")
+        player.set_activity("select_dg")
         check_items = False
         return render(request, self.template_name, {"player": player,
                                                     "inventory": player_inventory, "check": check_items,
