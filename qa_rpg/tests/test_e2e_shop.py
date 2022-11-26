@@ -31,12 +31,18 @@ class SeleniumTestShop(StaticLiveServerTestCase):
         self.selenium.find_element(By.XPATH, "//input[@name='password']").click()
         self.selenium.find_element(By.XPATH, "//input[@name='password']").send_keys('12345')
         self.selenium.find_element(By.XPATH, '//button[text()="Login"]').click()
+
+    @tag('e2e')
+    def test_shop_navigation(self):
         self.selenium.find_element(By.XPATH, '//button[text()="shop"]').click()
+        self.assertIn("/qa_rpg/shop/", self.selenium.current_url)
+        self.selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
+        self.assertIn("/qa_rpg/index/", self.selenium.current_url)
 
     @tag('e2e')
     def test_shop(self):
-        item_list = ItemCatalog()
-        items = item_list.get_store_items()
+
+        self.selenium.find_element(By.XPATH, '//button[text()="shop"]').click()
         self.selenium.find_element(By.XPATH, '//label[@for="Dungeon Candy1"]').click()
         self.selenium.find_element(By.XPATH, '//button[text()="Buy"]').click()
         self.selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
