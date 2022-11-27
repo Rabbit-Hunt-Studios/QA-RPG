@@ -6,8 +6,7 @@ omit =
     mysite/*
     qa_rpg/__init__.py
     qa_rpg/admin.py
-    qa_rpg/test_views.py
-    qa_rpg/test_models.py
+    qa_rpg/tests/*
     Dungeon/*
     qa_rpg/urls.py
     qa_rpg/dialogue.py
