@@ -4063,7 +4063,7 @@
   "model": "qa_rpg.question",
   "pk": 316,
   "fields": {
-    "question_text": "Who is the author of Jurrasic Park?",
+    "question_text": "Who is the author of Jurassic Park?",
     "damage": 22,
     "currency": 0,
     "max_currency": 20,
@@ -8050,7 +8050,7 @@
   "pk": 131,
   "fields": {
     "question": 33,
-    "choice_text": "King&#039;s Head",
+    "choice_text": "King's Head",
     "correct_answer": false
   }
 },
@@ -11443,7 +11443,7 @@
   "pk": 572,
   "fields": {
     "question": 143,
-    "choice_text": "Sholder",
+    "choice_text": "Shoulder",
     "correct_answer": false
   }
 },
