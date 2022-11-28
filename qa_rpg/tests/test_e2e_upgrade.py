@@ -1,10 +1,10 @@
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test import tag
+import unittest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from django.contrib.auth.models import User
 
-class MySeleniumTests(StaticLiveServerTestCase):
+
+class MySeleniumTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -21,7 +21,7 @@ class MySeleniumTests(StaticLiveServerTestCase):
         self.user = User.objects.create_user(username="demo")
         self.user.set_password("12345")
         self.user.save()
-        self.selenium.get(self.live_server_url)
+        self.selenium.get("https://www.qarpg.tech/")
         self.selenium.find_element(By.XPATH, '//button[text()="Play Now!"]').click()
         self.selenium.find_element(By.XPATH, "//input[@name='login']").click()
         self.selenium.find_element(By.XPATH, "//input[@name='login']").send_keys('demo')
@@ -30,7 +30,6 @@ class MySeleniumTests(StaticLiveServerTestCase):
         self.selenium.find_element(By.XPATH, '//button[text()="Login"]').click()
         self.selenium.find_element(By.XPATH, '//button[text()="profile"]').click()
 
-    @tag('e2e')
     def test_profile(self):
         self.selenium.find_element(By.XPATH, '//button[text()="Items Inventory"]').click()
         self.assertIn("/qa_rpg/profile/", self.selenium.current_url)
@@ -39,7 +38,6 @@ class MySeleniumTests(StaticLiveServerTestCase):
         self.selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
         self.assertIn("/qa_rpg/index/", self.selenium.current_url)
 
-    @tag('e2e')
     def test_upgrade(self):
         self.selenium.find_element(By.XPATH, '//button[text()="Upgrade"]').click()
         self.assertIn("/qa_rpg/profile/upgrade/", self.selenium.current_url)
