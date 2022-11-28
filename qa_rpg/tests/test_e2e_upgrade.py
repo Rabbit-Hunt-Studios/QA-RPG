@@ -1,4 +1,5 @@
 import unittest
+from django.test import tag
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from django.contrib.auth.models import User
@@ -30,6 +31,7 @@ class MySeleniumTests(unittest.TestCase):
         self.selenium.find_element(By.XPATH, '//button[text()="Login"]').click()
         self.selenium.find_element(By.XPATH, '//button[text()="profile"]').click()
 
+    @tag('e2e')
     def test_profile(self):
         self.selenium.find_element(By.XPATH, '//button[text()="Items Inventory"]').click()
         self.assertIn("/qa_rpg/profile/", self.selenium.current_url)
@@ -38,6 +40,7 @@ class MySeleniumTests(unittest.TestCase):
         self.selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
         self.assertIn("/qa_rpg/index/", self.selenium.current_url)
 
+    @tag('e2e')
     def test_upgrade(self):
         self.selenium.find_element(By.XPATH, '//button[text()="Upgrade"]').click()
         self.assertIn("/qa_rpg/profile/upgrade/", self.selenium.current_url)
