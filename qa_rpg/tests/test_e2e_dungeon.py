@@ -1,55 +1,37 @@
-from django.test import tag
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.webdriver import WebDriver
-from django.contrib.auth.models import User
+from selenium.webdriver.chrome.options import Options
 
+def test_enter_dungeon():
+    """Test e2e about the dungeon system."""
 
-class MySeleniumTests(StaticLiveServerTestCase):
+    ### Headless selenium
+    # chrome_options = Options()
+    # chrome_options.add_argument("--headless")
+    # selenium = webdriver.Chrome(options=chrome_options)
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.selenium = WebDriver()
-        cls.selenium.implicitly_wait(10)
+    ### Default selenium
+    selenium = webdriver.Chrome()
+    selenium.get("https://www.qarpg.tech/")
+    selenium.find_element(By.XPATH, '//button[text()="Play Now!"]').click()
+    selenium.find_element(By.XPATH, "//input[@name='login']").click()
+    selenium.find_element(By.XPATH, "//input[@name='login']").send_keys('demo')
+    selenium.find_element(By.XPATH, "//input[@name='password']").click()
+    selenium.find_element(By.XPATH, "//input[@name='password']").send_keys('12345')
+    selenium.find_element(By.XPATH, '//button[text()="Login"]').click()
 
-        
-    @classmethod
-    def tearDownClass(cls):
-        cls.selenium.quit()
-        super().tearDownClass()
+    selenium.find_element(By.XPATH, '//button[text()="dungeon"]').click()
+    assert ("/qa_rpg/select/" in selenium.current_url)
+    selenium.find_element(By.XPATH, '/html/body/form/div[1]/div[1]/div/div[1]/label').click()
+    selenium.find_element(By.XPATH, '/html/body/form/div[2]/div/div/input').click()
+    selenium.find_element(By.XPATH, '//button[text()="Select"]').click()
+    selenium.find_element(By.XPATH, '/html/body/form/div[1]/div[2]/div/div/label').click()
+    selenium.find_element(By.XPATH, '/html/body/form/div[2]/div/div/input').click()
+    selenium.find_element(By.XPATH, '//button[text()="Select"]').click()
+    selenium.find_element(By.XPATH, '//button[text()="Dungeon"]').click()
 
-    @tag('e2e')
-    def setUp(self) -> None:
-        self.user = User.objects.create_user(username = "demo")
-        self.user.set_password("12345")
-        self.user.save()
-        self.selenium.get(self.live_server_url)
-        self.selenium.find_element(By.XPATH, '//button[text()="Play Now!"]').click()
-        self.selenium.find_element(By.XPATH, '//input[@name="login"]').click()
-        self.selenium.find_element(By.XPATH, '//input[@name="login"]').send_keys("demo")
-        self.selenium.find_element(By.XPATH, '//input[@name="password"]').click()
-        self.selenium.find_element(By.XPATH, '//input[@name="password"]').send_keys("12345")
-        self.selenium.find_element(By.XPATH, '//button[text()="Login"]').click()
-        self.selenium.find_element(By.XPATH, '//button[text()="dungeon"]').click()
+    assert ("/qa_rpg/dungeon/" in selenium.current_url)
+    selenium.find_element(By.XPATH, '//button[text()="Exit"]').click()
 
-    @tag('e2e')
-    def test_select_item(self):
-        self.assertIn("/qa_rpg/select/", self.selenium.current_url)
-        self.selenium.find_element(By.XPATH, '/html/body/form/div[1]/div[1]/div/div[1]/label').click()
-        self.selenium.find_element(By.XPATH, '/html/body/form/div[2]/div/div/input').click()
-        self.selenium.find_element(By.XPATH, '/html/body/form/div[2]/div/div/input').send_keys("3")
-        self.selenium.find_element(By.XPATH, '//button[text()="Select"]').click()
-        text = self.selenium.find_element(By.CLASS_NAME, "error")
-        self.assertTrue(text is not None)
-        self.assertIn("/qa_rpg/select/", self.selenium.current_url)
-
-    @tag('e2e')
-    def test_enter_dungeon(self):
-        self.selenium.find_element(By.XPATH, '//button[text()="Dungeon"]').click()
-        self.assertIn("/qa_rpg/dungeon/", self.selenium.current_url)   
-        self.selenium.find_element(By.XPATH, '//button[text()="Walk"]').click()
-        self.assertIn("/qa_rpg/dungeon/", self.selenium.current_url)  
-        
-        
-  
+if __name__ == '__main__':
+    test_enter_dungeon()
