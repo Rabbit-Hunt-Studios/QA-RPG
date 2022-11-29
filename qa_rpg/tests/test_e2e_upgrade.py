@@ -1,61 +1,43 @@
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test import tag
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from django.contrib.auth.models import User
 
-class MySeleniumTests(StaticLiveServerTestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.selenium = webdriver.Chrome()
-        cls.selenium.implicitly_wait(10)
+def e2e_upgrade():
+    selenium = webdriver.Chrome()
+    selenium.get("https://www.qarpg.tech/")
+    selenium.find_element(By.XPATH, '//button[text()="Play Now!"]').click()
+    selenium.find_element(By.XPATH, "//input[@name='login']").click()
+    selenium.find_element(By.XPATH, "//input[@name='login']").send_keys('demo2')
+    selenium.find_element(By.XPATH, "//input[@name='password']").click()
+    selenium.find_element(By.XPATH, "//input[@name='password']").send_keys('testomed')
+    selenium.find_element(By.XPATH, '//button[text()="Login"]').click()
+    selenium.find_element(By.XPATH, '//button[text()="profile"]').click()
+    selenium.find_element(By.XPATH, '//button[text()="Items Inventory"]').click()
+    assert ("/qa_rpg/profile/" in selenium.current_url)
+    selenium.find_element(By.XPATH, '//button[text()="Templates Inventory"]').click()
+    assert ("/qa_rpg/profile/select_template" in selenium.current_url)
+    selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
+    assert ("/qa_rpg/index/" in selenium.current_url)
+    selenium.find_element(By.XPATH, '//button[text()="profile"]').click()
+    selenium.find_element(By.XPATH, '//button[text()="Upgrade"]').click()
+    assert ("/qa_rpg/profile/upgrade/" in selenium.current_url)
+    selenium.find_element(By.XPATH, "//button[@name='max_hp']").click()
+    text = selenium.find_element(By.CLASS_NAME, "error")
+    assert (text is not None)
+    selenium.find_element(By.XPATH, "//button[@name='max_currency']").click()
+    text = selenium.find_element(By.CLASS_NAME, "error")
+    assert (text is not None)
+    selenium.find_element(By.XPATH, "//button[@name='rate_currency']").click()
+    text = selenium.find_element(By.CLASS_NAME, "error")
+    assert (text is not None)
+    selenium.find_element(By.XPATH, "//button[@name='awake']").click()
+    text = selenium.find_element(By.CLASS_NAME, "error")
+    assert (text is not None)
+    selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
+    assert ("/qa_rpg/profile/" in selenium.current_url)
+    selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
+    assert ("/qa_rpg/index/" in selenium.current_url)
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.selenium.quit()
-        super().tearDownClass()
 
-    def setUp(self):
-        self.user = User.objects.create_user(username="demo")
-        self.user.set_password("12345")
-        self.user.save()
-        self.selenium.get(self.live_server_url)
-        self.selenium.find_element(By.XPATH, '//button[text()="Play Now!"]').click()
-        self.selenium.find_element(By.XPATH, "//input[@name='login']").click()
-        self.selenium.find_element(By.XPATH, "//input[@name='login']").send_keys('demo')
-        self.selenium.find_element(By.XPATH, "//input[@name='password']").click()
-        self.selenium.find_element(By.XPATH, "//input[@name='password']").send_keys('12345')
-        self.selenium.find_element(By.XPATH, '//button[text()="Login"]').click()
-        self.selenium.find_element(By.XPATH, '//button[text()="profile"]').click()
-
-    @tag('e2e')
-    def test_profile(self):
-        self.selenium.find_element(By.XPATH, '//button[text()="Items Inventory"]').click()
-        self.assertIn("/qa_rpg/profile/", self.selenium.current_url)
-        self.selenium.find_element(By.XPATH, '//button[text()="Templates Inventory"]').click()
-        self.assertIn("/qa_rpg/profile/select_template", self.selenium.current_url)
-        self.selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
-        self.assertIn("/qa_rpg/index/", self.selenium.current_url)
-
-    @tag('e2e')
-    def test_upgrade(self):
-        self.selenium.find_element(By.XPATH, '//button[text()="Upgrade"]').click()
-        self.assertIn("/qa_rpg/profile/upgrade/", self.selenium.current_url)
-        self.selenium.find_element(By.XPATH, "//button[@name='max_hp']").click()
-        text = self.selenium.find_element(By.CLASS_NAME, "error")
-        self.assertTrue(text is not None)
-        self.selenium.find_element(By.XPATH, "//button[@name='max_currency']").click()
-        text = self.selenium.find_element(By.CLASS_NAME, "error")
-        self.assertTrue(text is not None)
-        self.selenium.find_element(By.XPATH, "//button[@name='rate_currency']").click()
-        text = self.selenium.find_element(By.CLASS_NAME, "error")
-        self.assertTrue(text is not None)
-        self.selenium.find_element(By.XPATH, "//button[@name='awake']").click()
-        text = self.selenium.find_element(By.CLASS_NAME, "error")
-        self.assertTrue(text is not None)
-        self.selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
-        self.assertIn("/qa_rpg/profile/", self.selenium.current_url)
-        self.selenium.find_element(By.XPATH, '//button[text()="Back"]').click()
-        self.assertIn("/qa_rpg/index/", self.selenium.current_url)
+if __name__ == '__main__':
+    e2e_upgrade()
