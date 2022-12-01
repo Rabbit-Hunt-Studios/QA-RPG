@@ -56,7 +56,11 @@ Project documents are in the [Project Wiki](../../wiki/Home).
     ```sh
    python manage.py loaddata data/users.json data/qa_rpg.json
    ```
-9. Lastly run this command to initiate the tailwind or the front-end framework.
+9. Go to ```QA-RPG/Dungeon/static_src/``` directory then install npm.
+    ```sh
+    npm install
+    ```
+10. Lastly run this command to initiate the tailwind or the front-end framework.
     ```sh
    python manage.py tailwind start
    ```
