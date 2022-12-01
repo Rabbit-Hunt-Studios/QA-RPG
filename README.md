@@ -61,7 +61,7 @@ Project documents are in the [Project Wiki](../../wiki/Home).
     npm install
     ```
 10. Lastly run this command to initiate the tailwind or the front-end framework.
-    ```sh
+   ```sh
    python manage.py tailwind start
    ```
 ## How to run
