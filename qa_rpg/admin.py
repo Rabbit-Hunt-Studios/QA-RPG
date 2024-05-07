@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Question, Choice, Player, Log, Inventory, ReportAndCommend
+from django.contrib.auth.admin import UserAdmin
+from .models import User, Question, Choice, Player, Log, Inventory, ReportAndCommend
+
+
+class CustomUserAdmin(UserAdmin):
+    list_display = ('username', 'email', 'first_name', 'last_name', 'id')
+    readonly_fields = ('id',)
+
 
 class ChoiceInline(admin.TabularInline):
     model = Choice
@@ -62,6 +69,7 @@ class ReportCommendAdmin(admin.ModelAdmin):
     list_filter = ['question', 'user', 'vote']
 
 
+admin.site.register(User, CustomUserAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Player, PlayerAdmin)
 admin.site.register(Log, LogAdmin)

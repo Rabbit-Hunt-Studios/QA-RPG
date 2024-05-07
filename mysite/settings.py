@@ -173,3 +173,5 @@ INTERNAL_IPS = [
 ]
 
 NPM_BIN_PATH = config('NPM_BIN_PATH', cast=str, default='Your path')
+
+AUTH_USER_MODEL = 'qa_rpg.User'

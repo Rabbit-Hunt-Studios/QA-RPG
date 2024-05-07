@@ -1,9 +1,14 @@
 """Module containing models for storing data in database."""
+import uuid
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 
 BASE_LUCK = 0.25
 BASE_HEALTH = 100
+
+
+class User(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 
 class Question(models.Model):
