@@ -9,6 +9,7 @@ BASE_HEALTH = 100
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    policy = models.BooleanField(default=True)
 
 
 class Question(models.Model):

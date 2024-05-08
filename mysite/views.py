@@ -12,7 +12,6 @@ def signup(request):
             user = form.save()
             username = form.cleaned_data.get('username')
             raw_passwd = form.cleaned_data.get('password')
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         else:
             messages.error(request, "Your form is invalid! please fill out again.")
             return redirect('signup')
@@ -20,3 +19,8 @@ def signup(request):
     else:
         form = RegisterForm()
     return render(request, 'account/signup.html', {'form': form})
+
+
+def policy(request):
+    print(request)
+    return render(request, 'account/Privacy_Notice.html')
