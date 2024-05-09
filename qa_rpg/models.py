@@ -10,7 +10,6 @@ BASE_HEALTH = 100
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = encrypt(models.EmailField())
     first_name = encrypt(models.CharField(max_length=200))
     last_name = encrypt(models.CharField(max_length=200))
     policy = models.BooleanField(default=True)
