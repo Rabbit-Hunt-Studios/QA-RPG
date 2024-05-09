@@ -1,13 +1,14 @@
 """Module containing view classes."""
 import random
 import difflib
+import logging
+from datetime import datetime
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
 
 from django.views.decorators.cache import never_cache
 
@@ -15,6 +16,12 @@ from .models import Question, Choice, Player, Log, Inventory, ReportAndCommend
 from .dialogue import Dialogue
 from .template_question import TemplateCatalog
 from .items_catalog import ItemCatalog
+
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+logging.basicConfig(filename='qa-rpg_game.log', filemode='w', level=logging.DEBUG)
+logger = logging.getLogger('game')
 
 TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
 TREASURE_THRESHOLD = 0.55
@@ -173,7 +180,7 @@ def set_question_activation(question_id):
     report_score = report_num
     commend_score = commend_num * 0.5
     limit = 7
-    if question.owner != User.objects.get(pk=2):
+    if question.owner != User.objects.get(pk="08169793-f6d3-4368-bbc6-270e37156fc6",):
         if report_score - commend_score > limit:
             question.enable = False
             question.save()
@@ -228,6 +235,9 @@ class DungeonView(LoginRequiredMixin, generic.ListView):
         if check_url is not None:
             return redirect(check_url)
 
+        if player.activity == 'select_dg':
+            logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) has entered the dungeon')
+
         if EXIT_CHECK in log.split_log("question"):
             log.add_log(f"{TEXT_COLOR_CODE['normal']}:The coast is clear, you may now exit the dungeon.")
 
@@ -254,6 +264,9 @@ def report_previous(request):
     if log.split_log("question"):
         previous_question = log.split_log("question")[-1]
     messages.success(request, "Successfully reported the question.")
+
+    logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) reported the question id {question.pk}')
+
     log_text_and_color = [log_text.split(":") for log_text in log.split_log("text")]
     return render(request, "qa_rpg/dungeon.html", {"logs": log_text_and_color,
                                                    "player": player,
@@ -306,6 +319,9 @@ def action(request):
             return redirect("qa_rpg:battle")
 
         player.set_activity("index")
+
+        logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) has exited the dungeon')
+
         player.add_dungeon_currency()
         inventory.reset_inventory()
         return redirect("qa_rpg:index")
@@ -487,6 +503,11 @@ def check(request, question_id):
     log, inventory = get_log(player), get_inventory(player)
 
     one_user_per_report(request, question, log)
+
+    if request.POST['option'] in ['report', 'commend']:
+        logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) has {request.POST["option"]}ed the '
+                    f'question({question.pk})')
+
     set_question_activation(question_id)
 
     try:
@@ -540,6 +561,9 @@ def check(request, question_id):
         question.add_coin()
         if player.check_death():
             messages.error(request, "You lost consciousness in the dungeons.")
+
+            logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) has exited via losing consciousness')
+
             return redirect("qa_rpg:index")
 
         log.add_log(f"{TEXT_COLOR_CODE['damage']}:You lose {question.damage - nullified} health points.")
@@ -742,6 +766,9 @@ def create(request):
         choice.save()
     player.set_activity("index")
     messages.success(request, "Successfully summoned a new monster.")
+
+    logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) has created the question({question.pk})')
+
     player.currency -= summon_fee
     owned = inventory.get_templates()
     owned[int(request.POST["template_id"])] -= 1
@@ -858,6 +885,8 @@ def buy(request):
         price = question_templates.get_price(template)
         if price * amount >= player.currency:
             messages.error(request, "You don't have enough coins to purchase.")
+            logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) attempted purchase '
+                        f'with insufficient coins')
             return redirect("qa_rpg:shop")
 
         try:
@@ -872,6 +901,8 @@ def buy(request):
         items = request.POST["index"][1:-1].split(",")
         if int(items[1]) * amount > player.currency:
             messages.error(request, "You don't have enough coins to purchase.")
+            logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) attempted purchase '
+                        f'with insufficient coins')
             return redirect("qa_rpg:shop")
 
         try:
@@ -883,6 +914,7 @@ def buy(request):
         player.save()
 
     messages.success(request, "Purchase Successful.")
+    logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) has purchased an item from the shop')
     return redirect('qa_rpg:shop')
 
 
@@ -951,8 +983,11 @@ def upgrade(request):
             question.rate = player.question_rate_currency
             question.save()
         messages.success(request, "Upgrade Successful.")
+        logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) has upgraded {request.POST["upgrade"]}')
     else:
         messages.error(request, "You don't have enough coins to upgrade.")
+        logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) attempted upgrade '
+                    f'with insufficient coins')
 
     player.save()
     return redirect('qa_rpg:upgrade')
@@ -976,10 +1011,14 @@ def awake(request):
             player.awake += UPGRADE["awake"]
             inventory.max_inventory += UPGRADE["inventory"]
             messages.success(request, "Awaken Successful.")
+            logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) has awoken to {player.awake}')
         else:
             messages.error(request, "Awaken Failed.")
+            logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) has failed to awake')
     else:
         messages.error(request, "You don't have enough coins to Awaken.")
+        logger.info(f'{str(datetime.now())}: {player.player_name}({player.pk}) attempted awake '
+                    f'with insufficient coins')
 
     player.save()
     inventory.save()

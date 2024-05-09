@@ -1,9 +1,19 @@
 """Module containing models for storing data in database."""
+import uuid
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+from django_cryptography.fields import encrypt
 
 BASE_LUCK = 0.25
 BASE_HEALTH = 100
+
+
+class User(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = encrypt(models.EmailField())
+    first_name = encrypt(models.CharField(max_length=200))
+    last_name = encrypt(models.CharField(max_length=200))
+    policy = models.BooleanField(default=True)
 
 
 class Question(models.Model):
