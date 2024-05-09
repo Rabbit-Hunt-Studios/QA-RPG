@@ -6,7 +6,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import RegisterForm, LoginForm
 
-logging.basicConfig(filename='qa-rpg_auth.log', filemode='w', level=logging.DEBUG)
 logger = logging.getLogger('auth')
 
 
