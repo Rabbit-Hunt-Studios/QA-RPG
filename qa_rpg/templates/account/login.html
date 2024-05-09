@@ -13,18 +13,22 @@
           <table class="w-100 h-100 text-xl w-full justify-center items-center m-2 ml-5">
                 {{ form.as_table }}
           </table>
+            <div class="flex flex-row w-full items-center">
+                <a href="{% url 'policy' %}" target="_blank" rel="noopener noreferrer" class="font-bold pr-[84px] pl-[100px]"> Privacy Notice: </a> <input type="checkbox" onchange="document.getElementById('login_google').disabled = !this.checked;document.getElementById('login_discord').disabled = !this.checked;document.getElementById('login_google').disabled = !this.checked;document.getElementById('default_login').disabled = !this.checked;">
+                <br>
+            </div>
           <div class ="flex flex-row w-full items-center justify-center">
-              <button class="text-center px-10 py-2 m-4 text-xl text-white hover:text-white border-green-300 border-2 bg-green-600 hover:bg-green-900 hover:border-green-700 hover:border-2 duration-300 rounded" type="submit">Login</button> | <a href="{% url 'qa_rpg:home'%}"><button class="text-center px-10 py-2 m-4 text-xl text-white hover:text-white border-red-400 border-2 bg-red-600 hover:bg-red-900 hover:border-red-700 hover:border-2 duration-300 rounded" type="button">Back</button></a>
+              <button class="text-center px-10 py-2 m-4 text-xl text-white hover:text-white border-green-300 border-2 bg-green-600 hover:bg-green-900 hover:border-green-700 hover:border-2 duration-300 rounded disabled:bg-slate-500 disabled:border-gray-400" type="submit" disabled="disabled" id="default_login">Login</button> | <a href="{% url 'qa_rpg:home'%}"><button class="text-center px-10 py-2 m-4 text-xl text-white hover:text-white border-red-400 border-2 bg-red-600 hover:bg-red-900 hover:border-red-700 hover:border-2 duration-300 rounded" type="button">Back</button></a>
           </div>
               </form>
             <div class = "justify-center items-center flex-col flex w-full">
-                <button class="px-8 py-4 m-4 flex justify-center text-center text-xl text-black bg-white hover:text-white hover:bg-red-500 border-gray-400 border-2 hover:border-gray-500 duration-150 rounded-lg" onclick="document.location='{% provider_login_url 'google' %}'">
+                <button class="px-8 py-4 m-4 flex justify-center text-center text-xl text-black bg-white hover:text-white hover:bg-red-500 border-gray-400 border-2 hover:border-gray-500 duration-150 rounded-lg disabled:bg-slate-500" onclick="document.location='{% provider_login_url 'google' %}'" id="login_google" disabled="disabled">
                     <img src="https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-webinar-optimizing-for-success-google-business-webinar-13.png" width="30px" height="30px" class='float-left m-1 mr-6'>
                     <div class = "justify-center flex text-center text-xl font-bold mt-2 mb-2">
                         Continue with google
                     </div>
                 </button>
-                <button class="px-8 py-4 m-4 text-white bg-blue-500 hover:text-white hover:bg-blue-700 border-gray-400 border-2 hover:border-gray-500 duration-150 rounded-lg " onclick="document.location='{% provider_login_url 'discord' %}'"> 
+                <button class="px-8 py-4 m-4 text-white bg-blue-500 hover:text-white hover:bg-blue-700 border-gray-400 border-2 hover:border-gray-500 duration-150 rounded-lg disabled:bg-slate-500" onclick="document.location='{% provider_login_url 'discord' %}'" id="login_discord" disabled="disabled">
                     <img src="https://www.freepnglogos.com/uploads/discord-logo-png/discord-logo-logodownload-download-logotipos-1.png" width="30px" height="30px" class='float-left m-1 mr-5'>
                     <div class="justify-center flex text-center text-xl font-bold mt-2 mb-2">
                         Continue with discord

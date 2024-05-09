@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.discord',
+    'django_recaptcha',
 ]
 
 MIDDLEWARE = [
@@ -139,6 +140,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+
 ]
 
 # Internationalization
@@ -173,3 +175,9 @@ INTERNAL_IPS = [
 ]
 
 NPM_BIN_PATH = config('NPM_BIN_PATH', cast=str, default='Your path')
+
+AUTH_USER_MODEL = 'qa_rpg.User'
+
+RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY', cast=str, default="missing-recaptcha-public-key")
+RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', cast=str, default="missing-recaptcha-private-key")
+STLENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']

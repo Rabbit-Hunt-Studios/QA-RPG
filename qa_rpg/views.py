@@ -9,7 +9,6 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
 
 from django.views.decorators.cache import never_cache
 
@@ -17,6 +16,9 @@ from .models import Question, Choice, Player, Log, Inventory, ReportAndCommend
 from .dialogue import Dialogue
 from .template_question import TemplateCatalog
 from .items_catalog import ItemCatalog
+
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 logging.basicConfig(filename='qa-rpg_game.log', filemode='w', level=logging.DEBUG)
 logger = logging.getLogger('game')
@@ -178,7 +180,7 @@ def set_question_activation(question_id):
     report_score = report_num
     commend_score = commend_num * 0.5
     limit = 7
-    if question.owner != User.objects.get(pk=2):
+    if question.owner != User.objects.get(pk="08169793-f6d3-4368-bbc6-270e37156fc6",):
         if report_score - commend_score > limit:
             question.enable = False
             question.save()
