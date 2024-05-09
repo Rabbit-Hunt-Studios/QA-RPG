@@ -8,7 +8,6 @@ BASE_LUCK = 0.25
 BASE_HEALTH = 100
 
 
-
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = encrypt(models.EmailField())
@@ -93,7 +92,7 @@ class Player(models.Model):
     @property
     def player_name(self):
         """Return username of this player."""
-        return f.decrypt(self.user.username).decode()
+        return self.user.username
 
     def update_player_stats(self, health: int = 0, dungeon_currency: int = 0, luck: float = 0):
         """Add values to stats of player."""
