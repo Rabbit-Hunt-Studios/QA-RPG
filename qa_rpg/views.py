@@ -16,6 +16,8 @@ from .dialogue import Dialogue
 from .template_question import TemplateCatalog
 from .items_catalog import ItemCatalog
 
+random.seed(10)
+
 TREASURE_AMOUNT = [15, 30, 35, 40, 45, 50, 60, 69]
 TREASURE_THRESHOLD = 0.55
 ITEM_CHANCE = 0.37

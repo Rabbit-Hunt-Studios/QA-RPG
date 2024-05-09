@@ -2,13 +2,18 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django_cryptography.fields import encrypt
 
 BASE_LUCK = 0.25
 BASE_HEALTH = 100
 
 
+
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = encrypt(models.EmailField())
+    first_name = encrypt(models.CharField(max_length=200))
+    last_name = encrypt(models.CharField(max_length=200))
     policy = models.BooleanField(default=True)
 
 
@@ -88,7 +93,7 @@ class Player(models.Model):
     @property
     def player_name(self):
         """Return username of this player."""
-        return self.user.username
+        return f.decrypt(self.user.username).decode()
 
     def update_player_stats(self, health: int = 0, dungeon_currency: int = 0, luck: float = 0):
         """Add values to stats of player."""

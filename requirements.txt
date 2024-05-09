@@ -2,5 +2,8 @@ django==4.1.5
 django-tailwind==3.4.0
 django-browser-reload==1.6.0
 django-allauth==0.52.0
+django-cryptography
+cryptography
 python-decouple
 selenium
+django-recaptcha
