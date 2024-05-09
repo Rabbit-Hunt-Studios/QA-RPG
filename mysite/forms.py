@@ -25,6 +25,4 @@ class RegisterForm(UserCreationForm):
 
 
 class LoginForm(AuthenticationForm):
-    username = forms.CharField(label="Username ", widget=forms.TextInput)
-    password = forms.CharField(label="Password ", widget=forms.PasswordInput)
-    recaptcha = ReCaptchaField(widget=ReCaptchaV2Checkbox())
+    recaptcha = ReCaptchaField(widget=ReCaptchaV2Checkbox(), required=True)
